@@ -765,20 +765,36 @@ fn remove_annotation_type(code: &str, bug_type: &str) -> Option<String> {
 
 fn extract_fn_signature(code: &str, func_name: &str) -> String {
     use regex::Regex;
-    // Match return types: either parenthesized like (r: i32) or plain like i32, Vec<T>, Option<Result<T, E>>
-    // Pattern breakdown:
-    //   - \([^)]+\) : parenthesized return type with named binding
-    //   - \w+(?:<[^>]+>)* : plain type with optional generic params (handles nested generics)
+    // Find the start of the function (handles pub, open, spec, proof modifiers)
     let pattern = format!(
-        r"(?:pub\s+)?(?:open\s+)?(?:spec\s+|proof\s+)?fn\s+{}\s*(?:<[^>]*>)?\s*\([^)]*\)(?:\s*->\s*(?:\([^)]+\)|\w+(?:<[^>]+>)*))?",
+        r"(?:pub\s+)?(?:open\s+)?(?:spec\s+|proof\s+)?fn\s+{}",
         regex::escape(func_name)
     );
-    if let Ok(re) = Regex::new(&pattern) {
-        if let Some(m) = re.find(code) {
-            return m.as_str().to_string();
+    let start = match Regex::new(&pattern).ok().and_then(|re| re.find(code)) {
+        Some(m) => m.start(),
+        None => return String::new(),
+    };
+
+    // Parse from start until '{' with all brackets balanced (handles nested generics)
+    let chars: Vec<char> = code[start..].chars().collect();
+    let mut angle_depth: i32 = 0;  // < >
+    let mut paren_depth: i32 = 0;  // ( )
+    let mut i = 0;
+
+    while i < chars.len() {
+        match chars[i] {
+            '<' => angle_depth += 1,
+            // Don't count '>' as closing bracket if it's part of '->' (return type arrow)
+            '>' if i > 0 && chars[i - 1] != '-' => angle_depth = angle_depth.saturating_sub(1),
+            '(' => paren_depth += 1,
+            ')' => paren_depth = paren_depth.saturating_sub(1),
+            '{' if angle_depth == 0 && paren_depth == 0 => break,
+            _ => {}
         }
+        i += 1;
     }
-    String::new()
+
+    code[start..start + i].trim().to_string()
 }
 
 fn generate_task_entries(func: &ExtractedFunction, annotations: &ProofAnnotations) -> Vec<TaskEntry> {
