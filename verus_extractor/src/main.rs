@@ -723,7 +723,7 @@ fn generate_task_entries(func: &ExtractedFunction, annotations: &ProofAnnotation
                     has_requires: !annotations.requires.is_empty(),
                     has_ensures: !annotations.ensures.is_empty(),
                     has_invariants: !annotations.invariants.is_empty(),
-                    has_decreases: !annotations.fn_decreases.is_empty(),
+                    has_decreases: !annotations.fn_decreases.is_empty() || !annotations.loop_decreases.is_empty(),
                     bug_type: None,
                 },
             });
@@ -756,7 +756,7 @@ fn generate_task_entries(func: &ExtractedFunction, annotations: &ProofAnnotation
                         has_requires: !annotations.requires.is_empty(),
                         has_ensures: !annotations.ensures.is_empty(),
                         has_invariants: !annotations.invariants.is_empty(),
-                        has_decreases: !annotations.fn_decreases.is_empty(),
+                        has_decreases: !annotations.fn_decreases.is_empty() || !annotations.loop_decreases.is_empty(),
                         bug_type: Some(bug_type.to_string()),
                     },
                 });
