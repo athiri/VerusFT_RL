@@ -985,12 +985,9 @@ fn process_repo(repo_dir: &Path, verus_path: Option<&str>, skip_verify: bool, in
 
         if let Some(tf) = task_file.as_mut() {
             if is_verified {
-                let mut ann = ProofAnnotations::default();
-                for line in target.specs.lines() {
-                    if line.starts_with("requires") { ann.requires.push(line.trim_start_matches("requires").trim().into()); }
-                    else if line.starts_with("ensures") { ann.ensures.push(line.trim_start_matches("ensures").trim().into()); }
-                    else if line.starts_with("decreases") { ann.fn_decreases.push(line.trim_start_matches("decreases").trim().into()); }
-                }
+                // Use registry.fn_annotations which includes loop invariants, loop_decreases, and asserts
+                // (populated during visitor traversal, not just from target.specs)
+                let ann = registry.fn_annotations.get(&target.name).cloned().unwrap_or_default();
                 for entry in generate_task_entries(&func, &ann) {
                     writeln!(tf, "{}", serde_json::to_string(&entry)?)?;
                     tasks += 1;
