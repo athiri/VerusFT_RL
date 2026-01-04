@@ -717,16 +717,17 @@ fn strip_annotations_from_code(code: &str) -> String {
     use regex::Regex;
     let mut result = code.to_string();
 
+    // Note: Rust's regex crate doesn't support lookahead (?=...), so we use line-based patterns
     let patterns = [
         r"\bproof\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}",
         r"\bassert\s*\([^;]+\)\s*;",
         r"\bassert\s+[^;{]+?\s+by\s*\{[^}]*\}\s*;?",
-        r"\binvariant\s+[^{}]+?(?=\s*\{)",
-        r"\binvariant_except_break\s+[^{}]+?(?=\s*\{)",
-        r"\binvariant_ensures\s+[^{}]+?(?=\s*\{)",
-        r"(?:invariant[^{}]*?)?\bdecreases\s+[^{}]+?(?=\s*\{)",
-        r"\bensures\s+[^{}]+?(?=\s*\{)",
-        r"\brequires\s+[^{}]+?(?=\s*(?:ensures|\{))",
+        r"(?m)^\s*invariant\b[^\n{]*\n?",
+        r"(?m)^\s*invariant_except_break\b[^\n{]*\n?",
+        r"(?m)^\s*invariant_ensures\b[^\n{]*\n?",
+        r"(?m)^\s*decreases\b[^\n{]*\n?",
+        r"(?m)^\s*ensures\b[^\n{]*\n?",
+        r"(?m)^\s*requires\b[^\n{]*\n?",
     ];
 
     for pattern in &patterns {
@@ -743,11 +744,17 @@ fn strip_annotations_from_code(code: &str) -> String {
 
 fn remove_annotation_type(code: &str, bug_type: &str) -> Option<String> {
     use regex::Regex;
+    // Note: Rust's regex crate doesn't support lookahead (?=...), so we use simpler patterns
+    // that match annotation keyword + content up to end of line (handles multi-line via replace_all)
     let pattern = match bug_type {
-        "missing_ensures" => r"\bensures\s+[^{}]+?(?=\s*\{)",
-        "missing_requires" => r"\brequires\s+[^{}]+?(?=\s*(?:ensures|\{))",
-        "missing_invariant" => r"\binvariant\s+[^{}]+?(?=\s*\{)",
-        "missing_decreases" => r"\bdecreases\s+[^{}]+?(?=\s*\{)",
+        // Match 'ensures' + content until newline or '{' (doesn't consume '{')
+        "missing_ensures" => r"(?m)^\s*ensures\b[^\n{]*\n?",
+        // Match 'requires' + content until newline or '{'
+        "missing_requires" => r"(?m)^\s*requires\b[^\n{]*\n?",
+        // Match 'invariant' + content until newline or '{'
+        "missing_invariant" => r"(?m)^\s*invariant\b[^\n{]*\n?",
+        // Match 'decreases' + content until newline or '{'
+        "missing_decreases" => r"(?m)^\s*decreases\b[^\n{]*\n?",
         "missing_assert" => {
             let re1 = Regex::new(r"\bassert\s*\([^;]+\)\s*;").ok()?;
             let re2 = Regex::new(r"\bassert\s+[^;{]+?\s+by\s*\{[^}]*\}\s*;?").ok()?;
