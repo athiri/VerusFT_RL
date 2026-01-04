@@ -538,7 +538,7 @@ struct ProofAnnotations {
 
 impl ProofAnnotations {
     fn is_empty(&self) -> bool {
-        self.requires.is_empty() && self.ensures.is_empty() && self.fn_decreases.is_empty() && self.invariants.is_empty() && self.loop_decreases.is_empty()
+        self.requires.is_empty() && self.ensures.is_empty() && self.fn_decreases.is_empty() && self.invariants.is_empty() && self.loop_decreases.is_empty() && self.asserts.is_empty()
     }
 
     fn format_function_specs(&self) -> String {
