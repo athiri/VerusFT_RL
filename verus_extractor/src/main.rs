@@ -133,6 +133,8 @@ struct GlobalRegistry {
     current_file: PathBuf,
     /// If true, also extract spec and proof functions (not just exec)
     include_spec_proof: bool,
+    /// Annotations for each function, keyed by function name
+    fn_annotations: HashMap<String, ProofAnnotations>,
 }
 
 impl GlobalRegistry {
@@ -230,6 +232,8 @@ impl<'ast> Visit<'ast> for ItemCollectorVisitor<'_> {
         if should_extract {
             let specs = extract_specs_from_sig(&node.sig);
             if !specs.is_empty() {
+                // Extract and store annotations for this function
+                self.registry.fn_annotations.insert(name.clone(), AnnotationExtractor::extract_from_fn(node));
                 self.registry.targets.push(TargetFunction {
                     name,
                     source_file: self.registry.current_file.clone(),
@@ -273,6 +277,8 @@ impl<'ast> Visit<'ast> for ItemCollectorVisitor<'_> {
         if should_extract {
             let specs = extract_specs_from_sig(&node.sig);
             if !specs.is_empty() {
+                // Extract and store annotations for this impl method
+                self.registry.fn_annotations.insert(name.clone(), AnnotationExtractor::extract_from_impl_fn(node));
                 self.registry.targets.push(TargetFunction {
                     name,
                     source_file: self.registry.current_file.clone(),
@@ -560,6 +566,22 @@ struct AnnotationExtractor {
 
 impl AnnotationExtractor {
     fn extract_from_fn(node: &ItemFn) -> ProofAnnotations {
+        let mut extractor = Self { annotations: ProofAnnotations::default() };
+        let spec = &node.sig.spec;
+        if let Some(req) = &spec.requires {
+            extractor.annotations.requires.push(req.exprs.to_token_stream().to_string());
+        }
+        if let Some(ens) = &spec.ensures {
+            extractor.annotations.ensures.push(ens.exprs.to_token_stream().to_string());
+        }
+        if let Some(dec) = &spec.decreases {
+            extractor.annotations.fn_decreases.push(dec.decreases.exprs.to_token_stream().to_string());
+        }
+        extractor.visit_block(&node.block);
+        extractor.annotations
+    }
+
+    fn extract_from_impl_fn(node: &ImplItemFn) -> ProofAnnotations {
         let mut extractor = Self { annotations: ProofAnnotations::default() };
         let spec = &node.sig.spec;
         if let Some(req) = &spec.requires {
@@ -965,14 +987,11 @@ fn process_jsonl(input_path: &str, verus_path: Option<&str>, skip_verify: bool, 
         registry.current_file = PathBuf::from(&sample.source_file);
         let file = match verus_syn::parse_file(&sample.full_code) { Ok(f) => f, Err(_) => continue };
 
-        let mut fn_annotations: HashMap<String, ProofAnnotations> = HashMap::new();
+        // Visitor now populates registry.fn_annotations as it traverses, including nested modules and macros
         {
             let mut visitor = ItemCollectorVisitor::new(&mut registry);
             for item in &file.items {
                 visitor.visit_item(item);
-                if let Item::Fn(item_fn) = item {
-                    fn_annotations.insert(item_fn.sig.ident.to_string(), AnnotationExtractor::extract_from_fn(item_fn));
-                }
             }
         }
 
@@ -1000,7 +1019,7 @@ fn process_jsonl(input_path: &str, verus_path: Option<&str>, skip_verify: bool, 
 
             if let Some(tf) = task_file.as_mut() {
                 if is_verified {
-                    let ann = fn_annotations.get(&target.name).cloned().unwrap_or_default();
+                    let ann = registry.fn_annotations.get(&target.name).cloned().unwrap_or_default();
                     for entry in generate_task_entries(&func, &ann) {
                         writeln!(tf, "{}", serde_json::to_string(&entry)?)?;
                         tasks += 1;
