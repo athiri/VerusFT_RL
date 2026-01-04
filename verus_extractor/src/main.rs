@@ -262,6 +262,26 @@ impl<'ast> Visit<'ast> for ItemCollectorVisitor<'_> {
             tokens: tokens.clone(),
             references: refs.clone(),
         });
+
+        // Determine if this impl method should be a target (same logic as visit_item_fn)
+        let should_extract = match kind {
+            ItemKind::ExecFn => true,
+            ItemKind::SpecFn | ItemKind::ProofFn => self.registry.include_spec_proof,
+            _ => false,
+        };
+
+        if should_extract {
+            let specs = extract_specs_from_sig(&node.sig);
+            if !specs.is_empty() {
+                self.registry.targets.push(TargetFunction {
+                    name,
+                    source_file: self.registry.current_file.clone(),
+                    tokens,
+                    specs,
+                    references: refs,
+                });
+            }
+        }
     }
 
     fn visit_item_struct(&mut self, node: &'ast ItemStruct) {
