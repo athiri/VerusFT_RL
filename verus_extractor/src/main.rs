@@ -430,28 +430,99 @@ fn collect_refs_from_impl_fn(node: &ImplItemFn) -> HashSet<String> {
 }
 
 fn collect_refs_generic<T: ToTokens>(node: &T) -> HashSet<String> {
-    let mut collector = RefCollector::default();
+    let mut refs = HashSet::new();
     let tokens = node.to_token_stream();
     if let Ok(file) = syn::parse2::<syn::File>(tokens) {
         for item in file.items {
-            if let syn::Item::Struct(s) = item {
-                for field in s.fields {
-                    extract_type_refs(&field.ty, &mut collector.refs);
+            match item {
+                syn::Item::Struct(s) => {
+                    for field in s.fields {
+                        extract_type_refs(&field.ty, &mut refs);
+                    }
                 }
+                syn::Item::Enum(e) => {
+                    for variant in e.variants {
+                        for field in variant.fields {
+                            extract_type_refs(&field.ty, &mut refs);
+                        }
+                    }
+                }
+                syn::Item::Type(t) => {
+                    extract_type_refs(&t.ty, &mut refs);
+                }
+                syn::Item::Const(c) => {
+                    extract_type_refs(&c.ty, &mut refs);
+                }
+                syn::Item::Trait(t) => {
+                    for item in t.items {
+                        if let syn::TraitItem::Fn(f) = item {
+                            for input in f.sig.inputs.iter() {
+                                if let syn::FnArg::Typed(pat) = input {
+                                    extract_type_refs(&pat.ty, &mut refs);
+                                }
+                            }
+                            if let syn::ReturnType::Type(_, ty) = &f.sig.output {
+                                extract_type_refs(ty, &mut refs);
+                            }
+                        }
+                    }
+                }
+                syn::Item::Impl(i) => {
+                    // Extract the self type so impl blocks associate with their type
+                    extract_type_refs(&i.self_ty, &mut refs);
+                    // Also extract trait if it's a trait impl
+                    if let Some((_, path, _)) = &i.trait_ {
+                        if let Some(seg) = path.segments.last() {
+                            let name = seg.ident.to_string();
+                            if !is_builtin(&name) {
+                                refs.insert(name);
+                            }
+                        }
+                    }
+                }
+                _ => {}
             }
         }
     }
-    collector.refs
+    refs
 }
 
 fn extract_type_refs(ty: &syn::Type, refs: &mut HashSet<String>) {
-    if let syn::Type::Path(p) = ty {
-        if let Some(seg) = p.path.segments.last() {
-            let name = seg.ident.to_string();
-            if !is_builtin(&name) {
-                refs.insert(name);
+    match ty {
+        syn::Type::Path(p) => {
+            if let Some(seg) = p.path.segments.last() {
+                let name = seg.ident.to_string();
+                if !is_builtin(&name) {
+                    refs.insert(name);
+                }
+                // Recurse into generic arguments (e.g., Vec<MyType>, Option<T>)
+                if let syn::PathArguments::AngleBracketed(args) = &seg.arguments {
+                    for arg in &args.args {
+                        if let syn::GenericArgument::Type(inner_ty) = arg {
+                            extract_type_refs(inner_ty, refs);
+                        }
+                    }
+                }
             }
         }
+        syn::Type::Reference(r) => {
+            extract_type_refs(&r.elem, refs);
+        }
+        syn::Type::Slice(s) => {
+            extract_type_refs(&s.elem, refs);
+        }
+        syn::Type::Array(a) => {
+            extract_type_refs(&a.elem, refs);
+        }
+        syn::Type::Tuple(t) => {
+            for elem in &t.elems {
+                extract_type_refs(elem, refs);
+            }
+        }
+        syn::Type::Paren(p) => {
+            extract_type_refs(&p.elem, refs);
+        }
+        _ => {}
     }
 }
 
