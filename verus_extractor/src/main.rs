@@ -895,9 +895,29 @@ fn build_standalone_code(target: &TargetFunction, deps: &[AstItem], _use_stateme
 }
 
 fn verify_with_verus(code: &str, verus_path: &str) -> Result<bool, String> {
-    let temp_path = "/tmp/verus_verify_temp.rs";
-    fs::write(temp_path, code).map_err(|e| e.to_string())?;
-    let output = Command::new(verus_path).args([temp_path, "--crate-type=lib"]).output().map_err(|e| e.to_string())?;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    // Generate unique temp file path using process ID and timestamp to avoid race conditions
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let temp_path = format!("/tmp/verus_verify_{}_{}.rs", std::process::id(), timestamp);
+
+    // Write code to temp file
+    fs::write(&temp_path, code).map_err(|e| e.to_string())?;
+
+    // Run verification
+    let output = Command::new(verus_path)
+        .args([&temp_path, "--crate-type=lib"])
+        .output()
+        .map_err(|e| e.to_string());
+
+    // Clean up temp file regardless of result
+    let _ = fs::remove_file(&temp_path);
+
+    // Return result
+    let output = output?;
     if output.status.success() { Ok(true) } else { Err(String::from_utf8_lossy(&output.stderr).to_string()) }
 }
 
