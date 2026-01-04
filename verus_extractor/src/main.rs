@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use verus_syn::visit::{self, Visit};
 use verus_syn::{
-    Expr, ExprCall, ExprPath, FnMode, ImplItemFn, Item, ItemConst, ItemEnum, ItemFn,
+    Expr, ExprCall, ExprMethodCall, ExprPath, FnMode, ImplItemFn, Item, ItemConst, ItemEnum, ItemFn,
     ItemStruct, ItemTrait, ItemType, Signature, Type, TypePath,
 };
 
@@ -485,6 +485,16 @@ impl<'ast> Visit<'ast> for RefCollector {
             }
         }
         visit::visit_type_path(self, node);
+    }
+
+    fn visit_expr_method_call(&mut self, node: &'ast ExprMethodCall) {
+        // Track the method name as a dependency
+        let method_name = node.method.to_string();
+        if !is_builtin(&method_name) {
+            self.refs.insert(method_name);
+        }
+        // Also visit the receiver to capture its type dependencies
+        visit::visit_expr_method_call(self, node);
     }
 }
 
