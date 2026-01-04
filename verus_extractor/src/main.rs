@@ -555,7 +555,8 @@ impl ProofAnnotations {
         for e in &self.ensures { parts.push(format!("ensures {}", e)); }
         for d in &self.fn_decreases { parts.push(format!("decreases {}", d)); }
         for inv in &self.invariants { parts.push(format!("invariant {}", inv)); }
-        for d in &self.loop_decreases { parts.push(format!("loop_decreases {}", d)); }
+        // Loop decreases uses same 'decreases' keyword as function-level, just different position
+        for d in &self.loop_decreases { parts.push(format!("decreases {}", d)); }
         parts.join("\n")
     }
 }
