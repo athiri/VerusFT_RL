@@ -92,6 +92,7 @@ struct TaskMetadata {
 struct AstItem {
     name: String,
     qualified_name: String,
+    #[allow(dead_code)]
     source_file: PathBuf,
     kind: ItemKind,
     tokens: TokenStream,
@@ -126,6 +127,7 @@ struct GlobalRegistry {
     items_by_name: HashMap<String, Vec<AstItem>>,
     items_by_qualified: HashMap<String, AstItem>,
     impls_for_type: HashMap<String, Vec<AstItem>>,
+    #[allow(dead_code)]
     trait_impls: HashMap<String, AstItem>,
     targets: Vec<TargetFunction>,
     use_statements: HashSet<String>,
@@ -1021,9 +1023,8 @@ fn process_repo(repo_dir: &Path, verus_path: Option<&str>, skip_verify: bool, in
     eprintln!("Phase 1: Building global registry...");
 
     let files = find_verus_files(repo_dir);
-    let mut parsed = 0;
     for (i, path) in files.iter().enumerate() {
-        if parse_file_into_registry(path, &mut registry) { parsed += 1; }
+        parse_file_into_registry(path, &mut registry);
         if (i + 1) % 100 == 0 { eprintln!("  Parsed {}/{} files", i + 1, files.len()); }
     }
     eprintln!("Registry: {} items, {} targets", registry.items_by_name.len(), registry.targets.len());
