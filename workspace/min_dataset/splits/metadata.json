@@ -1,0 +1,27 @@
+{
+  "verus_version": "0.2025.12.23.ab8296c",
+  "verification_rate": "100.00%",
+  "total_samples": 14659,
+  "splits": {
+    "all": {
+      "train": 11725,
+      "val": 1466,
+      "test": 1468
+    },
+    "task_b": {
+      "train": 2600,
+      "val": 325,
+      "test": 326
+    },
+    "task_a": {
+      "train": 2941,
+      "val": 368,
+      "test": 368
+    },
+    "task_c": {
+      "train": 6184,
+      "val": 773,
+      "test": 774
+    }
+  }
+}
