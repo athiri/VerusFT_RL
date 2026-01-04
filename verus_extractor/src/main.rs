@@ -692,7 +692,14 @@ fn remove_annotation_type(code: &str, bug_type: &str) -> Option<String> {
 
 fn extract_fn_signature(code: &str, func_name: &str) -> String {
     use regex::Regex;
-    let pattern = format!(r"(?:pub\s+)?fn\s+{}\s*\([^)]*\)(?:\s*->\s*\([^)]+\))?", regex::escape(func_name));
+    // Match return types: either parenthesized like (r: i32) or plain like i32, Vec<T>, Option<Result<T, E>>
+    // Pattern breakdown:
+    //   - \([^)]+\) : parenthesized return type with named binding
+    //   - \w+(?:<[^>]+>)* : plain type with optional generic params (handles nested generics)
+    let pattern = format!(
+        r"(?:pub\s+)?(?:open\s+)?(?:spec\s+|proof\s+)?fn\s+{}\s*(?:<[^>]*>)?\s*\([^)]*\)(?:\s*->\s*(?:\([^)]+\)|\w+(?:<[^>]+>)*))?",
+        regex::escape(func_name)
+    );
     if let Ok(re) = Regex::new(&pattern) {
         if let Some(m) = re.find(code) {
             return m.as_str().to_string();
