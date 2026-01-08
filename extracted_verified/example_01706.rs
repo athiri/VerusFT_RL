@@ -1,36 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-    spec fn valid_input(n: int) -> bool {
-        n >= 1
+
+fn smallest_list_length(list: &Vec<Vec<i32>>) -> (min: usize)
+    requires
+        list.len() > 0,
+    ensures
+        min >= 0,
+        forall|i: int| 0 <= i < list.len() ==> min <= #[trigger] list[i].len(),
+        exists|i: int| 0 <= i < list.len() && min == #[trigger] list[i].len(),
+{
+    let mut min = list[0].len();
+    let mut j = 1;
+    
+    while j < list.len()
+        invariant
+            1 <= j <= list.len(),
+            forall|i: int| 0 <= i < j ==> min <= #[trigger] list[i].len(),
+            exists|i: int| 0 <= i < j && min == #[trigger] list[i].len(),
+    {
+        if list[j].len() < min {
+            min = list[j].len();
+        }
+        j += 1;
     }
     
-    spec fn min_bills(n: int) -> int
-        recommends n >= 1
-    {
-        n / 100 + (n % 100) / 20 + ((n % 100) % 20) / 10 + (((n % 100) % 20) % 10) / 5 + ((((n % 100) % 20) % 10) % 5)
-    }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-    requires 
-        valid_input(n as int)
-    ensures 
-        result >= 0,
-        result as int == min_bills(n as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
+    min
 }
 
-fn main() {}
+} // verus!

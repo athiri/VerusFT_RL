@@ -1,23 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    spec fn sorted(a: &[int]) -> bool {
+        forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j]
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mroot1(n: u32) -> (r: u32)
-    requires n >= 0,
-    ensures r >= 0 && (r as int) * (r as int) <= n < ((r + 1) as int) * ((r + 1) as int),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn binary_search(a: &[int], x: int) -> (index: i32)
+        requires sorted(a),
+        ensures 
+            (0 <= index < a.len()) ==> a[index as int] == x,
+            (index == -1) ==> forall|i: int| 0 <= i < a.len() ==> a[i] != x,
+    {
+        let mut left: usize = 0;
+        let mut right: usize = a.len();
+        
+        while left < right
+            invariant
+                left <= right <= a.len(),
+                forall|i: int| 0 <= i < left ==> a[i] < x,
+                forall|i: int| right <= i < a.len() ==> a[i] > x,
+        {
+            let mid = left + (right - left) / 2;
+            
+            if a[mid] == x {
+                return mid as i32;
+            } else if a[mid] < x {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        
+        -1
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

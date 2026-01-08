@@ -2,25 +2,14 @@ use vstd::prelude::*;
 
 verus! {
 
-fn replace_char(s: Vec<char>, old: char, new: char) -> (result: Vec<char>)
+#[verifier::loop_isolation(false)]
+fn is_non_prime(n: u32) -> (result: bool)
+    requires
+        n >= 2,
     ensures
-        result.len() == s.len(),
-        forall|i: int| 0 <= i && i < result.len() ==> result[i] == (if s[i] == old { new } else { s[i] }),
+        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    let mut result: Vec<char> = Vec::new();
-    let mut i = 0;
-    while i < s.len()
-        invariant
-            0 <= i && i <= s.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j && j < i ==> result[j] == (if s[j] == old { new } else { s[j] }),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases s.len() - i,
-    {
-        result.push(if s[i] == old { new } else { s[i] });
-        i = i + 1;
-    }
-    result
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 fn main() {}

@@ -1,35 +1,64 @@
-// <vc-preamble>
+/*This is a slightly simpler version of proof provided by Chris Hawblitzel*/
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn exp_int(x: nat, y: nat) -> nat
-    decreases y
+
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    if y == 0 { 1 } else { x * exp_int(x, (y - 1) as nat) }
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
+    }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+    
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+spec fn is_subrange_at(main: Seq<i32>, sub: Seq<i32>, i: int) -> bool {
+    sub =~= main.subrange(i, i + sub.len())
+}
 
-// <vc-spec>
-fn mod_exp_int(x: u64, y: u64, n: u64, z: u64) -> (res: u64)
-    requires 
-        y < exp_int(x as nat, y as nat),
-        z > 1,
-    ensures res as nat == exp_int(x as nat, y as nat) % (z as nat)
-    decreases n
-// </vc-spec>
-// <vc-code>
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    ensures
+        result == (exists|k: int|
+            0 <= k <= (main.len() - sub.len()) && is_subrange_at(main@, sub@, k)),
 {
-    // impl-start
-    assume(false);
-    0
-    // impl-end
+    if sub.len() > main.len() {
+        return false;
+    }
+    
+    let mut i = 0;
+    while i <= main.len() - sub.len()
+        invariant
+            0 <= i <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < i ==> !is_subrange_at(main@, sub@, k),
+    {
+        if sub_array_at_index(main, sub, i) {
+            assert(is_subrange_at(main@, sub@, i as int));
+            return true;
+        }
+        i += 1;
+    }
+    
+    assert(forall|k: int| 0 <= k <= main.len() - sub.len() ==> !is_subrange_at(main@, sub@, k));
+    
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

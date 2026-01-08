@@ -1,81 +1,56 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Helper function to check if a character is space, comma, or dot (spec version)
-spec fn is_space_comma_dot_spec(c: char) -> bool {
-    c == ' ' || c == ',' || c == '.'
+spec fn encode_char(c: char) -> char {
+    ((c as int - 'a' as int + 5) % 26 + 'a' as int) as char
 }
 
-// Helper function to check if a character is space, comma, or dot (exec version)
-fn is_space_comma_dot(c: char) -> (result: bool)
-    ensures result == is_space_comma_dot_spec(c)
+spec fn decode_char(c: char) -> char {
+    ((c as int - 'a' as int - 5) % 26 + 'a' as int) as char
+}
+
+spec fn valid_char(c: char) -> bool {
+    'a' <= c <= 'z'
+}
+// </vc-preamble>
+
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn decode_shift(s: Vec<char>) -> (t: Vec<char>)
+    requires forall|i: int| 0 <= i < s.len() ==> valid_char(s[i])
+    ensures s.len() == t.len(),
+            forall|i: int| 0 <= i < s.len() ==> t[i] == decode_char(s[i])
+// </vc-spec>
+// <vc-code>
 {
-    c == ' ' || c == ',' || c == '.'
-}
-
-// Precondition - always true in this case
-spec fn replace_with_colon_precond(s: Seq<char>) -> bool {
-    true
-}
-
-// Postcondition specification
-spec fn replace_with_colon_postcond(s: Seq<char>, result: Seq<char>) -> bool {
-    result.len() == s.len() &&
-    forall|i: int| #![trigger s.index(i)] #![trigger result.index(i)] 
-        0 <= i < s.len() ==> {
-            let old_char = s.index(i);
-            let new_char = result.index(i);
-            if is_space_comma_dot_spec(old_char) {
-                new_char == ':'
-            } else {
-                new_char == old_char
-            }
-        }
-}
-
-// Main function that replaces spaces, commas, and dots with colons
-fn replace_with_colon(s: &Vec<char>) -> (result: Vec<char>)
-    requires replace_with_colon_precond(s@)
-    ensures replace_with_colon_postcond(s@, result@)
-{
-    let mut result = Vec::new();
+    /* code modified by LLM (iteration 5): add decreases clause to while loop */
+    let mut t = Vec::new();
     let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
     while i < s.len()
-        invariant 
+        invariant
             0 <= i <= s.len(),
-            result.len() == i,
-            forall|j: int| #![trigger s@.index(j)] #![trigger result@.index(j)]
-                0 <= j < i ==> {
-                    let old_char = s@.index(j);
-                    let new_char = result@.index(j);
-                    if is_space_comma_dot_spec(old_char) {
-                        new_char == ':'
-                    } else {
-                        new_char == old_char
-                    }
-                }
+            t.len() == i,
+            forall|j: int| 0 <= j < i ==> t[j] == decode_char(s[j]),
+            forall|j: int| 0 <= j < s.len() ==> valid_char(s[j]),
         decreases s.len() - i
     {
         let c = s[i];
-        if is_space_comma_dot(c) {
-            result.push(':');
-        } else {
-            result.push(c);
-        }
+        let c_val = c as u8;
+        let a_val = 'a' as u8;
+        let decoded_val = ((c_val - a_val + 21) % 26 + a_val) as char;
+        t.push(decoded_val);
         i += 1;
     }
-    
-    result
+    t
+}
+// </vc-code>
+
+
 }
 
-} // verus!
-
-fn main() {
-    let input = vec!['h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', ',', ' ', 't', 'e', 's', 't', '.'];
-    let output = replace_with_colon(&input);
-    println!("Input: {:?}", input);
-    println!("Output: {:?}", output);
-}
+fn main() {}

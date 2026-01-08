@@ -1,50 +1,78 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+fn string_eq(s1: &str, s2: &str) -> (result: bool)
+    // post-conditions-start
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        result <==> s1@ == s2@,
+    // post-conditions-end
 {
-    for i in 0..arr.len()
+    /* code modified by LLM (iteration 1): Use sequence comparison instead of direct string comparison */
+    s1@ == s2@
+}
+
+fn check_substring(s: &str, sub: &str) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> exists|i: int|
+            0 <= i <= s@.len() - sub@.len() && s@.subrange(i, #[trigger] (i + sub@.len())) == sub@,
+    // post-conditions-end
+{
+    if sub.len() > s.len() {
+        return false;
+    }
+    
+    let mut i = 0;
+    while i <= s.len() - sub.len()
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            0 <= i <= s@.len() - sub@.len() + 1,
+            forall|j: int| 0 <= j < i ==> s@.subrange(j, j + sub@.len()) != sub@,
     {
-        if arr[i] == key {
+        /* code modified by LLM (iteration 1): Use sequence subrange comparison instead of string slice comparison */
+        if s@.subrange(i as int, i as int + sub@.len()) == sub@ {
+            proof {
+                assert(exists|k: int| 0 <= k <= s@.len() - sub@.len() && s@.subrange(k, k + sub@.len()) == sub@ && k == i);
+            }
             return true;
         }
+        i += 1;
     }
     false
 }
 
-fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+fn filter_by_substring<'a>(strings: &Vec<&'a str>, substring: &str) -> (res: Vec<&'a str>)
+    // post-conditions-start
     ensures
         forall|i: int|
-            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
-                #[trigger] result[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+            0 <= i < strings@.len() && (exists|j: int|
+                0 <= j <= strings@[i]@.len() - substring@.len() && strings[i]@.subrange(
+                    j,
+                    #[trigger] (j + substring@.len()),
+                ) == substring@) ==> res@.contains(#[trigger] (strings[i])),
+    // post-conditions-end
 {
     let mut result = Vec::new();
+    let mut i = 0;
     
-    for i in 0..arr1.len()
+    while i < strings.len()
         invariant
+            0 <= i <= strings@.len(),
             forall|k: int|
-                0 <= k < result.len() ==> (arr1@.contains(#[trigger] result[k]) && arr2@.contains(
-                    #[trigger] result[k],
-                )),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+                0 <= k < i && (exists|j: int|
+                    0 <= j <= strings@[k]@.len() - substring@.len() && strings[k]@.subrange(
+                        j,
+                        j + substring@.len(),
+                    ) == substring@) ==> result@.contains(strings[k]),
     {
-        let element = arr1[i];
-        if contains(arr2, element) && !contains(&result, element) {
-            result.push(element);
+        if check_substring(strings[i], substring) {
+            result.push(strings[i]);
         }
+        i += 1;
     }
     
     result
 }
 
-} // verus!
+}
+fn main() {}

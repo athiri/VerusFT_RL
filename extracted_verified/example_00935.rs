@@ -1,25 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn concat(a: &[i32], b: &[i32]) -> (c: Vec<i32>)
-    ensures 
-        c.len() == b.len() + a.len(),
-        forall|k: int| 0 <= k < a.len() ==> c[k] == a[k],
-        forall|k: int| 0 <= k < b.len() ==> c[k + a.len()] == b[k],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn main_method(n: i32, k: i32) -> (k_out: i32)
+        requires 
+            n > 0,
+            k > n,
+            n <= 100,    
+            k <= 200,
+        ensures 
+            k_out >= 0,
+    {
+        k
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

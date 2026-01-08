@@ -1,29 +1,50 @@
 use vstd::prelude::*;
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
 verus! {
 
-fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn two_sum(nums: &Vec<i32>, target: i32) -> (usize, usize)
+    requires
+        nums.len() >= 2,
+        exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        /* code modified by LLM (iteration 1): fixed ensures clauses to properly reference return value */
+        0 <= result.0 < nums.len(),
+        0 <= result.1 < nums.len(),
+        result.0 != result.1,
+        nums[result.0 as int] + nums[result.1 as int] == target
 {
-    let mut idx: usize = 0;
-    while idx < arr.len()
+    let mut i = 0;
+
+    while i < nums.len()
         invariant
-            0 <= idx <= arr.len(),
-            forall|i: int| 0 <= i < idx ==> ((i % 2) == (arr[i] % 2)),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases arr.len() - idx,
+            0 <= i <= nums.len(),
+            forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+            exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
     {
-        if (idx % 2) != (arr[idx] % 2) {
-            return false;
+        let mut j = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < j <= nums.len(),
+                forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+                exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
+                forall|u: int| i < u < j ==> nums[i as int] + nums[u] != target,
+        {
+            if nums[i] + nums[j] == target {
+                return (i, j);
+            }
+            j = j + 1;
         }
-        idx = idx + 1;
+        i = i + 1;
     }
-    true
+    /* code modified by LLM (iteration 1): replaced unreachable!() with explicit contradiction proof */
+    proof {
+        // At this point i == nums.len(), but we know from the precondition that
+        // there exists a valid pair, which contradicts our loop invariant
+        assert(false);
+    }
+    (0, 0) // This line will never be reached due to the proof above
 }
 
-} // verus!
+fn main() {}
+}

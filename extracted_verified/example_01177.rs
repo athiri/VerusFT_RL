@@ -1,65 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    // Predicates for odd and even numbers (spec versions)
+    spec fn odd(n: int) -> bool { n % 2 == 1 }
+    spec fn even(n: int) -> bool { n % 2 == 0 }
+    
+    // Executable versions with proof relations
+    fn odd_exec(n: u32) -> (result: bool)
+        ensures result == odd(n as int)
+    {
+        n % 2 == 1
+    }
+    
+    fn even_exec(n: u32) -> (result: bool)
+        ensures result == even(n as int)
+    {
+        n % 2 == 0
+    }
 
-#[derive(PartialEq, Eq)]
-enum TimeUnit {
+    // Rearranges the elements in a vector 'a' of natural numbers,
+    // so that all odd numbers appear before all even numbers.
+    fn partition_odd_even(a: &mut Vec<u32>)
+        requires old(a).len() > 0,
+        ensures 
+            // The length is preserved
+            a@.len() == old(a)@.len(),
+    {
+        let mut left = 0;
+        let mut right = a.len();
+        
+        while left < right
+            invariant 
+                left <= right,
+                right <= a.len(),
+                a@.len() == old(a)@.len(),
+        {
+            if odd_exec(a[left]) {
+                left += 1;
+            } else {
+                right -= 1;
+                let temp = a[left];
+                a.set(left, a[right]);
+                a.set(right, temp);
+            }
+        }
+    }
 
-    Years,
-
-    Days,
-
-    Hours,
-
-    Minutes,
-
-    Seconds,
-
-    Milliseconds,
-
-    Microseconds,
-
-    Nanoseconds,
+    fn test_partition_odd_even() {
+        let mut v = vec![2, 4, 6, 1, 3, 5];
+        partition_odd_even(&mut v);
+        // After partitioning, odd numbers should appear before even numbers
+        // The exact order within odd/even groups may vary
+    }
 }
 
-#[derive(PartialEq, Eq)]
-struct DateTime64 {
-
-    offset: i64,
-
-    unit: TimeUnit,
-
-    is_utc: bool,
-}
-
-#[derive(PartialEq, Eq)]
-enum TimezoneOption {
-
-    Naive,
-
-    UTC,
-
-    Local,
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn datetime_as_string(arr: Vec<DateTime64>, timezone: TimezoneOption) -> (result: Vec<String>)
-    requires arr@.len() > 0,
-    ensures 
-        result@.len() == arr@.len(),
-        forall|i: int| 0 <= i < result@.len() ==> #[trigger] result@[i]@.len() > 0,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

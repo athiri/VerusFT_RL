@@ -1,65 +1,85 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(position: Seq<char>) -> bool {
-  position.len() == 2 && 
-  'a' <= position[0] && position[0] <= 'h' && 
-  '1' <= position[1] && position[1] <= '8'
-}
 
-spec fn is_corner(position: Seq<char>) -> bool
-  recommends valid_input(position)
+pub open spec fn count_frequency_rcr(seq: Seq<u8>, key: u8) -> int
+    decreases seq.len(),
 {
-  (position[0] == 'a' || position[0] == 'h') && 
-  (position[1] == '1' || position[1] == '8')
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
 
-spec fn is_edge(position: Seq<char>) -> bool
-  recommends valid_input(position)
+fn count_frequency(arr: &[u8], key: u8) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
 {
-  (position[0] == 'a' || position[0] == 'h' || 
-   position[1] == '1' || position[1] == '8') && 
-  !is_corner(position)
+    let mut count = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            count == count_frequency_rcr(arr@.take(i as int), key),
+    {
+        if arr[i] == key {
+            count += 1;
+        }
+        
+        assert(arr@.take((i + 1) as int) == arr@.take(i as int).push(arr[i]));
+        assert(count_frequency_rcr(arr@.take((i + 1) as int), key) == 
+               count_frequency_rcr(arr@.take(i as int), key) + 
+               if arr[i] == key { 1 } else { 0 });
+        
+        i += 1;
+    }
+    
+    assert(arr@.take(i as int) == arr@);
+    count
 }
 
-spec fn is_interior(position: Seq<char>) -> bool
-  recommends valid_input(position)
+fn first_repeated_char(str1: &[u8]) -> (repeated_char: Option<(usize, u8)>)
+    ensures
+        if let Some((idx, rp_char)) = repeated_char {
+            idx < str1.len() && str1[idx] == rp_char && count_frequency_rcr(str1@, rp_char) > 1 &&
+            forall|k: int| 0 <= k < idx ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+        } else {
+            forall|k: int|
+                0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+        },
 {
-  !is_corner(position) && !is_edge(position)
+    let input_len = str1.len();
+    assert(str1@.take(0int).filter(|x: u8| count_frequency_rcr(str1@, x) > 1) == Seq::<
+        u8,
+    >::empty());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            str1@.take(index as int) =~= str1@.take(index as int).filter(
+                |x: u8| count_frequency_rcr(str1@, x) <= 1,
+            ),
+    {
+        if count_frequency(&str1, str1[index]) > 1 {
+            return Some((index, str1[index]));
+        }
+        assert(str1@.take((index + 1) as int).drop_last() == str1@.take(index as int));
+        reveal(Seq::filter);
+        index += 1;
+    }
+    assert(str1@ =~= str1@.take(input_len as int));
+    assert(forall|k: int|
+        0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1);
+    None
 }
 
-spec fn valid_moves(position: Seq<char>) -> int
-  recommends valid_input(position)
-{
-  if is_corner(position) { 3 }
-  else if is_edge(position) { 5 }
-  else { 8 }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(position: Vec<char>) -> (moves: i8)
-  requires 
-    valid_input(position@),
-  ensures 
-    moves as int == valid_moves(position@),
-    is_corner(position@) ==> moves == 3,
-    is_edge(position@) ==> moves == 5,
-    is_interior(position@) ==> moves == 8,
-    moves == 3 || moves == 5 || moves == 8,
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

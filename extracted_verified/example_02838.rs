@@ -2,37 +2,36 @@ use vstd::prelude::*;
 
 verus! {
 
-fn myfun1(x: &Vec<i32>) -> (max_index: usize)
+fn max_element(a: &Vec<i32>) -> (max: i32)
     // pre-conditions-start
     requires
-        x.len() >= 1,
+        a.len() > 0,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        forall|k: int| 0 <= k < x.len() ==> x[max_index as int] >= x[k],
-        max_index < x.len(),
+        forall|i: int| 0 <= i < a.len() ==> a@[i] <= max,
+        exists|i: int| 0 <= i < a.len() && a@[i] == max,
     // post-conditions-end
 {
-    let mut max_index: usize = 0;
-    let mut i: usize = 1;
+    let mut max = a[0];
+    let mut idx = 1;
     
-    /* code modified by LLM (iteration 1): added decreases clause for termination */
-    while i < x.len()
+    /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
+    while idx < a.len()
         invariant
-            max_index < x.len(),
-            i <= x.len(),
-            forall|k: int| 0 <= k < i ==> x[max_index as int] >= x[k],
-        decreases x.len() - i
+            1 <= idx <= a.len(),
+            forall|i: int| 0 <= i < idx ==> a@[i] <= max,
+            exists|i: int| 0 <= i < idx && a@[i] == max,
+        decreases a.len() - idx
     {
-        if x[i] > x[max_index] {
-            max_index = i;
+        if a[idx] > max {
+            max = a[idx];
         }
-        i = i + 1;
+        idx += 1;
     }
     
-    max_index
+    max
 }
 
-} // verus!
-
+}
 fn main() {}

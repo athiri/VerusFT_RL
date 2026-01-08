@@ -1,49 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
+
+fn main() {
+    // Example usage
+    let c = 52u8; // ASCII for '4'
+    let result = is_digit(c);
+    println!("Is '4' a digit? {}", result);
+}
 
 verus! {
-spec fn valid_input(n: nat, m: nat, buttons: Seq<Seq<nat>>) -> bool {
-    buttons.len() == n &&
-    n >= 1 && m >= 1 &&
-    forall|i: int| 0 <= i < n ==> 
-        #[trigger] buttons[i].len() >= 0 &&
-        forall|j: int| 0 <= j < buttons[i].len() ==> 1 <= #[trigger] buttons[i][j] <= m
+
+spec fn is_digit_sepc(c: u8) -> bool {
+    c >= 48 && c <= 57
 }
 
-spec fn union_of_all_bulbs(buttons: Seq<Seq<nat>>) -> Set<nat> {
-    Set::new(|bulb: nat| 
-        exists|i: int, j: int| 
-            0 <= i < buttons.len() && 
-            0 <= j < buttons[i].len() && 
-            #[trigger] buttons[i][j] == bulb
-    )
-}
-
-spec fn can_turn_on_all_bulbs(m: nat, buttons: Seq<Seq<nat>>) -> bool {
-    union_of_all_bulbs(buttons).finite() && union_of_all_bulbs(buttons).len() == m
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: u8, m: u8, buttons: Vec<Vec<u8>>) -> (result: String)
-    requires
-        valid_input(n as nat, m as nat, buttons@.map(|i: int, button: Vec<u8>| button@.map(|j: int, bulb: u8| bulb as nat))),
+fn is_digit(c: u8) -> (res: bool)
     ensures
-        result@ == seq!['Y', 'E', 'S'] || result@ == seq!['N', 'O'],
-        (result@ == seq!['Y', 'E', 'S']) <==> can_turn_on_all_bulbs(m as nat, buttons@.map(|i: int, button: Vec<u8>| button@.map(|j: int, bulb: u8| bulb as nat)))
-// </vc-spec>
-// <vc-code>
+        res == is_digit_sepc(c),
 {
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    c >= 48 && c <= 57
 }
 
-fn main() {}
+fn is_integer(text: &[u8]) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_sepc(text[i]))),
+{
+    let mut i = 0;
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            forall|j: int| 0 <= j < i ==> is_digit_sepc(text[j]),
+    {
+        if !is_digit(text[i]) {
+            return false;
+        }
+        i += 1;
+    }
+    true
+}
+
+} // verus!

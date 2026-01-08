@@ -1,22 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn reverse(a: &mut Vec<i32>)
-    ensures forall|k: int| 0 <= k < old(a).len() ==> a[k] == old(a)[old(a).len() as int - 1 - k]
-// </vc-spec>
-// <vc-code>
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	// pre-conditions-start
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 3 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 0);
 }
-// </vc-code>
-
 }
 fn main() {}

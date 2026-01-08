@@ -1,38 +1,37 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn unique(a: &[i32]) -> (result: Vec<i32>)
+    requires
+        forall|i: int, j: int|
+            #![trigger a[i], a[j]]
+            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        forall|i: int, j: int|
+            #![trigger result[i], result[j]]
+            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
 {
-    for i in 0..arr.len()
+    /* code modified by LLM (iteration 1): Added explicit type annotation for Vec::new() */
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    
+    while i < a.len()
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            0 <= i <= a.len(),
+            forall|k: int, l: int|
+                #![trigger result[k], result[l]]
+                0 <= k && k < l && l < result.len() ==> result[k] < result[l],
     {
-        if arr[i] == key {
-            return true;
+        if result.len() == 0 || a[i] != result[result.len() - 1] {
+            result.push(a[i]);
         }
+        i += 1;
     }
-    false
+    
+    result
 }
 
-fn any_value_exists(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
-    ensures
-        result == exists|k: int| 0 <= k < arr1.len() && arr2@.contains(#[trigger] arr1[k]),
-{
-    for i in 0..arr1.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> !arr2@.contains(arr1[j]),
-    {
-        /* code modified by LLM (iteration 1): replaced spec-mode arr2@.contains() with exec-mode contains() function call */
-        if contains(arr2, arr1[i]) {
-            return true;
-        }
-    }
-    false
+fn main() {}
 }
-
-} // verus!

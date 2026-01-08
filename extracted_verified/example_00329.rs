@@ -1,28 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn rotate_right(l: &Vec<i32>, n: usize) -> (result: Vec<i32>)
-    ensures
-        result.len() == l.len(),
-        forall|i: int| 0 <= i < l.len() ==> {
-            let len = l.len() as int;
-            let rotated_index = ((i - n as int + len) % len) as int;
-            #[trigger] result[i] == l[rotated_index]
-        },
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+	ensures
+		sum[0] <= 2 * N,
+{
+    sum.set(0, 0);
+}
+}

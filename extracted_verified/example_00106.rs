@@ -1,34 +1,27 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn has_no_even_digit(n: int) -> bool
-  decreases n
-{
-  n >= 0 && ((n < 10 && n % 2 == 1) || (n % 2 == 1 && has_no_even_digit(n / 10)))
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn unique_digits(x: Vec<u8>) -> (result: Vec<u8>)
-  ensures 
-    forall|i: int| 0 <= i < result@.len() ==> has_no_even_digit(result@[i] as int) &&
-    forall|i: int, j: int| 0 <= i < j < result@.len() ==> result@[i] <= result@[j] &&
-    forall|e: u8| x@.contains(e) && has_no_even_digit(e as int) ==> result@.contains(e) &&
-    forall|e: u8| result@.contains(e) ==> x@.contains(e)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, N: i32, m: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+	ensures
+		forall |k:int| 0 <= k < N ==> a[k] <= N,
+{
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            0 <= i <= a.len(),
+            a.len() == N,
+            forall |k:int| 0 <= k < i ==> a[k] <= N,
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        decreases a.len() - i,
+    {
+        if a[i] > N {
+            a.set(i, N);
+        }
+        i += 1;
+    }
+}
+}

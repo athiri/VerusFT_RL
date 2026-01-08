@@ -1,44 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(x: int, a: int, b: int) -> bool {
-    1 <= x <= 1000 &&
-    1 <= a <= 1000 &&
-    1 <= b <= 1000 &&
-    x != a && x != b && a != b &&
-    distance(x, a) != distance(x, b)
-}
 
-spec fn distance(s: int, t: int) -> nat {
-    if s >= t { (s - t) as nat } else { (t - s) as nat }
-}
-
-spec fn correct_result(x: int, a: int, b: int, result: Seq<char>) -> bool {
-    (result == seq!['A'] <==> distance(x, a) < distance(x, b)) &&
-    (result == seq!['B'] <==> distance(x, b) < distance(x, a))
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(x: i8, a: i8, b: i8) -> (result: String)
-    requires 
-        valid_input(x as int, a as int, b as int),
-    ensures 
-        result@ == seq!['A'] || result@ == seq!['B'],
-        correct_result(x as int, a as int, b as int, result@),
-// </vc-spec>
-// <vc-code>
+fn all_characters_same(char_arr: &[u8]) -> (result: bool)
+    ensures
+        result == (forall|i: int|
+            1 <= i < char_arr@.len() ==> char_arr[0] == #[trigger] char_arr[i]),
 {
-    assume(false);
-    unreached()
+    if char_arr.len() == 0 {
+        return true;
+    }
+    
+    let first_char = char_arr[0];
+    
+    for i in 1..char_arr.len()
+        invariant
+            forall|j: int| 1 <= j < i ==> char_arr[0] == char_arr[j],
+    {
+        if char_arr[i] != first_char {
+            return false;
+        }
+    }
+    
+    true
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

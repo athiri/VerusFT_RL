@@ -1,47 +1,43 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // Example usage
+    let c = 52u8; // ASCII for '4'
+    let result = is_digit(c);
+    println!("Is '4' a digit? {}", result);
+}
+
 verus! {
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() == 3 && forall|i: int| 0 <= i < s.len() ==> s[i] == 'S' || s[i] == 'R'
+
+spec fn is_digit_sepc(c: u8) -> bool {
+    c >= 48 && c <= 57
 }
 
-spec fn max_consecutive_rainy_days(s: Seq<char>) -> int {
-    if valid_input(s) {
-        if s == seq!['R', 'R', 'R'] {
-            3
-        } else if s.subrange(0, 2) == seq!['R', 'R'] || s.subrange(1, 3) == seq!['R', 'R'] {
-            2
-        } else if s.contains('R') {
-            1
-        } else {
-            0
-        }
-    } else {
-        0
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: i8)
-    requires 
-        valid_input(input@),
-    ensures 
-        result as int == max_consecutive_rainy_days(input@),
-        0 <= result && result <= 3,
-// </vc-spec>
-// <vc-code>
+fn is_digit(c: u8) -> (res: bool)
+    ensures
+        res == is_digit_sepc(c),
 {
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    c >= 48 && c <= 57
 }
 
-fn main() {}
+fn is_integer(text: &[u8]) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_sepc(text[i]))),
+{
+    let mut i = 0;
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            forall|j: int| 0 <= j < i ==> is_digit_sepc(text[j]),
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        decreases text.len() - i,
+    {
+        if !is_digit(text[i]) {
+            return false;
+        }
+        i += 1;
+    }
+    true
+}
+
+} // verus!

@@ -1,36 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(n: int, a: int, b: int, p: int, q: int) -> bool {
-  n > 0 && a > 0 && b > 0 && p > 0 && q > 0
-}
-
-spec fn gcd(a: int, b: int) -> int
-  recommends a > 0 && b >= 0
-  decreases b when b >= 0
+fn all_characters_same(char_arr: &[u8]) -> (result: bool)
+    ensures
+        result == (forall|i: int|
+            1 <= i < char_arr@.len() ==> char_arr[0] == #[trigger] char_arr[i]),
 {
-  if b == 0 { a } else { gcd(b, a % b) }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: i8, b: i8, p: i8, q: i8) -> (result: i8)
-  requires valid_input(n as int, a as int, b as int, p as int, q as int)
-  ensures result >= 0
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
+    if char_arr.len() == 0 {
+        return true;
+    }
+    
+    let first_char = char_arr[0];
+    
+    for i in 1..char_arr.len()
+        invariant
+            forall|j: int| 1 <= j < i ==> char_arr[0] == char_arr[j],
+    {
+        if char_arr[i] != first_char {
+            return false;
+        }
+    }
+    
+    true
 }
 
-fn main() {}
+} // verus!

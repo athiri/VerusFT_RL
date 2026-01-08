@@ -1,31 +1,47 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-pub enum ExpandedVector<T> {
-    RowVector(Vec<T>),
-    ColumnVector(Vec<T>),
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn expand_dims<T>(a: Vec<T>, axis: usize) -> (result: ExpandedVector<T>)
-    requires axis <= 1,
-    ensures match result {
-        ExpandedVector::RowVector(v) => axis == 0 && v@ == a@,
-        ExpandedVector::ColumnVector(v) => axis == 1 && v@ == a@,
+    fn triple(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        x * 3
     }
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
 
+    fn triple_if(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        if x == 0 {
+            0
+        } else {
+            x + x + x
+        }
+    }
+
+    fn triple_over(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        let doubled = x + x;
+        doubled + x
+    }
+
+    fn triple_conditions(x: u32) -> (r: u32)
+        requires x % 2 == 0 && x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        let half = x / 2;
+        let three_halves = half + half + half;
+        three_halves * 2
+    }
+
+    fn caller() {
+        let result1 = triple(10);
+        let result2 = triple_if(20);
+        let result3 = triple_over(30);
+        let result4 = triple_conditions(40);
+    }
 }
+
 fn main() {}

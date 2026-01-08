@@ -1,54 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
+
+fn main() {
+    
+}
 
 verus! {
 
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() > 0
-}
-
-spec fn valid_grid(grid: Seq<Seq<char>>, n: int, m: int) -> bool {
-    n >= 1 && m >= 1 && grid.len() == n &&
-    forall|i: int| 0 <= i < grid.len() ==> grid[i].len() == m
-}
-
-spec fn count_face_squares(input: Seq<char>) -> int
-    decreases input.len()
+fn min_sublist(seq: &Vec<Vec<i32>>) -> (min_list: &Vec<i32>)
+    requires
+        seq.len() > 0,
+    ensures
+        forall|k: int| 0 <= k < seq.len() ==> min_list.len() <= #[trigger] (seq[k]).len(),
+        exists|k: int| 0 <= k < seq.len() && min_list@ =~= #[trigger] (seq[k]@),
 {
-    if input.len() == 0 {
-        0
-    } else {
-        /* Parse input and count valid face squares */
-        0  /* Placeholder - actual implementation would parse lines and count squares */
+    let mut min_idx: usize = 0;
+    let mut i: usize = 1;
+    
+    while i < seq.len()
+        invariant
+            0 <= min_idx < seq.len(),
+            1 <= i <= seq.len(),
+            forall|k: int| 0 <= k < i ==> seq[min_idx as int].len() <= #[trigger] (seq[k]).len(),
+    {
+        if seq[i].len() < seq[min_idx].len() {
+            min_idx = i;
+        }
+        i += 1;
     }
+    
+    &seq[min_idx]
 }
 
-spec fn count_face_squares_as_string(input: Seq<char>) -> Seq<char> {
-    /* Convert count to string representation */
-    seq!['0', '\n']  /* Placeholder */
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: String) -> (result: String)
-    requires 
-        valid_input(input@),
-    ensures 
-        result@.len() > 0,
-        result@ == count_face_squares_as_string(input@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

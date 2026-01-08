@@ -1,39 +1,25 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-spec fn is_palindrome(s: Seq<int>) -> bool {
-    forall|i: int| #![trigger s[i]] 0 <= i < s.len() ==> s[i] == s[s.len() - 1 - i]
-}
-
-spec fn sum_elements(s: Seq<int>) -> int
-    decreases s.len()
+fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+	ensures
+		forall |k:int| 0 <= k < N ==> a[k] == N,
 {
-    if s.len() == 0 {
-        0
-    } else {
-        s[0] + sum_elements(s.subrange(1, s.len() as int))
+    let mut i: usize = 0;
+    /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            a.len() == N,
+            forall |k:int| 0 <= k < i ==> a[k] == N,
+        decreases a.len() - i,
+    {
+        a.set(i, N);
+        i = i + 1;
     }
 }
-
-// </vc-preamble>
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn will_it_fly(q: Vec<i8>, w: i8) -> (result: bool)
-    ensures result == (is_palindrome(q@.map(|i: int, x: i8| x as int)) && sum_elements(q@.map(|i: int, x: i8| x as int)) <= w as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    false
 }
-// </vc-code>
-
-
-}
-
-fn main() {}

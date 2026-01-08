@@ -1,42 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(x: int, y: int, z: int) -> bool {
-    x >= 1 && y >= 1 && z >= 1 && y + 2 * z <= x
-}
-
-spec fn max_people(x: int, y: int, z: int) -> int
-    recommends valid_input(x, y, z)
-{
-    (x - z) / (y + z)
-}
-
-spec fn valid_solution(x: int, y: int, z: int, result: int) -> bool
-    recommends valid_input(x, y, z)
-{
-    result == max_people(x, y, z) &&
-    result >= 0 &&
-    result * (y + z) <= x - z < (result + 1) * (y + z)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(x: i8, y: i8, z: i8) -> (result: i8)
-    requires valid_input(x as int, y as int, z as int)
-    ensures valid_solution(x as int, y as int, z as int, result as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn element_wise_module(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] % arr2[i]) <= i32::MAX),
+    ensures
+        result@.len() == arr1@.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] % arr2[i]),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

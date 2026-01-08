@@ -1,22 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_even(n: int) -> (result: bool)
-    ensures result <==> n % 2 == 0
-// </vc-spec>
-// <vc-code>
+fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> number > arr[j]
+    {
+        if number <= arr[i] {
+            return false;
+        }
+    }
+    true
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

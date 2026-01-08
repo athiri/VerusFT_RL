@@ -2,32 +2,28 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn replace(a: &mut Vec<i32>, x: i32, y: i32)
+fn get_positive(input: Vec<i32>) -> (positive_list: Vec<i32>)
     // post-conditions-start
     ensures
-        a.len() == old(a).len(),
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] == x ==> a[k] == y,
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] != x ==> a[k] == old(a)[k],
+        positive_list@ == input@.filter(|x: i32| x > 0),
     // post-conditions-end
 {
+    let mut result = Vec::new();
     let mut i = 0;
-    while i < a.len()
+    
+    while i < input.len()
         invariant
-            i <= a.len(),
-            a.len() == old(a).len(),
-            forall|k: int| 0 <= k < i && old(a)[k] == x ==> a[k] == y,
-            forall|k: int| 0 <= k < i && old(a)[k] != x ==> a[k] == old(a)[k],
-            forall|k: int| i <= k < a.len() ==> a[k] == old(a)[k],
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases a.len() - i
+            i <= input.len(),
+            result@ == input@.subrange(0, i as int).filter(|x: i32| x > 0),
     {
-        if a[i] == x {
-            a.set(i, y);
+        if input[i] > 0 {
+            result.push(input[i]);
         }
         i += 1;
     }
+    
+    result
 }
 
-fn main() {}
 }
+fn main() {}

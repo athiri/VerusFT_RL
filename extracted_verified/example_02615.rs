@@ -1,25 +1,45 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-	ensures
-		forall |k:int| 0 <= k < N ==> a[k] == k + 1,
+
+verus! {
+
+#[verifier::loop_isolation(false)]
+fn two_sum(nums: &Vec<i32>, target: i32) -> (usize, usize)
+    requires
+        nums.len() >= 2,
+        exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
+    ensures
+        /* code modified by LLM (iteration 1): fixed ensures clauses to properly reference return value */
+        ({ let (i, j) = two_sum(nums, target); 0 <= i < nums.len() }),
+        ({ let (i, j) = two_sum(nums, target); 0 <= j < nums.len() }),
+        ({ let (i, j) = two_sum(nums, target); i != j }),
+        ({ let (i, j) = two_sum(nums, target); nums[i as int] + nums[j as int] == target })
 {
-    let mut i: usize = 0;
-    while i < a.len()
+    let mut i = 0;
+
+    while i < nums.len()
         invariant
-            i <= a.len(),
-            a.len() == N,
-            forall |k:int| 0 <= k < i ==> a[k] == k + 1,
-        /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
-        decreases a.len() - i,
+            0 <= i <= nums.len(),
+            forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+            exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
     {
-        a.set(i, (i + 1) as i32);
+        let mut j = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < j <= nums.len(),
+                forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+                exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
+                forall|u: int| i < u < j ==> nums[i as int] + nums[u] != target,
+        {
+            if nums[i] + nums[j] == target {
+                return (i, j);
+            }
+            j = j + 1;
+        }
         i = i + 1;
     }
+    /* code modified by LLM (iteration 1): this unreachable code should never execute due to precondition */
+    unreachable!()
 }
+
+fn main() {}
 }

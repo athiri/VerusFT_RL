@@ -1,35 +1,36 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-/* SFC64 state containing 256 bits split into four 64-bit words */
-struct SFC64State {
-    a: u64,
-    b: u64,
-    c: u64,
-    counter: u64,
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn sfc64(seed: Option<u64>) -> (state: SFC64State)
-    ensures
-        seed.is_none() ==> (state.a == 0 && state.b == 0 && state.c == 0 && state.counter == 0),
-        seed.is_some() ==> (state.a != 0 || state.b != 0 || state.c != 0 || state.counter != 0),
-// </vc-spec>
-// <vc-code>
+spec fn arith_sum_int(i: nat) -> nat
+    decreases i
 {
-    // impl-start
-    assume(false);
-    SFC64State { a: 0, b: 0, c: 0, counter: 0 }
-    // impl-end
+    if i == 0 { 0 } else { i + arith_sum_int( (i - 1) as nat) }
 }
-// </vc-code>
 
-
+fn compute_arith_sum(n: u64) -> (sum: u64)
+    requires
+        arith_sum_int(n as nat) < 10000,
+    ensures
+        arith_sum_int(n as nat) == sum,
+{
+    let mut sum: u64 = 0;
+    let mut i: u64 = 0;
+    
+    while i < n
+        invariant
+            i <= n,
+            sum == arith_sum_int(i as nat),
+            arith_sum_int(n as nat) < 10000,
+    {
+        i = i + 1;
+        sum = sum + i;
+    }
+    
+    sum
 }
-fn main() {}
+
+} // verus!

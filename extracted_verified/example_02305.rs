@@ -1,60 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(sides: Seq<int>) -> bool {
-    sides.len() >= 3 && forall|i: int| 0 <= i < sides.len() ==> sides[i] > 0
-}
-
-spec fn can_form_polygon(sides: Seq<int>) -> bool
-    recommends valid_input(sides)
-{
-    let sorted_sides = quicksort(sides);
-    let longest = sorted_sides[sorted_sides.len() - 1];
-    let sum_of_others = sum_except_last(sorted_sides);
-    sum_of_others > longest
-}
-
-spec fn quicksort(s: Seq<int>) -> Seq<int> {
-    seq![]
-}
-
-spec fn filter(s: Seq<int>, pred: spec_fn(int) -> bool) -> Seq<int> {
-    seq![]
-}
-
-spec fn sum_except_last(s: Seq<int>) -> int
-    recommends s.len() >= 1
-{
-    0
-}
-
-proof fn filter_preserves_inclusion(s: Seq<int>, pred: spec_fn(int) -> bool)
-    ensures forall|x: int| #![auto] filter(s, pred).contains(x) ==> s.contains(x)
-{
-    assume(false); /* TODO: Remove this line and implement the proof */
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(sides: Seq<int>) -> (result: String)
-    requires
-        valid_input(sides),
-    ensures
-        result@ == seq!['Y', 'e', 's'] || result@ == seq!['N', 'o'],
-        (result@ == seq!['Y', 'e', 's']) == can_form_polygon(sides),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    "No".to_string()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+spec fn sum_to(arr: Seq<i64>) -> int
+    decreases arr.len(),
+{
+    if arr.len() == 0 {
+        0
+    } else {
+        sum_to(arr.drop_last()) + arr.last()
+    }
+}
+
+fn sum(arr: &Vec<i64>) -> (sum: i128)
+    ensures
+        sum_to(arr@) == sum,
+{
+    let mut result: i128 = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result == sum_to(arr@.subrange(0, i as int)),
+    {
+        result = result + arr[i] as i128;
+        i = i + 1;
+    }
+    
+    result
+}
+
+} // verus!

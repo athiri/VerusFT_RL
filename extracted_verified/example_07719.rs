@@ -1,27 +1,47 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition for isSublist (trivially true, as in original Lean code)  
-spec fn isSublist_precond(sub: Seq<i32>, main: Seq<i32>) -> bool {
-    true
-}
+// <vc-helpers>
 
-// Postcondition specification (simplified placeholder)
-spec fn isSublist_postcond(sub: Seq<i32>, main: Seq<i32>, result: bool) -> bool {
-    // The original Lean postcondition expressed that result is true iff
-    // there exists a position where sub appears as a contiguous subsequence in main
-    true  // Simplified - full specification requires complex quantifier handling
-}
+// </vc-helpers>
 
-fn isSublist(sub: Vec<i32>, main: Vec<i32>) -> (result: bool)
-    requires isSublist_precond(sub@, main@)
+// <vc-spec>
+fn element_wise_subtract(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] - arr2[i]) <= i32::MAX),
+
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] - arr2[i]),
+// </vc-spec>
+// <vc-code>
 {
-    return false;  // TODO: Remove this line and implement the function body
+    /* code modified by LLM (iteration 3): Added trigger annotations to quantifier in invariant */
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < arr1.len()
+        invariant
+            i <= arr1.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] - arr2[j],
+            arr1.len() == arr2.len(),
+            forall|j: int| 0 <= j < arr1.len() ==> i32::MIN <= #[trigger] (arr1[j] - arr2[j]) <= i32::MAX,
+        decreases arr1.len() - i,
+    {
+        let diff = arr1[i] - arr2[i];
+        result.push(diff);
+        i = i + 1;
+    }
+    result
 }
+// </vc-code>
 
 }
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+fn main() {}

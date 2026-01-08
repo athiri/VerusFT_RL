@@ -1,46 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, arr: Seq<int>) -> bool {
-    n >= 1 && arr.len() == n
-}
 
-spec fn sum_seq(s: Seq<int>) -> int
-    decreases s.len()
+fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> (0 <= #[trigger] arr[i] + 1 < i32::MAX),
+    ensures
+        is_consecutive == (forall|i: int, j: int|
+            0 <= i < j < arr.len() && j == i + 1 ==> (arr[i] + 1 == arr[j])),
 {
-    if s.len() == 0 {
-        0
-    } else {
-        s[0] + sum_seq(s.subrange(1, s.len() as int))
+    let mut i = 0;
+    while i < arr.len() - 1
+        invariant
+            0 <= i <= arr.len() - 1,
+            forall|k: int, l: int| 0 <= k < l < i + 1 && l == k + 1 ==> (arr[k] + 1 == arr[l]),
+    {
+        if arr[i] + 1 != arr[i + 1] {
+            return false;
+        }
+        i += 1;
     }
+    return true;
 }
 
-spec fn correct_result(n: int, arr: Seq<int>, result: int) -> bool {
-    &&& (sum_seq(arr) % n == 0 ==> result == n)
-    &&& (sum_seq(arr) % n != 0 ==> result == n - 1)
-    &&& (result == n || result == n - 1)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, arr: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, arr@.map(|i: int, x: i8| x as int))
-    ensures correct_result(n as int, arr@.map(|i: int, x: i8| x as int), result as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

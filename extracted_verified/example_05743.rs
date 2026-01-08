@@ -1,29 +1,37 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn is_even_at_even_index(arr: &Vec<usize>) -> (result: bool)
+spec fn zip_halves<T>(v: Seq<T>) -> (ret: Seq<(T, T)>) {
+    v.take((v.len() / 2) as int).zip_with(v.skip(((v.len() + 1) / 2) as int).reverse())
+}
+// pure-end
+
+spec fn diff(s: Seq<(i32, i32)>) -> (ret: int) {
+    s.fold_left(
+        0,
+        |acc: int, x: (i32, i32)|
+            if (x.0 != x.1) {
+                acc + 1
+            } else {
+                acc
+            },
+    )
+}
+// pure-end
+
+fn smallest_change(v: Vec<i32>) -> (change: usize)
+    // pre-conditions-start
+    requires
+        v@.len() < usize::MAX,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        change == diff(zip_halves(v@)),
+    // post-conditions-end
 {
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while idx < arr.len()
-        invariant
-            0 <= idx <= arr.len(),
-            forall|i: int| 0 <= i < idx ==> ((i % 2) == (arr[i] % 2)),
-        decreases arr.len() - idx
-    {
-        if (idx % 2) != (arr[idx] % 2) {
-            return false;
-        }
-        idx += 1;
-    }
-    
-    true
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-} // verus!
+}
+fn main() {}

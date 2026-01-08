@@ -1,64 +1,74 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // Simple main function - no specific requirements given
+}
+
 verus! {
-spec fn valid_input(n: int) -> bool {
-    n >= 3 && n <= 101 && n % 2 == 1
-}
 
-spec fn valid_result(result: Seq<String>, n: int) -> bool {
-    result.len() == n &&
-    forall|i: int| 0 <= i < result.len() ==> #[trigger] result[i]@.len() == n
-}
-
-spec fn repeat_char(c: char, count: int) -> Seq<char>
-    decreases count
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
 {
-    if count <= 0 { Seq::empty() }
-    else { repeat_char(c, count - 1).push(c) }
-}
-
-spec fn correct_diamond_pattern(result: Seq<String>, n: int) -> bool {
-    result.len() == n ==> {
-        let magic = (n - 1) / 2;
-        
-        (forall|i: int| 0 <= i <= magic && i < result.len() ==> {
-            let stars = magic - i;
-            let diamonds = n - 2 * stars;
-            #[trigger] result[i]@ == repeat_char('*', stars) + repeat_char('D', diamonds) + repeat_char('*', stars)
-        }) &&
-        
-        (forall|i: int| magic + 1 <= i < n && i < result.len() ==> {
-            let u = i - magic;
-            let stars = u;
-            let diamonds = n - 2 * stars;
-            #[trigger] result[i]@ == repeat_char('*', stars) + repeat_char('D', diamonds) + repeat_char('*', stars)
-        })
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: usize) -> (result: Vec<String>)
-    requires 
-        valid_input(n as int)
-    ensures 
-        valid_result(result@, n as int),
-        correct_diamond_pattern(result@, n as int)
-// </vc-spec>
-// <vc-code>
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
 {
-    // impl-start
-    assume(false);
-    Vec::new()
-    // impl-end
+    let mut count: usize = 0;
+    let mut i: usize = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            count_frequency_rcr(arr@.subrange(0, i as int), key) == count,
+    {
+        if arr[i] == key {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr@.len()) =~= arr@);
+    }
+    
+    count
 }
-// </vc-code>
 
-
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    let mut result: Vec<i32> = Vec::new();
+    let mut i: usize = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            result@ == arr@.subrange(0, i as int).filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+    {
+        let freq = count_frequency(arr, arr[i]);
+        if freq == 1 {
+            result.push(arr[i]);
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr@.len()) =~= arr@);
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

@@ -1,31 +1,39 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn fib(n: nat) -> nat
-    decreases n
+fn insert_before_each(arr: &Vec<i32>, elem: i32) -> (result: Vec<i32>)
+    // post-conditions-start
+    ensures
+        result@.len() == (2 * arr.len()),
+        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k] == elem,
+        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k + 1] == arr[k],
+    // post-conditions-end
 {
-    if n == 0 { 0 }
-    else if n == 1 { 1 }
-    else { fib((n - 1) as nat) + fib((n - 2) as nat) }
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause and strengthened invariant to help prove postcondition */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result@.len() == 2 * i,
+            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k] == elem,
+            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k + 1] == arr[k],
+        decreases arr.len() - i
+    {
+        result.push(elem);
+        result.push(arr[i]);
+        i += 1;
+    }
+    
+    /* code modified by LLM (iteration 1): added assertion to help prove postcondition */
+    assert(i == arr.len());
+    assert(result@.len() == 2 * i);
+    
+    result
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+} // verus!
 
-// <vc-spec>
-fn fibonacci1(n: u64) -> (f: u64)
-    requires n < 100,
-    ensures f == fib(n as nat)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

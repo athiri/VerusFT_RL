@@ -1,26 +1,19 @@
-// <vc-preamble>
+use std::os::windows::io::InvalidHandleError;
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn legmulx(c: Vec<f32>) -> (result: Vec<f32>)
-    requires c@.len() > 0,
-    ensures
-        result@.len() == c@.len() + 1,
-        result[0] == 0.0f32,
-        result[1] == c[0],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(c).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] <= 3 * N,
+{
+    sum.set(0, 0);
+}
+}

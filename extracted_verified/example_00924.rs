@@ -1,24 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_decimal_with_two_precision(s: &str) -> (result: bool)
-    ensures
-        result ==> exists|i: int| 0 <= i < s@.len() && s@[i] == '.' && s@.len() - i - 1 == 2,
-        !result ==> !exists|i: int| 0 <= i < s@.len() && s@[i] == '.' && s@.len() - i - 1 == 2,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn square_root(n: u32) -> (r: u32)
+        requires n <= 100
+        ensures 
+            r * r <= n,
+            n < (r + 1) * (r + 1),
+    {
+        let mut r = 0;
+        while r * r <= n && (r + 1) * (r + 1) <= n
+            invariant 
+                r * r <= n,
+                r <= 10,
+        {
+            r = r + 1;
+        }
+        r
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

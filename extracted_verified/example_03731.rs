@@ -1,14 +1,33 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
 
-pub fn myfun(a: &mut Vec<u32>, N: u32) -> (sum: u32)
-    requires 
-        old(a).len() == N,
-        N <= 0x7FFF_FFFF,
+verus! {
+
+fn mod_arrays(a: &[i32], b: &[i32]) -> (res: Vec<i32>)
+    requires
+        a.len() == b.len(),
+        forall|i: int| 0 <= i < b.len() ==> b[i] != 0,
     ensures
-        sum <= 2 * N,
+        res.len() == a.len(),
+        forall|i: int| 0 <= i < a.len() ==> res[i] == a[i] % b[i],
 {
-    0
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to fix termination verification */
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == a[j] % b[j],
+        decreases a.len() - i,
+    {
+        result.push(a[i] % b[i]);
+        i += 1;
+    }
+    
+    result
 }
+
+fn main() {}
+
 }

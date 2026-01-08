@@ -1,77 +1,59 @@
-// <vc-preamble>
+use vstd::math::*;
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-struct TestCase {
-    n: nat,
-    x: nat,
-    y: nat,
-    z: nat,
-    castles: Seq<nat>,
-}
-
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() > 0 &&
-    valid_input_structure(input)
-}
-
-spec fn valid_input_structure(input: Seq<char>) -> bool {
-    true /* TODO: implement input validation */
-}
-
-spec fn valid_output(input: Seq<char>, output: Seq<char>) -> bool
-    recommends valid_input(input)
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    output.len() > 0 &&
-    valid_output_structure(input, output)
-}
-
-spec fn valid_output_structure(input: Seq<char>, output: Seq<char>) -> bool {
-    true /* TODO: implement output validation */
-}
-
-spec fn get_test_count(s: Seq<char>) -> nat
-    recommends valid_input(s)
-{
-    1 /* TODO: implement test count parsing */
-}
-
-spec fn get_test_case(s: Seq<char>, i: nat) -> TestCase
-    recommends valid_input(s) && i < get_test_count(s)
-{
-    TestCase {
-        n: 1,
-        x: 1,
-        y: 1,
-        z: 1,
-        castles: seq![1],
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
     }
 }
 
-spec fn count_winning_first_moves(tc: TestCase) -> nat {
-    0
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(stdin_input: Vec<char>) -> (result: Vec<char>)
-    requires valid_input(stdin_input@)
-    ensures valid_output(stdin_input@, result@)
-// </vc-spec>
-// <vc-code>
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    // impl-start
-    assume(false);
-    Vec::new()
-    // impl-end
-}
-// </vc-code>
-
-
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-fn main() {}
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
+{
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    
+    let mut i = 1;
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len()
+        invariant
+            1 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+        decreases arr.len() - i,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i += 1;
+    }
+    
+    max_val + min_val
+}
+
+} // verus!

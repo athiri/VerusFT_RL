@@ -1,45 +1,64 @@
-// <vc-preamble>
+/*This is a slightly simpler version of proof provided by Chris Hawblitzel*/
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(x1: int, x2: int, x3: int) -> bool {
-    1 <= x1 <= 100 && 1 <= x2 <= 100 && 1 <= x3 <= 100 &&
-    x1 != x2 && x1 != x3 && x2 != x3
-}
-
-spec fn min_total_distance(x1: int, x2: int, x3: int) -> int
-    recommends valid_input(x1, x2, x3)
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    let max_pos = if x1 >= x2 && x1 >= x3 { x1 }
-                  else if x2 >= x1 && x2 >= x3 { x2 }
-                  else { x3 };
-    let min_pos = if x1 <= x2 && x1 <= x3 { x1 }
-                  else if x2 <= x1 && x2 <= x3 { x2 }
-                  else { x3 };
-    max_pos - min_pos
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
+    }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+    
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+spec fn is_subrange_at(main: Seq<i32>, sub: Seq<i32>, i: int) -> bool {
+    sub =~= main.subrange(i, i + sub.len())
+}
 
-// <vc-spec>
-fn find_minimum_total_distance(x1: i8, x2: i8, x3: i8) -> (result: i8)
-    requires 
-        valid_input(x1 as int, x2 as int, x3 as int)
-    ensures 
-        result as int == min_total_distance(x1 as int, x2 as int, x3 as int),
-        result >= 1 && result <= 99
-// </vc-spec>
-// <vc-code>
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    ensures
+        result == (exists|k: int|
+            0 <= k <= (main.len() - sub.len()) && is_subrange_at(main@, sub@, k)),
 {
-    assume(false);
-    unreached()
+    if sub.len() > main.len() {
+        return false;
+    }
+    
+    let mut i = 0;
+    while i <= main.len() - sub.len()
+        invariant
+            0 <= i <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < i ==> !is_subrange_at(main@, sub@, k),
+    {
+        if sub_array_at_index(main, sub, i) {
+            assert(is_subrange_at(main@, sub@, i as int));
+            return true;
+        }
+        i += 1;
+    }
+    
+    assert(forall|k: int| 0 <= k <= main.len() - sub.len() ==> !is_subrange_at(main@, sub@, k));
+    
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

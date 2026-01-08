@@ -49,6 +49,13 @@ VERUS_KEYWORDS = [
     "decreases",
 ]
 
+# Stub patterns - files containing these trivially "verify" but have no real implementation
+# NOT suitable for SFT training (see analysis.py and DATASET_PIPELINE.md)
+STUB_PATTERNS = [
+    "assume(false)",
+    "unreached()",
+]
+
 # File patterns to skip
 SKIP_PATTERNS = [
     r"mod\.rs$",
@@ -186,6 +193,17 @@ def has_verus_content(content: str) -> Tuple[bool, List[str]]:
     return len(found) > 0, found
 
 
+def is_stub_file(content: str) -> bool:
+    """
+    Check if file contains stub patterns that make it unsuitable for SFT.
+    
+    Files with assume(false) or unreached() trivially verify without
+    real implementation - they should be filtered out.
+    See analysis.py and DATASET_PIPELINE.md for details.
+    """
+    return any(pattern in content for pattern in STUB_PATTERNS)
+
+
 def should_include(filepath: Path) -> bool:
     """Check if file should be included based on patterns."""
     name = filepath.name
@@ -286,6 +304,11 @@ def extract_from_repo(
 
             is_verus, keywords = has_verus_content(content)
             if not is_verus:
+                continue
+
+            # Filter out stub files (assume(false), unreached())
+            # These trivially verify but have no real implementation
+            if is_stub_file(content):
                 continue
 
             loc = count_loc(content)

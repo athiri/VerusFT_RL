@@ -1,39 +1,24 @@
-// <vc-preamble>
-#![crate_name = "mcontained"]
-
 use vstd::prelude::*;
 
 verus! {
 
-spec fn strict_sorted(arr: &[i32]) -> bool {
-    forall|k: int, l: int| 0 <= k < l < arr.len() ==> arr[k] < arr[l]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-#[verifier::loop_isolation(false)]
-fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
+fn abs(x: i32) -> (result: i32)
+    // pre-conditions-start
     requires
-        n <= m && n>= 0,
-        strict_sorted(v),
-        strict_sorted(w),
-        v.len() >= n && w.len() >= m
+        x != i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        b ==> (forall|k: int| #![trigger v[k]]
-            0 <= k < n ==> (
-                exists|j: int| #![trigger w[j]]
-                0 <= j < m && v[k] == w[j]
-            ))
-// </vc-spec>
-// <vc-code>
+        result >= 0,
+        result == x || result == -x,
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    if x >= 0 {
+        x
+    } else {
+        -x
+    }
 }
-// </vc-code>
 
-}
 fn main() {}
+}

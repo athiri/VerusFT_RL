@@ -1,44 +1,74 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // Simple main function - no specific requirements given
+}
+
 verus! {
-spec fn valid_input(n: int, k: int, m: int, d: int) -> bool {
-    2 <= n && 2 <= k <= n && 1 <= m <= n && 1 <= d <= n && m * d * k >= n
-}
 
-spec fn candies_used(x: int, d: int, k: int) -> int {
-    x * ((d - 1) * k + 1)
-}
-
-spec fn valid_distribution(x: int, d: int, n: int, k: int, m: int, d_max: int) -> bool {
-    1 <= x <= m && 1 <= d <= d_max && candies_used(x, d, k) <= n
-}
-
-spec fn person1_candies(x: int, d: int) -> int {
-    x * d
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, m: i8, d: i8) -> (result: i8)
-    requires valid_input(n as int, k as int, m as int, d as int)
-    ensures
-        result >= 0 &&
-        result as int <= m as int * d as int &&
-        (forall|x: int, d_val: int| valid_distribution(x, d_val, n as int, k as int, m as int, d as int) ==> person1_candies(x, d_val) <= result as int) &&
-        (exists|x: int, d_val: int| valid_distribution(x, d_val, n as int, k as int, m as int, d as int) && person1_candies(x, d_val) == result as int)
-// </vc-spec>
-// <vc-code>
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
 {
-    assume(false);
-    unreached()
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
-// </vc-code>
 
-
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
+{
+    let mut count: usize = 0;
+    let mut i: usize = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            count_frequency_rcr(arr@.subrange(0, i as int), key) == count,
+    {
+        if arr[i] == key {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr@.len()) =~= arr@);
+    }
+    
+    count
 }
 
-fn main() {}
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    let mut result: Vec<i32> = Vec::new();
+    let mut i: usize = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            result@ == arr@.subrange(0, i as int).filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+    {
+        let freq = count_frequency(arr, arr[i]);
+        if freq == 1 {
+            result.push(arr[i]);
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr@.len()) =~= arr@);
+    }
+    
+    result
+}
+
+} // verus!

@@ -1,51 +1,73 @@
 use vstd::prelude::*;
 
-fn main() {
-    let v = vec![1, 2, 3, 4, 5];
-    let result = split_and_append(&v, 2);
-    println!("Original: {:?}, Split at 2: {:?}", v, result);
-}
-
 verus! {
 
-fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (ret:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '(' => (x + 1, b),
+                    ')' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
+}
+// pure-end
+
+spec fn spec_bracketing(brackets: Seq<char>) -> (ret:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
+    // pre-conditions-start
     requires
-        list@.len() > 0,
-        0 < n < list@.len(),
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
+        ret <==> spec_bracketing(brackets@),
+    // post-conditions-end
 {
-    let mut new_list = Vec::new();
+    let mut count: i32 = 0;
+    let mut is_valid = true;
+    let mut i = 0;
     
-    // First, append elements from index n to end
-    let mut i = n;
-    while i < list.len()
+    /* code modified by LLM (iteration 1): Removed extra braces around invariant condition to fix compilation error */
+    while i < brackets.len()
         invariant
-            0 < n < list@.len(),
-            n <= i <= list@.len(),
-            new_list@ == list@.subrange(n as int, i as int),
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases list@.len() - i
+            0 <= i <= brackets.len(),
+            count >= i32::MIN,
+            count <= i32::MAX,
+            {
+                let helper_result = spec_bracketing_helper(brackets@.subrange(0, i as int));
+                helper_result.0 == count && helper_result.1 == is_valid
+            },
     {
-        new_list.push(list[i]);
+        let c = brackets.chars().nth(i).unwrap();
+        match c {
+            '(' => {
+                count += 1;
+            }
+            ')' => {
+                count -= 1;
+                if count < 0 {
+                    is_valid = false;
+                }
+            }
+            _ => {}
+        }
         i += 1;
     }
     
-    // Then, append elements from start to index n-1
-    let mut j = 0;
-    while j < n
-        invariant
-            0 < n < list@.len(),
-            0 <= j <= n,
-            new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, j as int)),
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases n - j
-    {
-        new_list.push(list[j]);
-        j += 1;
-    }
-    
-    new_list
+    is_valid && count == 0
 }
 
 } // verus!
+fn main() {}

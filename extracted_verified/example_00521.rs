@@ -1,33 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn difference(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
-
+fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
+    // post-conditions-start
     ensures
-        forall|i: int|
-            0 <= i < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[i]) ==> result@.contains(
-                arr1[i],
-            )),
-        forall|i: int|
-            0 <= i < arr2.len() ==> (!arr1@.contains(#[trigger] arr2[i]) ==> result@.contains(
-                arr2[i],
-            )),
-        forall|i: int, j: int|
-            0 <= i < j < result.len() ==> #[trigger] result[i] != #[trigger] result[j],
-// </vc-spec>
-// <vc-code>
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> arr[j] != k
+    {
+        if arr[i] == k {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

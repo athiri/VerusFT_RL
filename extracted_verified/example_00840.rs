@@ -1,37 +1,56 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::multiset::*;
 
 verus! {
+    // Uninterpreted function for gcd - we assume its properties through axioms
+    spec fn gcd(a: nat, b: nat) -> nat;
 
-proof fn min_of_multiset(m: Multiset<int>) -> (min: int)
-    requires 
-        m.len() > 0,
-    ensures 
-        m.count(min) > 0,
-        forall|z: int| m.count(z) > 0 ==> min <= z,
-{
-    assume(false);
-    arbitrary()
+    // Lemma r1: gcd(a, 0) == a
+    proof fn r1(a: nat)
+        ensures gcd(a, 0) == a
+    {
+        // This is an axiom/assumption about gcd
+        assume(gcd(a, 0) == a);
+    }
+
+    // Lemma r2: gcd(a, a) == a
+    proof fn r2(a: nat)
+        ensures gcd(a, a) == a
+    {
+        // This is an axiom/assumption about gcd
+        assume(gcd(a, a) == a);
+    }
+
+    // Lemma r3: gcd(a, b) == gcd(b, a) (commutativity)
+    proof fn r3(a: nat, b: nat)
+        ensures gcd(a, b) == gcd(b, a)
+    {
+        // This is an axiom/assumption about gcd
+        assume(gcd(a, b) == gcd(b, a));
+    }
+
+    // Lemma r4: b > 0 ==> gcd(a, b) == gcd(b, a % b) (Euclidean property)
+    proof fn r4(a: nat, b: nat)
+        ensures b > 0 ==> gcd(a, b) == gcd(b, a % b)
+    {
+        // This is an axiom/assumption about gcd
+        assume(b > 0 ==> gcd(a, b) == gcd(b, a % b));
+    }
+
+    fn GCD1(a: u32, b: u32) -> (r: u32)
+        requires a > 0 && b > 0,
+        ensures gcd(a as nat, b as nat) == r,
+        decreases b
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
+
+    fn GCD2(a: u32, b: u32) -> (r: u32)
+        requires a > 0 && b >= 0,
+        ensures gcd(a as nat, b as nat) == r,
+        decreases b
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-exec fn sort(m: Multiset<int>) -> (s: Vec<int>)
-
-    ensures 
-        s@.to_multiset() == m,
-        forall|p: int, q: int| 0 <= p < q < s.len() ==> s[p] <= s[q],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

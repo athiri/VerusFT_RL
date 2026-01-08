@@ -1,57 +1,62 @@
-/* code modified by LLM (iteration 3): Added decreases clause to prove loop termination */
-
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn conditional_average(vals_1: &Vec<u64>, vals_2: &Vec<u64>, conds_1: &Vec<bool>, conds_2: &Vec<bool>, avgs: &mut Vec<u64>) 
-    requires 
-        vals_1.len() == vals_2.len(),
-        vals_1.len() == conds_1.len(),
-        vals_1.len() == conds_2.len(),
-        forall |idx:int| 0 <= idx < vals_1.len() ==> conds_1[idx] || conds_2[idx],
-        forall |idx:int| 0 <= idx < vals_1.len() ==> vals_1[idx] < 1000,
-        forall |idx:int| 0 <= idx < vals_2.len() ==> vals_2[idx] < 1000,
+verus! {
+
+spec fn abs_spec(i: int) -> int {
+    if i < 0 { -i } else { i }
+}
+
+fn abs(i: i32) -> (res: i32)
+    requires
+        i != i32::MIN,
     ensures
-        avgs.len() == vals_1.len(),
-        forall |idx:int| 0 <= idx < vals_1.len() ==> (
-            (conds_1[idx] && conds_2[idx] ==> avgs[idx] == (vals_1[idx] + vals_2[idx]) / 2) &&
-            (conds_1[idx] && !conds_2[idx] ==> avgs[idx] == vals_1[idx]) &&
-            (!conds_1[idx] && conds_2[idx] ==> avgs[idx] == vals_2[idx])
-        )
+        i < 0 ==> res == -i,
+        i >= 0 ==> res == i,
+        res == abs_spec(i as int)
 {
-    /* code modified by LLM (iteration 2): Replaced unsupported set_len(0) with clear() method */
-    avgs.clear();
-    
-    let mut i = 0;
-    /* code modified by LLM (iteration 3): Added decreases clause to prove loop termination */
-    while i < vals_1.len()
-        invariant
-            i <= vals_1.len(),
-            avgs.len() == i,
-            vals_1.len() == vals_2.len(),
-            vals_1.len() == conds_1.len(),
-            vals_1.len() == conds_2.len(),
-            forall |idx:int| 0 <= idx < vals_1.len() ==> conds_1[idx] || conds_2[idx],
-            forall |idx:int| 0 <= idx < vals_1.len() ==> vals_1[idx] < 1000,
-            forall |idx:int| 0 <= idx < vals_2.len() ==> vals_2[idx] < 1000,
-            forall |idx:int| 0 <= idx < i ==> (
-                (conds_1[idx] && conds_2[idx] ==> avgs[idx] == (vals_1[idx] + vals_2[idx]) / 2) &&
-                (conds_1[idx] && !conds_2[idx] ==> avgs[idx] == vals_1[idx]) &&
-                (!conds_1[idx] && conds_2[idx] ==> avgs[idx] == vals_2[idx])
-            )
-        decreases vals_1.len() - i
-    {
-        let avg_val = if conds_1[i] && conds_2[i] {
-            (vals_1[i] + vals_2[i]) / 2
-        } else if conds_1[i] && !conds_2[i] {
-            vals_1[i]
-        } else {
-            vals_2[i]
-        };
-        
-        avgs.push(avg_val);
-        i += 1;
+    if i < 0 {
+        -i
+    } else {
+        i
     }
 }
+
+#[verifier::loop_isolation(false)]
+fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+    requires
+        threshold >= 0,
+        forall|k: int| 0 <= k < numbers.len() ==> numbers[k] != i32::MIN
+    ensures
+        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+{
+    let mut i = 0;
+    while i < numbers.len()
+        invariant
+            forall|k: int, l: int| 0 <= k < i && 0 <= l < numbers.len() && k != l ==> abs_spec(numbers[k] - numbers[l]) >= threshold
+    {
+        let mut j = 0;
+        while j < numbers.len()
+            invariant
+                forall|k: int, l: int| 0 <= k < i && 0 <= l < numbers.len() && k != l ==> abs_spec(numbers[k] - numbers[l]) >= threshold,
+                /* code modified by LLM (iteration 1): fixed type casting in invariant from usize to int */
+                forall|l: int| 0 <= l < j && l != i as int ==> abs_spec(numbers[i as int] - numbers[l]) >= threshold
+        {
+            /* code modified by LLM (iteration 1): replaced abs_spec call with executable abs function and added overflow check */
+            if i != j {
+                let diff = numbers[i] - numbers[j];
+                if diff != i32::MIN && abs(diff) < threshold {
+                    proof {
+                        assert(abs_spec(numbers[i as int] - numbers[j as int]) < threshold);
+                    }
+                    return true;
+                }
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    false
+}
+
+fn main() {}
 }

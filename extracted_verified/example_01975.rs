@@ -1,49 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, a: int, b: int) -> bool {
-    n >= 1 && a >= 1 && a <= b && b <= 36
-}
 
-spec fn digit_sum(n: int) -> int 
-    decreases n
+fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> (0 <= #[trigger] arr[i] + 1 < i32::MAX),
+    ensures
+        is_consecutive == (forall|i: int, j: int|
+            0 <= i < j < arr.len() && j == i + 1 ==> (arr[i] + 1 == arr[j])),
 {
-    if n <= 0 { 0 }
-    else { (n % 10) + digit_sum(n / 10) }
-}
-
-spec fn sum_in_range(n: int, a: int, b: int) -> int
-    decreases n
-{
-    if n <= 0 { 0 }
-    else if a <= digit_sum(n) && digit_sum(n) <= b { 
-        n + sum_in_range(n - 1, a, b) 
+    let mut i = 0;
+    while i < arr.len() - 1
+        invariant
+            0 <= i <= arr.len() - 1,
+            forall|k: int, l: int| 0 <= k < l < i + 1 && l == k + 1 ==> (arr[k] + 1 == arr[l]),
+    {
+        if arr[i] + 1 != arr[i + 1] {
+            return false;
+        }
+        i += 1;
     }
-    else { 
-        sum_in_range(n - 1, a, b) 
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: i8, b: i8) -> (result: i8)
-    requires valid_input(n as int, a as int, b as int)
-    ensures 
-        result as int == sum_in_range(n as int, a as int, b as int) &&
-        result >= 0
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    return true;
 }
 
-fn main() {}
+} // verus!

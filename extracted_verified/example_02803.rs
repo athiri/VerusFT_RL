@@ -2,50 +2,53 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> (ret: bool) {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
+spec fn odd_or_zero(x: u32) -> (ret:u32) {
+    if x % 2 == 0 {
+        x
+    } else {
+        0
+    }
 }
+// pure-end
 
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
+spec fn add_odd_evens(lst: Seq<u32>) -> (ret:int)
+    decreases lst.len(),
+{
+    if (lst.len() < 2) {
+        0
+    } else {
+        odd_or_zero(lst[1]) + add_odd_evens(lst.skip(2))
+    }
+}
+// pure-end
+
+fn add(lst: Vec<u32>) -> (sum: u64)
+    // pre-conditions-start
+    requires
+        0 < lst.len() < u32::MAX,
+    // pre-conditions-end
     // post-conditions-start
     ensures
-        result == in_array(a@, x),
+        sum == add_odd_evens(lst@),
     // post-conditions-end
 {
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a[j] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
-    }
-    false
-}
-
-#[verifier::loop_isolation(false)]
-fn remove_elements(a: &Vec<i32>, b: &Vec<i32>) -> (c: Vec<i32>)
-    // post-conditions-start
-    ensures
-        forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
-        forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
-    // post-conditions-end
-{
-    let mut c = Vec::new();
+    let mut sum: u64 = 0;
+    let mut i: usize = 1;
     
-    for i in 0..a.len()
+    while i < lst.len()
         invariant
-            forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
-            forall|p: int, q: int| 0 <= p < q < c.len() ==> c[p] != c[q],
+            i % 2 == 1,
+            sum == add_odd_evens(lst@.take(i as int + 1)),
     {
-        let elem = a[i];
-        if !in_array_exec(b, elem) && !in_array_exec(&c, elem) {
-            c.push(elem);
+        let val = lst[i];
+        if val % 2 == 0 {
+            sum = sum + val as u64;
         }
+        i = i + 2;
     }
     
-    c
+    sum
 }
 
+} // verus!
 fn main() {}
-}

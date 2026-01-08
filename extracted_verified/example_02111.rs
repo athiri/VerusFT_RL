@@ -1,57 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn normalize_angle(angle: int) -> int {
-    let n = angle % 360;
-    if n < 0 { n + 360 } else { n }
-}
-
-spec fn deviation_from_vertical(angle: int) -> int
-    recommends 0 <= angle < 360
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-    if angle <= 180 { angle } else { 360 - angle }
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
+    {
+        let div_result = arr1[i] / arr2[i];
+        result.push(div_result);
+        i += 1;
+    }
+    
+    result
 }
 
-spec fn image_angle_after_rotations(camera_angle: int, rotations: int) -> int
-    recommends 0 <= rotations <= 3
-{
-    normalize_angle(-camera_angle + 90 * rotations)
-}
-
-spec fn image_deviation_after_rotations(camera_angle: int, rotations: int) -> int
-    recommends 0 <= rotations <= 3
-{
-    deviation_from_vertical(image_angle_after_rotations(camera_angle, rotations))
-}
-
-spec fn is_optimal_rotations(camera_angle: int, result: int) -> bool
-    recommends 0 <= result <= 3
-{
-    forall|k: int| 0 <= k <= 3 ==> #[trigger] image_deviation_after_rotations(camera_angle, k) >= image_deviation_after_rotations(camera_angle, result) && (image_deviation_after_rotations(camera_angle, k) > image_deviation_after_rotations(camera_angle, result) || result <= k)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(x: i8) -> (result: u8)
-    ensures 
-        0 <= result <= 3,
-        is_optimal_rotations(x as int, result as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

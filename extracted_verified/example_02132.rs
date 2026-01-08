@@ -1,52 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, m: int) -> bool {
-    n >= 2 && m >= 1 && n <= m && m <= 200000
-}
-
-spec fn combination(n: int, k: int, modulus: int) -> int {
-    0  /* placeholder - actual combinatorial calculation */
-}
-
-spec fn power(base: int, exp: int, modulus: int) -> int {
-    0  /* placeholder - actual modular exponentiation */
-}
-
-spec fn expected_result(n: int, m: int) -> int {
-    if n == 2 {
-        0
-    } else {
-        (((combination(m, n - 1, 998244353) * (n - 2)) % 998244353) * power(2, n - 3, 998244353)) % 998244353
-    }
-}
-
-spec fn valid_output(result: int) -> bool {
-    0 <= result < 998244353
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, m: i8) -> (result: i8)
-    requires 
-        valid_input(n as int, m as int)
-    ensures 
-        valid_output(result as int),
-        result as int == expected_result(n as int, m as int)
-// </vc-spec>
-// <vc-code>
+fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+    requires
+        seq.len() > 0,
+    ensures
+        result == (forall|i: int, j: int|
+            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
+                == #[trigger] seq[j].len())),
 {
-    assume(false);
-    unreached()
+    let first_len = seq[0].len();
+    
+    for i in 1..seq.len()
+        invariant
+            forall|k: int| (0 <= k < i) ==> seq[k].len() == first_len,
+    {
+        if seq[i].len() != first_len {
+            return false;
+        }
+    }
+    
+    true
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

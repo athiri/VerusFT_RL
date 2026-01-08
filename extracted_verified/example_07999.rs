@@ -1,30 +1,46 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Precondition function
-spec fn cube_surface_area_precond(size: nat) -> bool {
-    true
+pub enum ExpandedVector<T> {
+    RowVector(Vec<T>),
+    ColumnVector(Vec<T>),
 }
+// </vc-preamble>
 
-// Main function - using nat for simplicity to match Lean
-spec fn cube_surface_area(size: nat) -> nat {
-    6 * size * size
-}
-
-// Postcondition function (equivalent to the Lean postcondition)
-spec fn cube_surface_area_postcond(size: nat, result: nat) -> bool {
-    (result - 6 * size * size == 0) && (6 * size * size - result == 0)
-}
-
-// Proof that the specification is satisfied
-proof fn cube_surface_area_spec_satisfied(size: nat)
-    requires cube_surface_area_precond(size)
-    ensures cube_surface_area_postcond(size, cube_surface_area(size))
+// <vc-helpers>
+proof fn lemma_axis_is_one_when_not_zero_and_le_one(x: usize)
+    requires
+        x <= 1,
+        x != 0,
+    ensures
+        x == 1,
 {
-    assume(false);  // TODO: Remove this line and implement the proof
 }
 
-}
+// </vc-helpers>
 
+// <vc-spec>
+fn expand_dims<T>(a: Vec<T>, axis: usize) -> (result: ExpandedVector<T>)
+    requires axis <= 1,
+    ensures match result {
+        ExpandedVector::RowVector(v) => axis == 0 && v@ == a@,
+        ExpandedVector::ColumnVector(v) => axis == 1 && v@ == a@,
+    }
+// </vc-spec>
+// <vc-code>
+{
+    if axis == 0 {
+        ExpandedVector::RowVector(a)
+    } else {
+        proof {
+            lemma_axis_is_one_when_not_zero_and_le_one(axis);
+        }
+        ExpandedVector::ColumnVector(a)
+    }
+}
+// </vc-code>
+
+}
 fn main() {}

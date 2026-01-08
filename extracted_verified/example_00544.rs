@@ -1,34 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
-    if str1[i] == 32 {
-        ch
-    } else {
-        str1[i]
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
-
+fn smallest_num(nums: &Vec<i32>) -> (min: i32)
+    // pre-conditions-start
+    requires
+        nums.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        str1@.len() == result@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
-// </vc-spec>
-// <vc-code>
+        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
+        exists|i: int| 0 <= i < nums.len() && min == nums[i],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut min = nums[0];
+    let mut j = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while j < nums.len()
+        invariant
+            0 < j <= nums.len(),
+            forall|i: int| 0 <= i < j ==> min <= nums[i],
+            exists|i: int| 0 <= i < j && min == nums[i],
+        decreases nums.len() - j
+    {
+        if nums[j] < min {
+            min = nums[j];
+        }
+        j += 1;
+    }
+    
+    min
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

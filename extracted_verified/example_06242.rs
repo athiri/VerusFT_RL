@@ -1,19 +1,12 @@
 use vstd::prelude::*;
-
-verus! {
-    fn append(a: &[int], b: int) -> (c: Vec<int>)
-        requires a.len() < usize::MAX
-        ensures c@ == a@ + seq![b]
-    {
-        let mut c = Vec::new();
-        for i in 0..a.len()
-            invariant c@ == a@.subrange(0, i as int)
-        {
-            c.push(a[i]);
-        }
-        c.push(b);
-        c
-    }
-}
-
 fn main() {}
+verus!{
+pub fn havoc_inline_post(v: &mut Vec<u32>, a: u32, b: bool)
+    requires 
+        forall |k:int| 0 <= k < old(v).len() ==> old(v)[k] > 0,
+        a > 0,
+        b == false,
+{  
+    // TODO: Remove this comment and implement the function body
+}
+}

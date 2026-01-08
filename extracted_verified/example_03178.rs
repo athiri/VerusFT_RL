@@ -1,61 +1,71 @@
 use vstd::prelude::*;
 
 verus! {
-    // Selection sort implementation in Verus
-    fn selection_sort(a: &mut Vec<int>)
-        ensures 
-            a.len() == old(a).len(),
-            forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j],
-            // Note: multiset preservation requires additional lemmas in Verus
-            // a@.to_multiset() == old(a)@.to_multiset(),
-    {
-        let n = a.len();
-        let mut i = 0;
-        
-        /* code modified by LLM (iteration 1): Added decreases clause for termination */
-        while i < n
-            invariant
-                a.len() == n,
-                // Everything before position i is sorted
-                forall|p: int, q: int| 0 <= p < q < i ==> a[p] <= a[q],
-                // Everything before position i is <= everything after position i
-                forall|p: int, q: int| 0 <= p < i <= q < n ==> a[p] <= a[q],
-            decreases n - i
-        {
-            // Find the minimum element in the remaining unsorted portion
-            let mut min_idx = i;
-            let mut j = i + 1;
-            
-            while j < n
-                invariant
-                    a.len() == n,
-                    i <= min_idx < n,
-                    i < j <= n,
-                    /* code modified by LLM (iteration 1): Fixed invariant to use int casting for specification */
-                    forall|k: int| i as int <= k < j as int ==> a[min_idx as int] <= a[k],
-                    // Everything before position i is sorted
-                    forall|p: int, q: int| 0 <= p < q < i ==> a[p] <= a[q],
-                    // Everything before position i is <= everything after position i
-                    forall|p: int, q: int| 0 <= p < i <= q < n ==> a[p] <= a[q],
-                decreases n - j
-            {
-                /* code modified by LLM (iteration 1): Fixed array access to use usize indices directly */
-                if a[j] < a[min_idx] {
-                    min_idx = j;
-                }
-                j += 1;
-            }
-            
-            // Swap the minimum element with the element at position i
-            /* code modified by LLM (iteration 2): Fixed borrow checker issue by storing values before set calls */
-            let temp = a[i];
-            let min_val = a[min_idx];
-            a.set(i, min_val);
-            a.set(min_idx, temp);
-            
-            i += 1;
-        }
-    }
+
+spec fn is_upper_case(c: char) -> (result:bool) {
+    c >= 'A' && c <= 'Z'
 }
+// pure-end
+
+spec fn shift32_spec(c: char) -> (result:char) {
+    ((c as u8) + 32) as char
+}
+// pure-end
+
+fn to_lowercase(str1: &Vec<char>) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if is_upper_case(#[trigger] str1[i]) {
+                shift32_spec(str1[i])
+            } else {
+                str1[i]
+            }),
+    // post-conditions-end
+{
+    // impl-start
+    let mut lower_case: Vec<char> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        // invariants-start
+        invariant
+            0 <= index <= str1.len(),
+            lower_case.len() == index,
+            forall|i: int|
+                0 <= i < index ==> lower_case[i] == (if is_upper_case(#[trigger] str1[i]) {
+                    shift32_spec(str1[i])
+                } else {
+                    str1[i]
+                }),
+        // invariants-end
+    {
+        if (str1[index] >= 'A' && str1[index] <= 'Z') {
+            lower_case.push(((str1[index] as u8) + 32) as char);
+        } else {
+            lower_case.push(str1[index]);
+        }
+        // assert-start
+        assert(lower_case[index as int] == (if is_upper_case(str1[index as int]) {
+            shift32_spec(str1[index as int])
+        } else {
+            str1[index as int]
+        }));
+        // assert-end
+        index += 1;
+    }
+    // assert-start
+    assert(forall|i: int|
+        0 <= i < str1.len() ==> lower_case[i] == (if is_upper_case(#[trigger] str1[i]) {
+            shift32_spec(str1[i])
+        } else {
+            str1[i]
+        }));
+    // assert-end
+    lower_case
+    // impl-end
+}
+
+} // verus!
 
 fn main() {}

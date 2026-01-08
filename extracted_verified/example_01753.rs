@@ -1,37 +1,32 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, s: Seq<char>) -> bool {
-    n == s.len() && n >= 0
-}
 
-spec fn is_good_string(s: Seq<char>) -> bool {
-    s.len() % 2 == 0 && forall|i: int| 0 <= i < s.len() / 2 ==> #[trigger] s[2*i] != #[trigger] s[2*i+1]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: usize, s: Vec<char>) -> (result: (usize, Vec<char>))
-    requires 
-        valid_input(n as int, s@),
-    ensures 
-        result.0 >= 0,
-        result.0 == s@.len() - result.1@.len(),
-        is_good_string(result.1@),
-        result.0 + result.1@.len() == s@.len(),
-// </vc-spec>
-// <vc-code>
+fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> (0 <= #[trigger] arr[i] + 1 < i32::MAX),
+    ensures
+        is_consecutive == (forall|i: int, j: int|
+            0 <= i < j < arr.len() && j == i + 1 ==> (arr[i] + 1 == arr[j])),
 {
-    assume(false);
-    (0, Vec::new())
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len() - 1
+        invariant
+            0 <= i <= arr.len() - 1,
+            forall|k: int, l: int| 0 <= k < l < i + 1 && l == k + 1 ==> (arr[k] + 1 == arr[l]),
+        decreases arr.len() - 1 - i,
+    {
+        if arr[i] + 1 != arr[i + 1] {
+            return false;
+        }
+        i += 1;
+    }
+    return true;
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

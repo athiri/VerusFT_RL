@@ -1,52 +1,33 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr = vec![1, 2, 3];
+    let result = insert_before_each(&arr, 0);
+    println!("Original: {:?}", arr);
+    println!("Result: {:?}", result);
+}
+
 verus! {
-spec fn h(x: int, y: int) -> int {
-    x * x + 2 * x * y + x + 1
-}
 
-spec fn valid_input(r: int) -> bool {
-    r > 0
-}
-
-spec fn valid_solution(result: Seq<int>, r: int) -> bool {
-    if result.len() == 0 {
-        true
-    } else {
-        result.len() == 2 && result[0] > 0 && result[1] > 0 && h(result[0], result[1]) == r
-    }
-}
-
-spec fn has_solution(r: int) -> bool {
-    r > 4 && r % 2 == 1
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(r: i8) -> (result: Vec<i8>)
-    requires 
-        valid_input(r as int)
-    ensures 
-        valid_solution(result@.map(|i: int, x: i8| x as int), r as int),
-        result@.len() == 0 || result@.len() == 2,
-        result@.len() == 2 ==> result@[0] as int > 0 && result@[1] as int > 0,
-        result@.len() == 2 ==> h(result@[0] as int, result@[1] as int) == r as int,
-        r as int <= 4 ==> result@.len() == 0,
-        r as int > 4 && (r as int) % 2 == 0 ==> result@.len() == 0,
-        r as int > 4 && (r as int) % 2 == 1 ==> result@.len() == 2 && result@[0] as int == 1 && result@[1] as int == ((r as int) - 3) / 2,
-// </vc-spec>
-// <vc-code>
+fn insert_before_each(arr: &Vec<i32>, elem: i32) -> (result: Vec<i32>)
+    ensures
+        result@.len() == (2 * arr.len()),
+        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k] == elem,
+        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k + 1] == arr[k],
 {
-    assume(false);
-    Vec::new()
+    let mut result = Vec::new();
+    
+    for i in 0..arr.len()
+        invariant
+            result@.len() == 2 * i,
+            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k] == elem,
+            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k + 1] == arr[k],
+    {
+        result.push(elem);
+        result.push(arr[i]);
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

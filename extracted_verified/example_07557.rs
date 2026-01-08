@@ -1,39 +1,41 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition for Triple function
-pub open spec fn triple_precond(x: int) -> bool {
-    true
-}
+// <vc-helpers>
 
-// Postcondition for Triple function
-pub open spec fn triple_postcond(x: int, result: int) -> bool {
-    result / 3 == x && (result / 3) * 3 == result
-}
+// </vc-helpers>
 
-// The Triple function implementation as a spec function
-pub open spec fn triple(x: int) -> int
-    recommends triple_precond(x)
+// <vc-spec>
+fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
+    requires
+        v.len() <= 100_000,
+        forall|i: int, j: int| 0 <= i < j < v.len() ==> v[i] <= v[j],
+        0 <= c <= f + 1 <= v.len(),
+        forall|k: int| 0 <= k < c ==> v[k] <= elem,
+        forall|k: int| f < k < v.len() ==> v[k] > elem,
+    ensures
+        -1 <= p < v.len(),
+        forall|u: int| 0 <= u <= p ==> v[u] <= elem,
+        forall|w: int| p < w < v.len() ==> v[w] > elem,
+    decreases f - c + 1
+// </vc-spec>
+// <vc-code>
 {
-    let y = x * 2;
-    y + x
+    if c > f {
+        f
+    } else {
+        let m = c + (f - c) / 2;
+        if v[m as usize] <= elem {
+            binary_search_recursive(v, elem, m + 1, f)
+        } else {
+            binary_search_recursive(v, elem, c, m - 1)
+        }
+    }
 }
-
-// Theorem that the function satisfies its specification
-proof fn triple_spec_satisfied(x: int)
-    requires triple_precond(x)
-    ensures triple_postcond(x, triple(x))
-{
-    // triple(x) = x * 2 + x = x * 3
-    // So triple(x) / 3 = (x * 3) / 3 = x
-    // And (triple(x) / 3) * 3 = x * 3 = triple(x)
-    assert(triple(x) == x * 2 + x);
-    assert(triple(x) == x * 3);
-    assert(triple(x) / 3 == x);
-    assert((triple(x) / 3) * 3 == triple(x));
-}
+// </vc-code>
 
 }
-
 fn main() {}

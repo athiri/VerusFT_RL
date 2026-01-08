@@ -1,26 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    spec fn power(n: nat) -> nat
+        decreases n
+    {
+        if n == 0 { 1 } else { 2 * power((n - 1) as nat) }
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn take(arr: Vec<f32>, indices: Vec<usize>) -> (result: Vec<f32>)
-    requires
-        forall|i: int| 0 <= i < indices@.len() ==> indices[i] < arr@.len(),
-    ensures
-        result@.len() == indices@.len(),
-        forall|i: int| 0 <= i < indices@.len() ==> result[i] == arr[indices[i] as int],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn compute_power(n: u32) -> (y: u32)
+        requires n <= 30,
+        ensures y == power(n as nat),
+    {
+        let mut result = 1u32;
+        let mut i = 0u32;
+        
+        while i < n
+            invariant 
+                i <= n,
+                result == power(i as nat),
+        {
+            result = result * 2;
+            i = i + 1;
+        }
+        
+        result
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

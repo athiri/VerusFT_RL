@@ -1,57 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {
+    // Example usage
+    let arr = vec![1, 3, 4, 7];
+    let result = is_product_even(&arr);
+    println!("Array contains even number: {}", result);
+}
 
 verus! {
-spec fn valid_input(n: int, k: int, l: Seq<int>) -> bool {
-    n >= 1 && k >= 1 && n <= 2*k &&
-    l.len() == n &&
-    forall|i: int, j: int| 0 <= i < l.len()-1 && j == i+1 ==> #[trigger] l[i] <= #[trigger] l[j] &&
-    (forall|i: int| 0 <= i < l.len() ==> #[trigger] l[i] >= 0)
+
+spec fn is_even(n: u32) -> bool {
+    (n % 2) == 0
 }
 
-spec fn valid_box_configuration(boxes: Seq<int>, box_size: int) -> bool {
-    boxes.len() >= 1 &&
-    (forall|i: int| 0 <= i < boxes.len() ==> #[trigger] boxes[i] <= box_size) &&
-    (forall|i: int| 0 <= i < boxes.len() ==> #[trigger] boxes[i] >= 0)
-}
-
-spec fn sum_seq(s: Seq<int>) -> int
-    decreases s.len()
+fn is_product_even(arr: &Vec<u32>) -> (result: bool)
+    ensures
+        result <==> (exists|k: int| 0 <= k < arr.len() && is_even(#[trigger] arr[k])),
 {
-    if s.len() == 0 { 0 } else { s[0] + sum_seq(s.subrange(1, s.len() as int)) }
-}
-
-spec fn max_seq(s: Seq<int>) -> int
-    decreases s.len()
-{
-    if s.len() == 0 { 
-        0 
-    } else if s.len() == 1 { 
-        s[0] 
-    } else if s[0] >= max_seq(s.subrange(1, s.len() as int)) { 
-        s[0] 
-    } else { 
-        max_seq(s.subrange(1, s.len() as int)) 
+    for i in 0..arr.len()
+        invariant
+            forall|k: int| 0 <= k < i ==> !is_even(arr[k])
+    {
+        if is_even(arr[i]) {
+            return true;
+        }
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, l: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, k as int, l@.map_values(|v: i8| v as int))
-    ensures result >= 0
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    false
 }
 
-fn main() {}
+} // verus!

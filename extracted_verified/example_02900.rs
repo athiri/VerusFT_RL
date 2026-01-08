@@ -2,46 +2,87 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn inner_epxr_replace_chars(str1: &Vec<char>, old_char: char, new_char: char, i: int) -> (result: char) {
-    if str1[i] == old_char {
-        new_char
+spec fn sum(s: Seq<int>) -> (result:int)
+    decreases s.len(),
+{
+    if s.len() == 0 {
+        0
     } else {
-        str1[i]
+        s[0] + sum(s.skip(1))
     }
 }
 // pure-end
 
-fn replace_chars(str1: &Vec<char>, old_char: char, new_char: char) -> (result: Vec<char>)
+spec fn sum_other_way(s: Seq<int>) -> (result:int)
+    decreases s.len(),
+{
+    if s.len() == 0 {
+        0
+    } else {
+        s[s.len() - 1] + sum_other_way(s.take(s.len() - 1))
+    }
+}
+// pure-end
+
+proof fn lemma_sum_equals_sum_other_way(s: Seq<int>)
     // post-conditions-start
     ensures
-        str1@.len() == result@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> result[i] == inner_epxr_replace_chars(str1, old_char, new_char, i),
+        sum(s) == sum_other_way(s),
+    decreases s.len(),
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
+    // impl-start
+    if s.len() == 1 {
+        assert(sum(s.skip(1)) == 0);
+        assert(sum_other_way(s.take(s.len() - 1)) == 0);
+    } else if s.len() > 1 {
+        let ss = s.skip(1);
+        lemma_sum_equals_sum_other_way(ss);
+        assert(sum_other_way(ss) == ss[ss.len() - 1] + sum_other_way(ss.take(ss.len() - 1)));
+        lemma_sum_equals_sum_other_way(ss.take(ss.len() - 1));
+        assert(ss.take(ss.len() - 1) == s.take(s.len() - 1).skip(1));
+        lemma_sum_equals_sum_other_way(s.take(s.len() - 1));
+    }
+    // impl-end
+}
+// pure-end
+
+fn below_zero(operations: Vec<i32>) -> (result: bool)
+    // pre-conditions-start
+    requires
+        forall|i: int|
+            0 <= i <= operations@.len() ==> sum(operations@.take(i).map(|_idx, j: i32| j as int))
+                <= i32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        result <==> exists|i: int|
+            0 <= i <= operations@.len() && sum(operations@.take(i).map(|_idx, j: i32| j as int))
+                < 0,
+    // post-conditions-end
+{
+    let mut current_sum: i32 = 0;
+    let mut idx: usize = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < str1.len()
+    while idx < operations.len()
         invariant
-            idx <= str1.len(),
-            result.len() == idx,
-            forall|i: int| 0 <= i < idx ==> result[i] == inner_epxr_replace_chars(str1, old_char, new_char, i),
-        decreases str1.len() - idx,
+            0 <= idx <= operations@.len(),
+            current_sum == sum(operations@.take(idx as int).map(|_idx, j: i32| j as int)),
+            forall|i: int| 0 <= i < idx ==> sum(operations@.take(i).map(|_idx, j: i32| j as int)) >= 0,
     {
-        let char_to_add = if str1[idx] == old_char {
-            new_char
-        } else {
-            str1[idx]
-        };
-        result.push(char_to_add);
-        idx += 1;
+        current_sum = current_sum + operations[idx];
+        
+        if current_sum < 0 {
+            assert(sum(operations@.take((idx + 1) as int).map(|_idx, j: i32| j as int)) < 0);
+            return true;
+        }
+        
+        idx = idx + 1;
     }
     
-    result
+    assert(forall|i: int| 0 <= i <= operations@.len() ==> sum(operations@.take(i).map(|_idx, j: i32| j as int)) >= 0);
+    false
 }
 
-} // verus!
-
+}
 fn main() {}

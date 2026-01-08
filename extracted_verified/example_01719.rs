@@ -1,61 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr1 = vec![10, 20, 30];
+    let arr2 = vec![2, 4, 5];
+    let result = element_wise_division(&arr1, &arr2);
+    println!("Result: {:?}", result);
+}
+
 verus! {
-spec fn valid_output(n: int, result: Seq<String>) -> bool
-    recommends n >= 2
+
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-    if n < 6 {
-        result.len() == 1 + (n - 1) &&
-        result[0]@ == seq!['-', '1'] &&
-        (forall|i: int| #![auto] 1 <= i < result.len() ==> result[i]@ == seq!['1', ' '] + int_to_string(i + 1))
-    } else {
-        result.len() == (5 + (n - 6)) + (n - 1) &&
-        result[0]@ == seq!['1', ' ', '2'] && 
-        result[1]@ == seq!['1', ' ', '3'] && 
-        result[2]@ == seq!['1', ' ', '4'] && 
-        result[3]@ == seq!['2', ' ', '5'] && 
-        result[4]@ == seq!['2', ' ', '6'] &&
-        (forall|i: int| #![auto] 5 <= i < 5 + (n - 6) ==> result[i]@ == seq!['1', ' '] + int_to_string(i + 2)) &&
-        (forall|i: int| #![auto] 5 + (n - 6) <= i < result.len() ==> result[i]@ == seq!['1', ' '] + int_to_string(i - (5 + (n - 6)) + 2))
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < arr1.len()
+        invariant
+            0 <= idx <= arr1.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == arr1[i] / arr2[i],
+    {
+        let division_result = arr1[idx] / arr2[idx];
+        result.push(division_result);
+        idx += 1;
     }
+    
+    result
 }
 
-spec fn int_to_string_pos(n: nat) -> Seq<char>
-    decreases n
-{
-    if n < 10 {
-        seq![(n + ('0' as nat)) as char]
-    } else {
-        int_to_string_pos(n / 10) + int_to_string_pos(n % 10)
-    }
-}
-
-spec fn int_to_string(n: int) -> Seq<char> {
-    if n < 0 {
-        seq!['-'] + int_to_string_pos((-n) as nat)
-    } else {
-        int_to_string_pos(n as nat)
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: Vec<String>)
-    requires n as int >= 2
-    ensures valid_output(n as int, result@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    Vec::new()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

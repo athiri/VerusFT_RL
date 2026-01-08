@@ -1,29 +1,29 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn nansum(a: Vec<f32>) -> (result: f32)
-    ensures
-        /* If vector is empty, result is 0 */
-        a.len() == 0 ==> result == 0.0f32,
-        /* Core property: nansum handles NaN values by treating them as zero */
-        true,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus! {
+fn linear_search(nums: Vec<i32>, target: i32) -> (ret: i32)
+requires
+    nums@.len() < 0x8000_0000,
+ensures
+    ret < nums@.len(),
+    ret >=0 ==> nums@[ret as int] == target,
+    ret >=0 ==> forall |i: int| 0 <= i < ret as int ==> #[trigger]nums@[i]!= target,
+    ret < 0 ==> forall |i: int| 0 <= i < nums@.len() as int ==> #[trigger]nums@[i] != target,
+{
+    let mut i = 0;
+    while i < nums.len()
+        invariant
+            0 <= i <= nums@.len(),
+            forall |j: int| 0 <= j < i ==> #[trigger]nums@[j] != target,
+    {
+        if nums[i] == target {
+            return i as i32;
+        }
+        i += 1;
+    }
+    return -1;
+}
+}

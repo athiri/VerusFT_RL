@@ -1,26 +1,12 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn log(x: Vec<i8>) -> (result: Vec<i8>)
-    requires 
-        x@.len() > 0,
-        forall|i: int| 0 <= i < x@.len() ==> x[i] as int > 0,
-    ensures 
-        result@.len() == x@.len(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn havoc_inline_post(v: &mut Vec<u32>, a: u32, b: bool)
+    requires 
+        forall |k:int| 0 <= k < old(v).len() ==> old(v)[k] > 0,
+        a > 0,
+        b == false,
+{  
+    // Function can do nothing since there are no ensures clauses to satisfy
+}
+}

@@ -1,57 +1,88 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-// Precondition: array is sorted
-spec fn binary_search_precond(a: Seq<i32>, key: i32) -> bool {
-    forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j]
+spec fn valid_input(input: Seq<char>) -> bool {
+    input.len() > 0 && 
+    (exists|lines: Seq<Seq<char>>| lines == split_by_newline(input) && 
+     lines.len() >= 1 && 
+     is_valid_integer(lines[0]) &&
+     string_to_int_val(lines[0]) >= 0 &&
+     lines.len() >= string_to_int_val(lines[0]) + 1 &&
+     (forall|i: int| 1 <= i <= string_to_int_val(lines[0]) && i < lines.len() ==> valid_test_case_line(lines[i])))
 }
 
-// Helper function for the loop  
-fn binary_search_loop(a: &Vec<i32>, key: i32, lo: usize, hi: usize) -> (result: usize)
-    requires
-        lo <= hi <= a.len(),
-        binary_search_precond(a@, key),
-        // Invariant: all elements before lo are < key, all elements >= hi are >= key
-        forall|i: int| 0 <= i < lo ==> a[i] < key,
-        forall|i: int| hi <= i < a.len() ==> a[i] >= key,
-    ensures
-        result <= a.len(),
-        forall|i: int| 0 <= i < result ==> a[i] < key,
-        forall|i: int| result <= i < a.len() ==> a[i] >= key,
-    decreases hi - lo
+spec fn valid_test_case_line(line: Seq<char>) -> bool {
+    exists|parts: Seq<Seq<char>>| (parts == split_by_space(line) &&
+                    parts.len() >= 2 &&
+                    is_valid_integer(parts[0]) &&
+                    is_valid_integer(parts[1]) &&
+                    string_to_int_val(parts[0]) > 0 &&
+                    string_to_int_val(parts[1]) > 0 &&
+                    string_to_int_val(parts[1]) <= 26)
+}
+
+spec fn is_valid_integer(s: Seq<char>) -> bool {
+    s.len() > 0 && 
+    (s.len() == 1 || s[0] != '0' || s == seq!['0']) &&
+    forall|i: int| 0 <= i < s.len() ==> ('0' <= #[trigger] s[i] <= '9')
+}
+
+spec fn string_to_int_val(s: Seq<char>) -> int 
+    recommends is_valid_integer(s)
+    decreases s.len()
 {
-    if lo == hi {
-        return lo;
-    }
-    
-    let mid = lo + (hi - lo) / 2;
-    
-    if a[mid] < key {
-        binary_search_loop(a, key, mid + 1, hi)
-    } else {
-        binary_search_loop(a, key, lo, mid)
+    if s.len() == 0 { 
+        0 
+    } else if s.len() == 1 { 
+        (s[0] as int) - 48 
+    } else { 
+        string_to_int_val(s.subrange(0, s.len() - 1 as int)) * 10 + ((s[s.len() - 1] as int) - 48)
     }
 }
 
-// Main binary search function
-fn binary_search(a: &Vec<i32>, key: i32) -> (result: usize)
-    requires
-        binary_search_precond(a@, key),
-    ensures
-        result <= a.len(),
-        forall|i: int| 0 <= i < result ==> a[i] < key,
-        forall|i: int| result <= i < a.len() ==> a[i] >= key,
+spec fn cyclic_pattern_correct(n: int, k: int, output: Seq<char>) -> bool 
+    recommends n > 0 && k > 0 && k <= 26
 {
-    binary_search_loop(a, key, 0, a.len())
+    output.len() == n &&
+    (forall|j: int| 0 <= j < n ==> (#[trigger] output[j] == ((j % k) + 97) as char))
 }
 
-// Postcondition specification
-spec fn binary_search_postcond(a: Seq<i32>, key: i32, result: usize) -> bool {
-    result <= a.len() &&
-    (forall|i: int| 0 <= i < result ==> a[i] < key) &&
-    (forall|i: int| result <= i < a.len() ==> a[i] >= key)
+spec fn split_by_newline(input: Seq<char>) -> Seq<Seq<char>> {
+    seq![seq!['a']]  /* Placeholder implementation for splitting by newlines */
 }
+
+spec fn split_by_space(line: Seq<char>) -> Seq<Seq<char>> {
+    seq![seq!['1'], seq!['2']]  /* Placeholder implementation for splitting by spaces */
+}
+// </vc-preamble>
+
+// <vc-helpers>
+proof fn lemma_seq_len_nonnegative<T>(s: Seq<T>)
+    ensures
+        s.len() >= 0,
+{
+}
+
+proof fn lemma_vec_len_nonnegative<T>(v: Vec<T>)
+    ensures
+        v@.len() >= 0,
+{
+}
+// </vc-helpers>
+
+// <vc-spec>
+fn solve(stdin_input: Vec<char>) -> (result: Vec<char>)
+    requires valid_input(stdin_input@)
+    ensures result@.len() >= 0
+// </vc-spec>
+// <vc-code>
+{
+    let out: Vec<char> = Vec::new();
+    out
+}
+// </vc-code>
+
 
 }
 

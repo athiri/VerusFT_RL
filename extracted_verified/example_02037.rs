@@ -1,47 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
-    spec fn count_as(s: Seq<char>) -> int
-        decreases s.len()
+
+fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+    requires
+        seq.len() > 0,
+    ensures
+        result == (forall|i: int, j: int|
+            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
+                == #[trigger] seq[j].len())),
+{
+    let first_len = seq[0].len();
+    
+    for i in 1..seq.len()
+        invariant
+            forall|k: int| (0 <= k < i) ==> seq[k].len() == first_len,
     {
-        if s.len() == 0 {
-            0
-        } else if s[0] == 'a' {
-            1 + count_as(s.subrange(1, s.len() as int))
-        } else {
-            count_as(s.subrange(1, s.len() as int))
+        if seq[i].len() != first_len {
+            return false;
         }
     }
     
-    spec fn remove_as(s: Seq<char>) -> Seq<char>
-        decreases s.len()
-    {
-        if s.len() == 0 {
-            seq![]
-        } else if s[0] == 'a' {
-            remove_as(s.subrange(1, s.len() as int))
-        } else {
-            seq![s[0]].add(remove_as(s.subrange(1, s.len() as int)))
-        }
-    }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(t: Vec<char>) -> (result: Vec<char>)
-    requires t@.len() >= 1
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    true
 }
 
-fn main() {}
+} // verus!

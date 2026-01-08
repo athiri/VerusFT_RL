@@ -1,71 +1,48 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn is_upper_case(c: char) -> (result:bool) {
-    c >= 'A' && c <= 'Z'
-}
-// pure-end
-
-spec fn is_lower_case(c: char) -> (result:bool) {
-    c >= 'a' && c <= 'z'
-}
-// pure-end
-
-spec fn shift_plus_32_spec(c: char) -> (result:char) {
-    ((c as u8) + 32) as char
-}
-// pure-end
-
-spec fn shift_minus_32_spec(c: char) -> (result:char) {
-    ((c as u8) - 32) as char
-}
-// pure-end
-
-spec fn flip_case_spec(c: char) -> (result:char) {
-    if is_lower_case(c) {
-        shift_minus_32_spec(c)
-    } else if is_upper_case(c) {
-        shift_plus_32_spec(c)
-    } else {
-        c
-    }
-}
-// pure-end
-
-fn flip_case(str: &[char]) -> (flipped_case: Vec<char>)
-    // post-conditions-start
+// <vc-helpers>
+/* helper modified by LLM (iteration 3): lemma relating Vec length and Seq length */
+proof fn vec_len_agrees<T>(v: &Vec<T>)
     ensures
-        str@.len() == flipped_case@.len(),
-        forall|i: int| 0 <= i < str.len() ==> flipped_case[i] == flip_case_spec(#[trigger] str[i]),
-    // post-conditions-end
+        v@.len() == v.len() as int,
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < str.len()
+}
+
+// </vc-helpers>
+
+// <vc-spec>
+fn polymulx(c: Vec<f32>) -> (result: Vec<f32>)
+    ensures
+        result.len() == c.len() + 1,
+        result[0] == 0.0f32,
+        forall|i: int| 0 <= i < c@.len() ==> result[i + 1] == c[i],
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 3): iterate with usize index to avoid casts from int; maintain invariants over j as int */
+    let mut result: Vec<f32> = Vec::new();
+    result.push(0.0f32);
+    let mut j: usize = 0usize;
+    while j < c.len()
         invariant
-            idx <= str.len(),
-            result.len() == idx,
-            forall|i: int| 0 <= i < idx ==> result[i] == flip_case_spec(str[i]),
-        decreases str.len() - idx,
+            0 <= j as int <= c@.len(),
+            result@.len() == j as int + 1,
+            result.len() == j + 1usize,
+            result@[0] == 0.0f32,
+            forall|k: int| 0 <= k < j as int ==> result@[k + 1] == c@[k],
+        decreases c@.len() as int - j as int
     {
-        let c = str[idx];
-        /* code modified by LLM (iteration 1): replaced spec function calls with inline conditions */
-        let flipped_c = if c >= 'a' && c <= 'z' {
-            ((c as u8) - 32) as char
-        } else if c >= 'A' && c <= 'Z' {
-            ((c as u8) + 32) as char
-        } else {
-            c
-        };
-        result.push(flipped_c);
-        idx += 1;
+        let v = c[j];
+        result.push(v);
+        j = j + 1usize;
     }
-    
     result
 }
+// </vc-code>
 
-} // verus!
+}
 fn main() {}

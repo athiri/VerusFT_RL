@@ -1,67 +1,25 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
-spec fn is_upper_case(c: u8) -> bool {
-    c >= 65 && c <= 90
-}
-
-spec fn shift32_spec(c: u8) -> u8 {
-    (c + 32) as u8
-}
-
-spec fn is_lower_case(c: u8) -> bool {
-    c >= 97 && c <= 122
-}
-
-spec fn shift_minus_32_spec(c: u8) -> u8 {
-    (c - 32) as u8
-}
-
-spec fn to_toggle_case_spec(s: u8) -> u8 {
-    if is_lower_case(s) {
-        shift_minus_32_spec(s)
-    } else if is_upper_case(s) {
-        shift32_spec(s)
-    } else {
-        s
-    }
-}
-
-fn to_toggle_case(str1: &[u8]) -> (toggle_case: Vec<u8>)
+fn replace_char(s: Vec<char>, old: char, new: char) -> (result: Vec<char>)
     ensures
-        str1@.len() == toggle_case@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+        result.len() == s.len(),
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == (if s[i] == old { new } else { s[i] }),
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < str1.len()
+    let mut result: Vec<char> = Vec::new();
+    let mut i = 0;
+    while i < s.len()
         invariant
-            idx <= str1.len(),
-            result.len() == idx,
-            forall|i: int| 0 <= i < idx ==> result[i] == to_toggle_case_spec(str1[i]),
-        decreases str1.len() - idx,
+            0 <= i && i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == (if s[j] == old { new } else { s[j] }),
     {
-        let c = str1[idx];
-        let toggled = if c >= 97 && c <= 122 {
-            // lowercase to uppercase
-            c - 32
-        } else if c >= 65 && c <= 90 {
-            // uppercase to lowercase
-            c + 32
-        } else {
-            // keep as is
-            c
-        };
-        result.push(toggled);
-        idx += 1;
+        result.push(if s[i] == old { new } else { s[i] });
+        i = i + 1;
     }
-    
     result
 }
 
-} // verus!
+fn main() {}
+}

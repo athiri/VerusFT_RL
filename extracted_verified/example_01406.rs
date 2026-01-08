@@ -1,65 +1,56 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+use std::collections::HashSet;
+fn main() {}
 
 verus! {
-
-/* Complex number type for FFT results */
-#[derive(PartialEq, Eq)]
-pub struct Complex {
-    /* Real part */
-    pub re: int,
-    /* Imaginary part */
-    pub im: int,
+spec fn seq_to_set_rec<A>(seq: Seq<A>) -> Set<A>
+    decreases seq.len()
+{
+    if seq.len() == 0 {
+        Set::empty()
+    } else {
+        seq_to_set_rec(seq.drop_last()).insert(seq.last())
+    }
 }
 
-impl Complex {
-    pub open spec fn zero() -> Complex {
-        Complex { re: 0, im: 0 }
-    }
+
+fn remove_duplicates(nums: Vec<i32>) -> (res: Vec<i32>)
+ensures
+    res@.no_duplicates(),
+    /* code modified by LLM (iteration 1): replaced ext_equal with == for set equality */
+    nums@.to_set() == res@.to_set()
+{
+    let mut res = Vec::new();
+    /* code modified by LLM (iteration 1): added HashSet import and initialized HashSet */
+    let mut seen = HashSet::new();
     
-    pub open spec fn add(self, other: Complex) -> Complex {
-        Complex { re: self.re + other.re, im: self.im + other.im }
-    }
-    
-    pub open spec fn mul(self, other: Complex) -> Complex {
-        Complex { 
-            re: self.re * other.re - self.im * other.im, 
-            im: self.re * other.im + self.im * other.re 
+    /* code modified by LLM (iteration 1): fixed syntax error with 'in' operator, changed to use contains method and added proof block for verification */
+    for i in 0..nums.len()
+        invariant
+            res@.no_duplicates(),
+            res@.to_set().subset_of(nums@.to_set()),
+            forall |j: int| 0 <= j < i ==> res@.to_set().contains(nums@[j]),
+            forall |x: i32| res@.to_set().contains(x) ==> nums@.to_set().contains(x),
+            forall |j: int| 0 <= j < i && nums@.to_set().contains(nums@[j]) ==> res@.to_set().contains(nums@[j])
+    {
+        if !seen.contains(&nums[i]) {
+            res.push(nums[i]);
+            seen.insert(nums[i]);
+            
+            proof {
+                assert(nums@.to_set().contains(nums@[i as int]));
+                assert(res@.to_set().contains(nums@[i as int]));
+            }
         }
     }
+    
+    /* code modified by LLM (iteration 1): added proof block to establish the final postcondition */
+    proof {
+        assert(forall |x: i32| nums@.to_set().contains(x) ==> res@.to_set().contains(x));
+        assert(forall |x: i32| res@.to_set().contains(x) ==> nums@.to_set().contains(x));
+    }
+    
+    res
 }
-
-/* Convert int to Complex */
-spec fn int_to_complex(x: int) -> Complex {
-    Complex { re: x, im: 0 }
 }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn rfft2(a: Vec<Vec<i8>>) -> (result: Vec<Vec<Complex>>)
-    requires 
-        a.len() > 0,
-        forall|i: int| 0 <= i < a.len() ==> #[trigger] a[i]@.len() > 0,
-        forall|i: int| 0 <= i < a.len() ==> #[trigger] a[i]@.len() == a[0]@.len(),
-    ensures
-        result.len() == a.len(),
-        forall|k: int| 0 <= k < result.len() ==> 
-            #[trigger] result[k]@.len() == (a[0]@.len() / 2) + 1,
-        /* DC component is real (imaginary part is zero) */
-        result[0]@[0].im == 0,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-fn main() {}

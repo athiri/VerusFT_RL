@@ -1,46 +1,59 @@
+use vstd::cell;
 use vstd::prelude::*;
+use vstd::simple_pptr::{self, PPtr};
+
+use vstd_extra::ownership::*;
+
+use std::marker::PhantomData;
+use std::ops::Deref;
+
+use super::*;
 
 verus! {
 
-// Precondition: all heights are non-negative
-spec fn rain_precond(heights: Seq<i32>) -> bool {
-    forall|i: int| 0 <= i < heights.len() ==> #[trigger] heights[i] >= 0
+/// A reference to a page table node.
+pub type PageTableNodeRef<'a, C> = FrameRef<'a, PageTablePageMeta<C>>;
+
+/// A guard that holds the lock of a page table node.
+#[rustc_has_incoherent_inherent_impls]
+pub struct PageTableGuard<'rcu, C: PageTableConfig> {
+    pub inner: PageTableNodeRef<'rcu, C>,
 }
 
-// Postcondition: result is non-negative and zero for arrays with < 3 elements
-spec fn rain_postcond(heights: Seq<i32>, result: int) -> bool {
-    result >= 0 &&
-    if heights.len() < 3 {
-        result == 0
-    } else {
-        // For arrays with >= 3 elements, result is the amount of trapped water
-        true
+impl<'rcu, C: PageTableConfig> Deref for PageTableGuard<'rcu, C> {
+    type Target = PageTableNodeRef<'rcu, C>;
+
+    #[verus_spec(ensures returns self.inner)]
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }
 
-// Main rain function implementing the two-pointer algorithm
-fn rain(heights: Vec<i32>) -> (result: i32)
-    requires 
-        rain_precond(heights@),
-    ensures 
-        rain_postcond(heights@, result as int),
-{
-    return 0;  // TODO: Remove this line and implement the function body
+#[rustc_has_incoherent_inherent_impls]
+pub struct Entry<'rcu, C: PageTableConfig> {
+    /// The page table entry.
+    ///
+    /// We store the page table entry here to optimize the number of reads from
+    /// the node. We cannot hold a `&mut E` reference to the entry because that
+    /// other CPUs may modify the memory location for accessed/dirty bits. Such
+    /// accesses will violate the aliasing rules of Rust and cause undefined
+    /// behaviors.
+    pub pte: C::E,
+    /// The index of the entry in the node.
+    pub idx: usize,
+    /// The node that contains the entry.
+    pub node: PPtr<PageTableGuard<'rcu, C>>,
 }
 
-// Theorem that states the specification is satisfied
-proof fn rain_spec_satisfied(heights: Seq<i32>, result: int)
-    requires 
-        rain_precond(heights),
-        rain_postcond(heights, result)
-    ensures 
-        result >= 0
-{
-    assume(false);  // TODO: Remove this line and implement the proof
+impl<'rcu, C: PageTableConfig> Entry<'rcu, C> {
+    pub open spec fn new_spec(pte: C::E, idx: usize, node: PPtr<PageTableGuard<'rcu, C>>) -> Self {
+        Self { pte, idx, node }
+    }
+
+    #[verifier::when_used_as_spec(new_spec)]
+    pub fn new(pte: C::E, idx: usize, node: PPtr<PageTableGuard<'rcu, C>>) -> Self {
+        Self { pte, idx, node }
+    }
 }
 
-}
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+} // verus!

@@ -1,25 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    fn max(a: i32, b: i32) -> (c: i32)
+        ensures c >= a && c >= b
+    {
+        if a >= b {
+            a
+        } else {
+            b
+        }
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn tan(x: Vec<f32>) -> (result: Vec<f32>)
-    requires 
-        x@.len() > 0,
-    ensures
-        result@.len() == x@.len(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn testing() {
+        let x = max(5, 3);
+        let y = max(-2, 10);
+        let z = max(0, 0);
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

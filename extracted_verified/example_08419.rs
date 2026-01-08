@@ -1,37 +1,127 @@
+/*
+### ID
+HumanEval/28
+*/
+/*
+### VERUS BEGIN
+*/
 use vstd::prelude::*;
 
 verus! {
 
-spec fn check_find_first_odd(arr: &Vec<u32>, index: Option<usize>) -> (result: bool)
+pub closed spec fn concat_helper(strings: Seq<Seq<char>>, i: nat) -> Seq<char>
+    recommends
+        i <= strings.len(),
+    decreases strings.len() - i,
 {
-    if let Some(idx) = index {
-        &&& idx < arr.len()
-        &&& arr[idx as int] % 2 != 0
-        &&& forall|k: int| 0 <= k < idx ==> arr[k] % 2 == 0
+    if (i >= strings.len()) {
+        seq![]
     } else {
-        forall|k: int| 0 <= k < arr.len() ==> (arr[k] % 2 == 0)
+        strings[i as int] + concat_helper(strings, i + 1)
     }
 }
 
-fn find_first_odd(arr: &Vec<u32>) -> (index: Option<usize>)
-    ensures check_find_first_odd(arr, index),
+pub open spec fn concatenate(strings: Seq<Seq<char>>) -> Seq<char> {
+    concat_helper(strings, 0)
+}
+
+proof fn sanity_check() {
+    assert(concatenate(seq![seq!['a'], seq!['b'], seq!['c']]) == seq!['a', 'b', 'c']) by (compute);
+    assert(concatenate(Seq::empty()) == Seq::<char>::empty());
+    assert(concatenate(seq![seq!['a', 'z'], seq!['b'], seq!['c', 'y']]) == seq![
+        'a',
+        'z',
+        'b',
+        'c',
+        'y',
+    ]) by (compute);
+}
+
+fn concatenate_impl(strings: Vec<Vec<char>>) -> (joined: Vec<char>)
+    ensures
+        joined@ == concatenate(strings.deep_view()),
 {
     let mut i = 0;
-    while i < arr.len()
-        invariant 
-            0 <= i <= arr.len(),
-            forall|k: int| 0 <= k < i ==> arr[k] % 2 == 0,
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases arr.len() - i,
+    let mut joined = vec![];
+
+    while (i < strings.len())
+        invariant
+            0 <= i <= strings.len(),
+            concatenate(strings.deep_view()) == joined@ + concat_helper(
+                strings.deep_view(),
+                i as nat,
+            ),
+        decreases strings.len() - i,
     {
-        if arr[i] % 2 != 0 {
-            return Some(i);
-        }
-        i += 1;
+        assert(concatenate(strings.deep_view()) == joined@ + strings[i as int]@ + concat_helper(
+            strings.deep_view(),
+            (i + 1) as nat,
+        ));
+
+        let mut copy_str = strings[i].clone();
+        joined.append(&mut copy_str);
+        i = i + 1;
     }
-    None
+    return joined;
 }
 
 } // verus!
+fn main() {
+    let test1 = vec![vec!['a'], vec!['b'], vec!['c']];
+    let test2: Vec<Vec<char>> = Vec::new();
+    let test3 = vec![vec!['a', 'z'], vec!['b'], vec!['c', 'y']];
 
-fn main() {}
+    print!("concatenation of {:?}:\n", test1);
+    print!("{:?}\n", concatenate_impl(test1));
+    print!("concatenation of {:?}:\n", test2);
+    print!("{:?}\n", concatenate_impl(test2));
+    print!("concatenation of {:?}:\n", test3);
+    print!("{:?}\n", concatenate_impl(test3));
+}
+
+/*
+### VERUS END
+*/
+
+/*
+### PROMPT
+from typing import List
+
+
+def concatenate(strings: List[str]) -> str:
+    """ Concatenate list of strings into a single string
+    >>> concatenate([])
+    ''
+    >>> concatenate(['a', 'b', 'c'])
+    'abc'
+    """
+
+*/
+
+/*
+### ENTRY POINT
+concatenate
+*/
+
+/*
+### CANONICAL SOLUTION
+    return ''.join(strings)
+
+*/
+
+/*
+### TEST
+
+
+METADATA = {
+    'author': 'jt',
+    'dataset': 'test'
+}
+
+
+def check(candidate):
+    assert candidate([]) == ''
+    assert candidate(['x', 'y', 'z']) == 'xyz'
+    assert candidate(['x', 'y', 'z', 'w', 'k']) == 'xyzwk'
+
+*/

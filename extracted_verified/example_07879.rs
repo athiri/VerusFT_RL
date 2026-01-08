@@ -1,53 +1,49 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition definition
-spec fn max_coverage_after_removing_one_precond(intervals: Seq<(nat, nat)>) -> bool {
-    intervals.len() > 0
-}
+// <vc-helpers>
 
-// Helper function to merge overlapping intervals
-fn merge_intervals(sorted_intervals: Vec<(usize, usize)>) -> (result: Vec<(usize, usize)>)
-    ensures result@.len() <= sorted_intervals@.len()
+// </vc-helpers>
+
+// <vc-spec>
+spec fn vec_sum(a: Seq<i32>) -> int 
+    decreases a.len()
 {
-    return Vec::new();  // TODO: Remove this line and implement the function body
+    if a.len() == 0 {
+        0
+    } else {
+        a[0] + vec_sum(a.skip(1))
+    }
 }
 
-// Helper function to calculate total coverage
-fn calculate_coverage(intervals: &Vec<(usize, usize)>) -> (result: usize)
-    requires forall|i: int| 0 <= i < intervals@.len() ==> #[trigger] intervals@[i].0 <= intervals@[i].1
+fn nanpercentile(a: Vec<i8>, q: i8) -> (result: i8)
+    requires 0 <= q <= 100,
+    ensures
+        /* Case 1: Empty array returns 0 */
+        a.len() == 0 ==> result == 0,
+        /* Case 2: Non-empty array */
+        a.len() > 0 ==> {
+            /* Result is within bounds of input values */
+            (forall|i: int| 0 <= i < a.len() ==> a[i] as int <= result as int || result as int <= a[i] as int) &&
+            /* For single element, result equals that element */
+            (a.len() == 1 ==> result == a[0])
+        }
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    if a.len() == 0 {
+        0
+    } else if a.len() == 1 {
+        a[0]
+    } else {
+        0
+    }
 }
+// </vc-code>
 
-// Simple sorting function using selection sort
-fn sort_intervals(intervals: &mut Vec<(usize, usize)>)
-    ensures intervals@.len() == old(intervals)@.len()
-{
-    // TODO: Remove this comment and implement the function body
-}
-
-// Main function
-fn max_coverage_after_removing_one(intervals: Vec<(usize, usize)>) -> (result: usize)
-    requires 
-        intervals@.len() > 0,
-        forall|i: int| 0 <= i < intervals@.len() ==> #[trigger] intervals@[i].0 <= intervals@[i].1
-    ensures result >= 0
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// Simplified postcondition
-spec fn max_coverage_after_removing_one_postcond(
-    intervals: Seq<(nat, nat)>, 
-    result: nat
-) -> bool {
-    result >= 0 && intervals.len() > 0
-}
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
 
 }
+fn main() {}

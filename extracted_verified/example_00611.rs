@@ -1,27 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
+verus!{
 
-uninterp spec fn power(n: int, alpha: int) -> int;
-
-uninterp spec fn log(n: int, alpha: int) -> int;
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn pow(n: u32, alpha: i32) -> (product: i32)
-    requires n > 0 && alpha > 0
-    ensures product == power(n as int, alpha as int)
-// </vc-spec>
-// <vc-code>
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	// pre-conditions-start
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 2 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 0);
 }
-// </vc-code>
-
 }
 fn main() {}

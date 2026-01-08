@@ -1,47 +1,39 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn triple_precond(x: int) -> bool {
-    true
-}
+// <vc-helpers>
 
-spec fn triple_postcond(x: int, result: int) -> bool {
-    result / 3 == x && (result / 3) * 3 == result
-}
+// </vc-helpers>
 
-proof fn lemma_div_mul_cancel(n: int)
-    requires n % 3 == 0
-    ensures n / 3 * 3 == n
+// <vc-spec>
+fn contains_consecutive_numbers(a: &[i32]) -> (result: bool)
+    requires a.len() > 0
+    ensures result <==> exists|i: int| #![trigger a.spec_index(i)] 
+        0 <= i < (a.len() as int) - 1 && a[i] + 1 == a[i + 1]
+// </vc-spec>
+// <vc-code>
 {
-    // This is a fundamental property of division and multiplication
-    // When n is divisible by 3, (n / 3) * 3 == n
-}
-
-proof fn lemma_three_times_div(x: int)
-    ensures 
-        (3 * x) / 3 == x,
-        ((3 * x) / 3) * 3 == 3 * x
-{
-    // (3 * x) / 3 == x by definition of division
-    // ((3 * x) / 3) * 3 == x * 3 == 3 * x
-}
-
-fn triple(x: i32) -> (result: i32)
-    requires 
-        triple_precond(x as int),
-        -1000000 <= x <= 1000000
-    ensures triple_postcond(x as int, result as int)
-{
-    proof {
-        lemma_three_times_div(x as int);
+    /* code modified by LLM (iteration 2): added trigger to the quantifier in the loop invariant */
+    let mut i: usize = 0;
+    while i < a.len() - 1
+        invariant
+            0 <= i <= a.len() - 1,
+            forall|j: int| #![trigger a.spec_index(j + 1)] 0 <= j < i as int ==> a.spec_index(j) + 1 != a.spec_index(j + 1),
+        decreases (a.len() - 1) - i
+    {
+        if let Some(val) = a[i].checked_add(1) {
+            if val == a[i+1] {
+                return true;
+            }
+        }
+        i = i + 1;
     }
-    3 * x
+    return false;
 }
-
-fn main() {
-    let result = triple(5);
-    assert(result == 15);
-}
+// </vc-code>
 
 }
+fn main() {}

@@ -1,68 +1,64 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let input = b"Hello World!";
+    let result = to_uppercase(input);
+    println!("Input: {:?}", std::str::from_utf8(input).unwrap());
+    println!("Output: {:?}", std::str::from_utf8(&result).unwrap());
+}
+
 verus! {
-spec fn count_occurrences(s: Seq<int>, x: int) -> int
-    decreases s.len()
+
+spec fn is_lower_case(c: u8) -> bool {
+    c >= 97 && c <= 122
+}
+
+spec fn shift_minus_32_spec(c: u8) -> u8 {
+    (c - 32) as u8
+}
+
+fn to_uppercase(str1: &[u8]) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> (result[i] == (if is_lower_case(#[trigger] str1[i]) {
+                shift_minus_32_spec(str1[i])
+            } else {
+                str1[i]
+            })),
 {
-    if s.len() == 0 {
-        0
-    } else if s[0] == x {
-        1 + count_occurrences(s.drop_first(), x)
-    } else {
-        count_occurrences(s.drop_first(), x)
+    let mut upper_case: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            upper_case.len() == index,
+            forall|i: int|
+                0 <= i < index ==> (upper_case[i] == (if is_lower_case(#[trigger] str1[i]) {
+                    shift_minus_32_spec(str1[i])
+                } else {
+                    str1[i]
+                })),
+    {
+        if (str1[index] >= 97 && str1[index] <= 122) {
+            upper_case.push((str1[index] - 32) as u8);
+        } else {
+            upper_case.push(str1[index]);
+        }
+        assert(upper_case[index as int] == (if is_lower_case(str1[index as int]) {
+            shift_minus_32_spec(str1[index as int])
+        } else {
+            str1[index as int]
+        }));
+        index += 1;
     }
+    assert(forall|i: int|
+        0 <= i < str1.len() ==> upper_case[i] == (if is_lower_case(#[trigger] str1[i]) {
+            shift_minus_32_spec(str1[i])
+        } else {
+            str1[i]
+        }));
+    upper_case
 }
 
-spec fn sum(s: Seq<int>) -> int
-    decreases s.len()
-{
-    if s.len() == 0 {
-        0
-    } else {
-        s[0] + sum(s.drop_first())
-    }
-}
-
-spec fn valid_input(n: int, ratings: Seq<int>) -> bool {
-    n >= 2 && ratings.len() == n
-}
-
-spec fn all_infected(k: int, ratings: Seq<int>) -> bool {
-    ratings.contains(k) && count_occurrences(ratings, k) == ratings.len()
-}
-
-spec fn can_infect_in_one_contest(k: int, ratings: Seq<int>) -> bool {
-    (ratings.contains(k) && count_occurrences(ratings, k) != ratings.len()) ||
-    (!ratings.contains(k) && k * ratings.len() == sum(ratings))
-}
-
-spec fn requires_two_contests(k: int, ratings: Seq<int>) -> bool {
-    !ratings.contains(k) && k * ratings.len() != sum(ratings)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve_case(n: i8, k: i8, ratings: Vec<i8>) -> (answer: i8)
-    requires 
-        valid_input(n as int, ratings@.map(|i: int, x: i8| x as int))
-    ensures 
-        answer >= 0 && answer <= 2,
-        all_infected(k as int, ratings@.map(|i: int, x: i8| x as int)) ==> answer == 0,
-        can_infect_in_one_contest(k as int, ratings@.map(|i: int, x: i8| x as int)) && !all_infected(k as int, ratings@.map(|i: int, x: i8| x as int)) ==> answer == 1,
-        requires_two_contests(k as int, ratings@.map(|i: int, x: i8| x as int)) ==> answer == 2
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

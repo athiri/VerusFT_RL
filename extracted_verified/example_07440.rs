@@ -1,41 +1,73 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn linear_search_precond(a: Seq<i32>, e: i32) -> bool {
-    true
-}
-
-spec fn linear_search_postcond(a: Seq<i32>, e: i32, result: usize) -> bool {
-    result <= a.len() &&
-    (result == a.len() || a.index(result as int) == e) &&
-    (forall|i: int| 0 <= i < result ==> a.index(i) != e)
-}
-
-fn linear_search(a: &Vec<i32>, e: i32) -> (result: usize)
-    requires
-        linear_search_precond(a@, e),
-    ensures
-        linear_search_postcond(a@, e, result),
-{
-    let mut i: usize = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while i < a.len()
-        invariant
-            i <= a.len(),
-            forall|j: int| 0 <= j < i ==> a@.index(j) != e,
-        decreases a.len() - i
-    {
-        if a[i] == e {
-            return i;
+// <vc-helpers>
+/* helper modified by LLM (iteration 2): avoid negation overflow by widening to i64 before negation */
+fn diag_col(r: usize, offset: i32) -> (opt: Option<usize>) {
+    if offset >= 0 {
+        let off = offset as usize;
+        match r.checked_add(off) {
+            Some(c) => Some(c),
+            None => None,
         }
-        i = i + 1;
+    } else {
+        let off_i64: i64 = -(offset as i64);
+        let off: usize = off_i64 as usize;
+        if r >= off {
+            Some(r - off)
+        } else {
+            None
+        }
     }
-    
-    i
 }
 
+fn get2d(a: &Vec<Vec<f32>>, r: usize, c: usize) -> (res: Option<f32>) {
+    if r < a.len() {
+        let row = &a[r];
+        if c < row.len() {
+            Some(row[c])
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
+// </vc-helpers>
 
+// <vc-spec>
+fn trace(a: Vec<Vec<f32>>, offset: i32) -> (result: f32)
+    ensures true
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 2): iterate rows and sum elements on the specified diagonal using safe column computation */
+    let mut sum: f32 = 0.0;
+    let n = a.len();
+    let mut r: usize = 0;
+    while r < n
+        invariant
+            r <= n,
+        decreases n - r
+    {
+        match diag_col(r, offset) {
+            Some(c) => {
+                match get2d(&a, r, c) {
+                    Some(v) => { sum += v; }
+                    None => { }
+                }
+            }
+            None => { }
+        }
+        r += 1;
+    }
+    sum
+}
+// </vc-code>
+
+
+}
 fn main() {}

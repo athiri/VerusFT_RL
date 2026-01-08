@@ -1,55 +1,58 @@
 use vstd::prelude::*;
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
 verus! {
 
-//IMPL min_second_value_first
-fn min_second_value_first(arr: &Vec<Vec<i32>>) -> (first_of_min_second: i32)
+#[verifier::loop_isolation(false)]
+fn is_prime(n: u32) -> (result: bool)
     requires
-        arr.len() > 0,
-        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() >= 2,
+        n >= 2,
     ensures
-        exists|i: int|
-            0 <= i < arr.len() && first_of_min_second == #[trigger] arr[i][0] && (forall|j: int|
-                0 <= j < arr.len() ==> (arr[i][1] <= #[trigger] arr[j][1])),
+        result ==> (forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0),
+        !result ==> exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    /* code modified by LLM (iteration 1): added bounds checks and fixed array access */
-    assert(0 < arr.len());
-    assert(arr[0].len() >= 2);
-    
-    let mut min_second = arr[0][1];
-    let mut result_first = arr[0][0];
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): fixed loop with proper bounds checking and invariants */
-    while idx < arr.len()
+    let mut i = 2u32;
+    while i < n
         invariant
-            0 <= idx <= arr.len(),
-            arr.len() > 0,
-            forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() >= 2,
-            forall|k: int| 0 <= k < idx ==> min_second <= #[trigger] arr[k][1],
-            exists|k: int| 0 <= k < arr.len() && result_first == #[trigger] arr[k][0] && arr[k][1] == min_second,
-            forall|k: int| 0 <= k < idx ==> min_second <= #[trigger] arr[k][1],
-        decreases arr.len() - idx,
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
     {
-        /* code modified by LLM (iteration 1): added bounds assertion before array access */
-        assert(idx < arr.len());
-        assert(arr[idx as int].len() >= 2);
-        
-        if arr[idx][1] < min_second {
-            min_second = arr[idx][1];
-            result_first = arr[idx][0];
+        if n % i == 0 {
+            return false;
         }
-        idx = idx + 1;
+        i = i + 1;
     }
-    
-    /* code modified by LLM (iteration 1): added final assertion to help prove postcondition */
-    assert(forall|j: int| 0 <= j < arr.len() ==> min_second <= #[trigger] arr[j][1]);
-    
-    result_first
+    true
 }
 
-} // verus!
+spec fn is_prime_pred(n: u32) -> bool {
+    forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0
+}
+
+#[verifier::loop_isolation(false)]
+fn largest_prime_factor(n: u32) -> (result: u32)
+    requires
+        2 <= n <= u32::MAX - 1,
+    ensures
+        1 <= result <= n,
+        result == 1 || (result > 1 && is_prime_pred(result))
+{
+    let mut largest = 1u32;
+    let mut i = 2u32;
+    
+    while i <= n
+        invariant
+            2 <= i <= n + 1,
+            1 <= largest <= n,
+            largest == 1 || (largest > 1 && is_prime_pred(largest)),
+    {
+        if n % i == 0 && is_prime(i) {
+            largest = i;
+        }
+        i = i + 1;
+    }
+    
+    largest
+}
+
+fn main() {}
+}

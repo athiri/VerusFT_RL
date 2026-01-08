@@ -1,56 +1,40 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    let lists = vec![
+        vec![1, 2],
+        vec![3, 4, 5, 6],
+        vec![7],
+    ];
+    let max_list = max_length_list(&lists);
+    println!("Max length list has {} elements", max_list.len());
+}
 
 verus! {
 
-spec fn valid_input(n: int, k: int) -> bool {
-    4 <= n <= 1000 && 1 <= k <= 4 && k < n
-}
-
-spec fn factorial(n: int) -> int
-    decreases n
+fn max_length_list(seq: &Vec<Vec<i32>>) -> (max_list: &Vec<i32>)
+    requires
+        seq.len() > 0,
+    ensures
+        forall|k: int| 0 <= k < seq.len() ==> max_list.len() >= #[trigger] (seq[k]).len(),
+        exists|k: int| 0 <= k < seq.len() && max_list@ =~= #[trigger] (seq[k]@),
 {
-    if n <= 1 { 1 } else { n * factorial(n - 1) }
+    let mut max_idx = 0;
+    let mut i = 1;
+    
+    while i < seq.len()
+        invariant
+            0 <= max_idx < seq.len(),
+            1 <= i <= seq.len(),
+            forall|k: int| 0 <= k < i ==> seq[max_idx as int].len() >= seq[k].len(),
+    {
+        if seq[i].len() > seq[max_idx].len() {
+            max_idx = i;
+        }
+        i += 1;
+    }
+    
+    &seq[max_idx]
 }
 
-spec fn derangement(n: int) -> int
-    decreases n
-{
-    if n <= 1 { 0 }
-    else if n == 2 { 1 }
-    else { (n - 1) * (derangement(n - 1) + derangement(n - 2)) }
-}
-
-spec fn binomial(n: int, k: int) -> int {
-    if k > n { 0 }
-    else if k == 0 || k == n { 1 }
-    else { factorial(n) / (factorial(k) * factorial(n - k)) }
-}
-
-spec fn sum_binomial_derangement(n: int, k: int, i: int) -> int
-    decreases n - k - i
-{
-    if i >= n - k { 0 }
-    else { binomial(n, i) * derangement(n - i) + sum_binomial_derangement(n, k, i + 1) }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8) -> (result: i8)
-    requires valid_input(n as int, k as int)
-    ensures result as int == factorial(n as int) - sum_binomial_derangement(n as int, k as int, 0)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

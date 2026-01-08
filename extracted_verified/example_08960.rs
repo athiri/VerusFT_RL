@@ -1,71 +1,79 @@
-use vstd::prelude::*;
+// SPDX-License-Identifier: MPL-2.0
+//! Atomic Mode
+//!
+//! Multitasking, while powerful, can sometimes lead to undesirable
+//! or catastrophic consequences if being misused.
+//! For instance, a user of OSTD might accidentally write an IRQ handler
+//! that relies on mutexes,
+//! which could attempt to sleep within an interrupt context---something that must be avoided.
+//! Another common mistake is
+//! acquiring a spinlock in a task context and then attempting to yield or sleep,
+//! which can easily lead to deadlocks.
+//!
+//! To mitigate the risks associated with improper multitasking,
+//! we introduce the concept of atomic mode.
+//! Kernel code is considered to be running in atomic mode
+//! if one of the following conditions is met:
+//!
+//! 1. Task preemption is disabled, such as when a spinlock is held.
+//! 2. Local IRQs are disabled, such as during interrupt context.
+//!
+//! While in atomic mode,
+//! any attempt to perform "sleep-like" actions will trigger a panic:
+//!
+//! 1. Switching to another task.
+//! 2. Switching to user space.
+//!
+//! This module provides API to detect such "sleep-like" actions.
+use core::sync::atomic::Ordering;
 
-verus! {
-
-// Precondition for runLengthEncoder - always true as in the original
-spec fn run_length_encoder_precond(input: Seq<char>) -> bool {
-    true
+/// Marks a function as one that might sleep.
+///
+/// This function will panic if it is executed in atomic mode.
+#[track_caller]
+pub fn might_sleep() {
+    let preempt_count = super::preempt::cpu_local::get_guard_count();
+    let is_local_irq_enabled = crate::arch::irq::is_local_enabled();
+    if (preempt_count != 0 || !is_local_irq_enabled)
+        && !crate::IN_BOOTSTRAP_CONTEXT.load(Ordering::Relaxed)
+    {
+        panic!(
+            "This function might break atomic mode (preempt_count = {}, is_local_irq_enabled = {})",
+            preempt_count, is_local_irq_enabled
+        );
+    }
 }
 
-// Helper function to check if character is digit
-spec fn is_digit(c: char) -> bool {
-    c >= '0' && c <= '9'
+/// A marker trait for guard types that enforce the atomic mode.
+///
+/// Key kernel primitives such as `SpinLock` and `Rcu` rely on
+/// [the atomic mode](crate::task::atomic_mode) for correctness or soundness.
+/// The existence of such a guard guarantees that the current task is executing
+/// in the atomic mode.
+///
+/// It requires [`core::fmt::Debug`] by default to make it easier to derive
+/// [`Debug`] for types with `&dyn InAtomicMode`.
+///
+/// # Safety
+///
+/// The implementer must ensure that the atomic mode is maintained while
+/// the guard type is alive.
+pub unsafe trait InAtomicMode: core::fmt::Debug {}
+
+/// Abstracts any type from which one can obtain a reference to an atomic-mode guard.
+pub trait AsAtomicModeGuard {
+    /// Returns a guard for the atomic mode.
+    fn as_atomic_mode_guard(&self) -> &dyn InAtomicMode;
 }
 
-// Simple run length encoder implementation
-fn run_length_encoder(input: Vec<char>) -> (result: Vec<char>)
-    requires run_length_encoder_precond(input@)
-{
-    return Vec::new();  // TODO: Remove this line and implement the function body
+impl<G: InAtomicMode> AsAtomicModeGuard for G {
+    fn as_atomic_mode_guard(&self) -> &dyn InAtomicMode {
+        self
+    }
 }
 
-// Parse encoded string into (char, count) pairs
-spec fn parse_encoded_string(s: Seq<char>) -> Seq<(char, nat)> {
-    // Simplified implementation - would need complex parsing logic
-    arbitrary()
+impl AsAtomicModeGuard for dyn InAtomicMode + '_ {
+    fn as_atomic_mode_guard(&self) -> &dyn InAtomicMode {
+        self
+    }
 }
-
-// Check if the encoded format is valid
-spec fn format_valid(encoded: Seq<char>) -> bool {
-    // Simplified - would check alternating char/digit pattern
-    true
-}
-
-// Expand encoded pairs back to original sequence
-spec fn expand_pairs(pairs: Seq<(char, nat)>) -> Seq<char> {
-    // Would expand each (char, count) to repeated characters
-    arbitrary()
-}
-
-// Check if content is valid by parsing and expanding
-spec fn content_valid(input: Seq<char>, encoded: Seq<char>) -> bool {
-    let pairs = parse_encoded_string(encoded);
-    let expanded = expand_pairs(pairs);
-    expanded == input
-}
-
-// Postcondition for runLengthEncoder
-spec fn run_length_encoder_postcond(input: Seq<char>, result: Seq<char>) -> bool {
-    let format_ok = format_valid(result);
-    let content_ok = content_valid(input, result);
-    let empty_ok = (input.len() == 0) == (result.len() == 0);
-    
-    format_ok && content_ok && empty_ok
-}
-
-// Abstract spec function representing the encoder result
-uninterp spec fn run_length_encoder_spec(input: Seq<char>) -> Seq<char>;
-
-// Specification theorem - states that our spec satisfies the postcondition
-proof fn run_length_encoder_spec_satisfied(input: Seq<char>)
-    requires run_length_encoder_precond(input)
-    ensures run_length_encoder_postcond(input, run_length_encoder_spec(input))
-{
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
-} // verus!

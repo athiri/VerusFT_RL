@@ -1,76 +1,82 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition for maxSubarraySum
-spec fn max_subarray_sum_precond(xs: Seq<i32>) -> bool {
-    true
-}
-
-// Helper function to compute sum of a subarray slice
-spec fn subarray_sum(xs: Seq<i32>, start: int, end: int) -> int
-    recommends 0 <= start <= end <= xs.len()
-    decreases end - start
+// <vc-helpers>
+fn arctan_approximation(x: i32) -> (result: i32)
+    requires true,
+    ensures
+        result >= -2 && result <= 2,
+        (x > 0 ==> result >= 0),
+        (x < 0 ==> result <= 0),
+        (x == 0 ==> result == 0),
+        (x > 10 ==> result >= 1),
+        (x < -10 ==> result <= -1)
 {
-    if start >= end {
+    if x == 0 {
         0
+    } else if x > 10 {
+        2
+    } else if x < -10 {
+        -2
+    } else if x > 0 {
+        1
     } else {
-        xs[start] as int + subarray_sum(xs, start + 1, end)
+        -1
     }
 }
+// </vc-helpers>
 
-// Check if a sum exists as a subarray sum  
-spec fn is_subarray_sum(xs: Seq<i32>, target: int) -> bool {
-    exists|start: int, end: int| 
-        0 <= start <= end <= xs.len() && end > start &&
-        subarray_sum(xs, start, end) == target
-}
-
-// Check if target is the maximum among all subarray sums
-spec fn is_max_subarray_sum(xs: Seq<i32>, target: int) -> bool {
-    forall|start: int, end: int| 
-        (0 <= start <= end <= xs.len() && end > start) ==>
-        subarray_sum(xs, start, end) <= target
-}
-
-// Postcondition for maxSubarraySum  
-spec fn max_subarray_sum_postcond(xs: Seq<i32>, result: int) -> bool {
-    if xs.len() == 0 {
-        result == 0
-    } else {
-        is_subarray_sum(xs, result) && is_max_subarray_sum(xs, result)
+// <vc-spec>
+fn arctan(x: Vec<i32>) -> (result: Vec<i32>)
+    requires x.len() > 0,
+    ensures 
+        result.len() == x.len(),
+        forall|i: int| 0 <= i < result.len() ==> {
+            /* Range constraint: arctan(x) ∈ (-π/2, π/2) - simplified for integer domain */
+            result[i] >= -2 && result[i] <= 2 &&
+            /* Sign property: arctan preserves sign */
+            (x[i] > 0 ==> result[i] >= 0) &&
+            (x[i] < 0 ==> result[i] <= 0) &&
+            (x[i] == 0 ==> result[i] == 0) &&
+            /* Monotonicity property for specific cases */
+            (x[i] > 10 ==> result[i] >= 1) &&
+            (x[i] < -10 ==> result[i] <= -1) &&
+            /* Bounded function: |arctan(x)| ≤ 2 for integer approximation */
+            result[i] >= -2 && result[i] <= 2
+        }
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 2): added decreases clause to while loop */
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    
+    while i < x.len()
+        invariant
+            0 <= i <= x.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> {
+                result[j] >= -2 && result[j] <= 2 &&
+                (x[j] > 0 ==> result[j] >= 0) &&
+                (x[j] < 0 ==> result[j] <= 0) &&
+                (x[j] == 0 ==> result[j] == 0) &&
+                (x[j] > 10 ==> result[j] >= 1) &&
+                (x[j] < -10 ==> result[j] <= -1)
+            }
+        decreases x.len() - i
+    {
+        let approx = arctan_approximation(x[i]);
+        result.push(approx);
+        i += 1;
     }
+    
+    result
 }
+// </vc-code>
 
-// Helper function 
-#[verifier::loop_isolation(false)]
-fn helper(lst: &Vec<i32>, cur_max: i32, global_max: i32, index: usize) -> (result: i32)
-    requires 
-        index <= lst.len(),
-        lst.len() <= 100  // Smaller bound for simplicity
-    decreases lst.len() - index
-{
-    return 0;  // TODO: Remove this line and implement the function body
+
 }
-
-// Main function implementation
-fn max_subarray_sum(xs: Vec<i32>) -> (result: i32)
-    requires 
-        max_subarray_sum_precond(xs@),
-        xs.len() <= 100
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// The theorem statement (proof omitted like in Lean)  
-proof fn max_subarray_sum_spec_satisfied(xs: Seq<i32>)
-    requires 
-        max_subarray_sum_precond(xs),
-        xs.len() <= 100
-{
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
 fn main() {}
-
-}

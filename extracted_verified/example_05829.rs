@@ -2,34 +2,62 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (result:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '<' => (x + 1, b),
+                    '>' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
+}
+// pure-end
+
+spec fn spec_bracketing(brackets: Seq<char>) -> (result:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
+    // pre-conditions-start
     requires
-        lists.len() > 0,
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
-        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
+        ret <==> spec_bracketing(brackets@),
+    // post-conditions-end
 {
-    let mut min_len = lists[0].len();
-    let mut idx = 0;
+    let mut count: i32 = 0;
+    let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-    while idx < lists.len()
+    while i < brackets.len()
         invariant
-            0 <= idx <= lists.len(),
-            exists|i: int| #![auto] 0 <= i < idx ==> min_len == lists[i].len(),
-            forall|i: int| #![auto] 0 <= i < idx ==> min_len <= lists[i].len(),
-            min_len == lists[0].len() || exists|i: int| #![auto] 0 <= i < idx && min_len == lists[i].len(),
-        decreases lists.len() - idx
+            0 <= i <= brackets.len(),
+            count >= 0,
+            spec_bracketing_helper(brackets@.subrange(0, i as int)) == (count as int, true),
     {
-        if lists[idx].len() < min_len {
-            min_len = lists[idx].len();
+        let c = brackets.as_bytes()[i] as char;
+        if c == '<' {
+            count += 1;
+        } else if c == '>' {
+            if count == 0 {
+                return false;
+            }
+            count -= 1;
         }
-        idx += 1;
+        i += 1;
     }
     
-    min_len
+    count == 0
 }
 
+} // verus!
 fn main() {}
-}

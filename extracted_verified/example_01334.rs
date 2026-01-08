@@ -1,29 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn histogram_bin_edges(data: Vec<i8>, num_bins: usize) -> (edges: Vec<i8>)
-    requires 
-        data.len() > 0,
-        num_bins > 0,
-    ensures
-        edges.len() == num_bins + 1,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+verus!{
+
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall |k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
+{
+}
+
+pub fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
+    requires 
+        forall |k1:int,k2:int| 0 <= k1 < k2 < v.len() ==> v[k1] != v[k2]
+    ensures
+        forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+        forall |k:int| 0 <= k < v.len() && v[k] <= e ==> result@.contains(v[k]),
+{  
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+}

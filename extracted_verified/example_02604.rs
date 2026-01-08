@@ -1,24 +1,45 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
+#[verifier::loop_isolation(false)]
+fn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)
     requires
-        arr.len() > 0,
+        0 <= pos < a.len(),
     ensures
-        is_sorted == (forall|i: int, j: int| 0 <= i < j < arr.len() ==> (arr[i] <= arr[j])),
+        result.len() == a.len() - 1,
+        forall|i: int| 0 <= i < pos ==> result[i] == a[i],
+        forall|i: int| pos <= i < result.len() ==> result[i] == a[i + 1],
 {
-    for idx in 1..arr.len()
+    let mut result = Vec::new();
+    
+    // Copy elements before pos
+    let mut i = 0;
+    while i < pos
         invariant
-            forall|i: int, j: int| 0 <= i < j < idx ==> arr[i] <= arr[j],
+            0 <= i <= pos,
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == a[j],
     {
-        if arr[idx - 1] > arr[idx] {
-            return false;
-        }
+        result.push(a[i]);
+        i += 1;
     }
-    true
+    
+    // Skip element at pos and copy remaining elements
+    let mut j = pos + 1;
+    while j < a.len()
+        invariant
+            pos < j <= a.len(),
+            result.len() == pos + (j - pos - 1),
+            forall|k: int| 0 <= k < pos ==> result[k] == a[k],
+            forall|k: int| pos <= k < result.len() ==> result[k] == a[k + 1],
+    {
+        result.push(a[j]);
+        j += 1;
+    }
+    
+    result
 }
 
-} // verus!
+fn main() {}
+}

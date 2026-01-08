@@ -1,25 +1,24 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn polymulx(c: Vec<f32>) -> (result: Vec<f32>)
-    ensures
-        result.len() == c.len() + 1,
-        result[0] == 0.0f32,
-        forall|i: int| 0 <= i < c@.len() ==> result[i + 1] == c[i],
-// </vc-spec>
-// <vc-code>
+spec fn seq_to_set_rec<A>(seq: Seq<A>) -> Set<A>
+    decreases seq.len()
 {
-    assume(false);
-    unreached()
+    if seq.len() == 0 {
+        Set::empty()
+    } else {
+        seq_to_set_rec(seq.drop_last()).insert(seq.last())
+    }
 }
-// </vc-code>
 
+
+fn remove_duplicates(nums: Vec<i32>) -> (res: Vec<i32>)
+ensures
+    res@.no_duplicates(),
+    nums@.to_set().ext_equal(res@.to_set())
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
-fn main() {}
+}

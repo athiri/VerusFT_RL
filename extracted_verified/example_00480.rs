@@ -1,27 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
+//IMPL arithmetic_weird
 #[verifier::loop_isolation(false)]
-fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
-    requires
-        lists.len() > 0,
+fn arithmetic_weird() -> (result: i32)
+    // post-conditions-start
     ensures
-        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
-        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
-// </vc-spec>
-// <vc-code>
+        result < 10
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    5
 }
-// </vc-code>
 
-}
 fn main() {}
+}

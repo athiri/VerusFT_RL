@@ -1,29 +1,41 @@
-// <vc-preamble>
+//This is an example from Verus tutorial Chpt 4.2
+//This is a rather complicated example: a inductive proof function is introduced to help prove that *sum_idx will not overflow
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn legcompanion(c: Vec<i8>) -> (result: Vec<Vec<i8>>)
-    requires 
-        c@.len() >= 2,
-        c[c@.len() - 1] as int != 0,
-    ensures 
-        result@.len() == c@.len() - 1,
-        forall|i: int| 0 <= i < result@.len() ==> result@[i]@.len() == c@.len() - 1,
-        forall|i: int, j: int| 0 <= i < result@.len() && 0 <= j < result@.len() ==> 
-            result@[i]@[j] == result@[j]@[i],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+     
+spec fn triangle(n: nat) -> nat
+    decreases n
+{
+    if n == 0 {
+        0
+    } else {
+        n + triangle((n - 1) as nat)
+    }
+}
+
+proof fn triangle_is_monotonic(i: nat, j: nat)
+    requires
+        i <= j,
+    ensures
+        triangle(i) <= triangle(j),
+    decreases j
+{
+    if i < j {
+        triangle_is_monotonic(i, (j - 1) as nat);
+    }
+}
+
+fn tail_triangle(n: u32, idx: u32, sum: &mut u32)
+    requires
+        idx <= n,
+        *old(sum) == triangle(idx as nat),
+        triangle(n as nat) < 0x1_0000_0000,
+    ensures
+        *sum == triangle(n as nat),
+{
+    // TODO: Remove this comment and implement the function body
+}
+}

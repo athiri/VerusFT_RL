@@ -1,46 +1,45 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
-fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
-    requires
-        list@.len() > 0,
-        0 < n < list@.len(),
+#[verifier::external_body]
+fn add_one(n: i32) -> (result: i32)
     ensures
-        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
+        result == n + 1,
 {
-    let mut new_list = Vec::new();
-    
-    // First, append elements from position n to the end
-    let mut i = n;
-    /* code modified by LLM (iteration 1): added decreases clause for termination */
-    while i < list.len()
-        invariant
-            0 < n < list@.len(),
-            n <= i <= list@.len(),
-            new_list@ == list@.subrange(n as int, i as int),
-        decreases list@.len() - i,
-    {
-        new_list.push(list[i]);
-        i += 1;
-    }
-    
-    // Then, append elements from the beginning to position n
-    let mut j = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for termination */
-    while j < n
-        invariant
-            0 < n < list@.len(),
-            0 <= j <= n,
-            new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, j as int)),
-        decreases n - j,
-    {
-        new_list.push(list[j]);
-        j += 1;
-    }
-    
-    new_list
+    n + 1
 }
 
-} // verus!
+#[verifier::external_body]
+fn square(n: i32) -> (result: i32)
+    ensures
+        n * n == result,
+{
+    n * n
+}
+
+fn integer_square_root(n: i32) -> (result: i32)
+    requires
+        n >= 1,
+    ensures
+        0 <= result * result,
+        result * result <= n,
+        n < (result + 1) * (result + 1)
+{
+    let mut result = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause and fixed loop logic to ensure termination and correctness */
+    while (result + 1) * (result + 1) <= n
+        invariant
+            result >= 0,
+            result * result <= n,
+        decreases n - result * result
+    {
+        result = result + 1;
+    }
+    
+    result
+}
+
+fn main() {}
+}

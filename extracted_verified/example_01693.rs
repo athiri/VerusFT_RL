@@ -1,40 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int) -> bool {
-    1 <= n <= 10000
-}
 
-spec fn valid_change(change: int) -> bool {
-    0 <= change <= 999
-}
-
-spec fn correct_change(n: int) -> int
-    recommends valid_input(n)
+fn filter_odd_numbers(arr: &Vec<u32>) -> (odd_list: Vec<u32>)
+    ensures
+        odd_list@ == arr@.filter(|x: u32| x % 2 != 0),
 {
-    (1000 - n % 1000) % 1000
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (change: i8)
-    requires valid_input(n as int)
-    ensures 
-        valid_change(change as int) &&
-        change as int == correct_change(n as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            result@ == arr@.subrange(0, i as int).filter(|x: u32| x % 2 != 0),
+    {
+        if arr[i] % 2 != 0 {
+            result.push(arr[i]);
+        }
+        i += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

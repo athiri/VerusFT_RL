@@ -1,38 +1,25 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_temperature(temp: int) -> bool {
-    -40 <= temp <= 40
-}
-
-spec fn expected_output(temp: int) -> Seq<char> {
-    if temp >= 30 { seq!['Y', 'e', 's', '\n'] } else { seq!['N', 'o', '\n'] }
-}
-
-spec fn correct_output(temp: int, output: Seq<char>) -> bool {
-    output == expected_output(temp)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(x: i8) -> (result: Vec<u8>)
-    requires valid_temperature(x as int)
-    ensures correct_output(x as int, result@.map(|i: int, b: u8| b as char))
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    Vec::new()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn filter_odd_numbers(arr: &Vec<u32>) -> (odd_list: Vec<u32>)
+    ensures
+        odd_list@ == arr@.filter(|x: u32| x % 2 != 0),
+{
+    let mut result = Vec::new();
+    
+    for i in 0..arr.len()
+        invariant
+            result@ == arr@.subrange(0, i as int).filter(|x: u32| x % 2 != 0),
+    {
+        if arr[i] % 2 != 0 {
+            result.push(arr[i]);
+        }
+    }
+    
+    result
+}
+
+} // verus!

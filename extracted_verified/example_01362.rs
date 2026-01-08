@@ -1,27 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn spacing(x: Vec<i8>) -> (result: Vec<i8>)
-    ensures
-        result@.len() == x@.len(),
-        forall|i: int| 0 <= i < x@.len() ==> #[trigger] result@[i] as int > 0
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+     
+spec fn triangle(n: nat) -> nat
+    decreases n
+{
+    if n == 0 {
+        0
+    } else {
+        n + triangle((n - 1) as nat)
+    }
+}
+
+fn tail_triangle(n: u32, idx: u32, sum: &mut u32)
+    requires
+        idx <= n,
+        *old(sum) == triangle(idx as nat),
+        triangle(n as nat) < 0x1_0000_0000,
+    ensures
+        *sum == triangle(n as nat),
+{
+    let mut i = idx;
+    while i < n
+        invariant
+            i <= n,
+            *sum == triangle(i as nat),
+    {
+        i = i + 1;
+        *sum = *sum + i;
+    }
+}
+}

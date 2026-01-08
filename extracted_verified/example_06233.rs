@@ -1,48 +1,24 @@
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-    /* 
-    * Formal specification and verification of a dynamic programming algorithm for calculating C(n, k).
-    * FEUP, MIEIC, MFES, 2020/21.
-    */
-
-    // Initial recursive definition of C(n, k), based on the Pascal equality.
-    spec fn comb(n: nat, k: nat) -> nat 
-        recommends 0 <= k <= n
-        decreases n
-    {
-        if k == 0 || k == n { 
-            1 
-        } else if k > n { 
-            0 
-        } else { 
-            comb(sub(n, 1), k) + comb(sub(n, 1), sub(k, 1)) 
-        }
+    spec fn sorted_between(a: Seq<u32>, from: int, to: int) -> bool {
+        forall |i: int, j:int|  from <= i < j < to ==> a[i] <= a[j]
     }
-
-    // Calculates C(n,k) iteratively in time O(k*(n-k)) and space O(n-k), 
-    // with dynamic programming.
-    #[verifier::external_body]
-    fn comb_method(n: u64, k: u64) -> (result: u64)
-        requires 0 <= k <= n,
-        ensures result as nat == comb(n as nat, k as nat),
-    {
-    return 0;  // TODO: Remove this line and implement the function body
+ 
+ 
+    spec fn is_reorder_of<T>(r: Seq<int>, p: Seq<T>, s: Seq<T>) -> bool {
+    &&& r.len() == s.len()
+    &&& forall|i: int| 0 <= i < r.len() ==> 0 <= #[trigger] r[i] < r.len()
+    &&& forall|i: int, j: int| 0 <= i < j < r.len() ==> r[i] != r[j]
+    &&& p =~= r.map_values(|i: int| s[i])
     }
-
-    proof fn comb_props(n: nat, k: nat)
-        requires 0 <= k <= n,
-        ensures comb(n, k) == comb(n, sub(n, k)),
+ 
+    fn test1(nums: &mut Vec<u32>)
+        ensures
+            sorted_between(nums@, 0, nums@.len() as int),
+            exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
     {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    fn main()
-    {
-    // TODO: Remove this comment and implement the function body
-    }
-
-    fn test_comb() {
     // TODO: Remove this comment and implement the function body
     }
 }

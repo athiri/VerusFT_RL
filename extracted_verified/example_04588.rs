@@ -1,28 +1,40 @@
 use vstd::prelude::*;
-
 fn main() {}
 
 verus! {
 
-fn insert_before_each(arr: &Vec<i32>, elem: i32) -> (result: Vec<i32>)
+fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
+    requires
+        list@.len() > 0,
+        0 < n < list@.len(),
     ensures
-        result@.len() == (2 * arr.len()),
-        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k] == elem,
-        forall|k: int| 0 <= k < arr.len() ==> #[trigger] result[2 * k + 1] == arr[k],
+        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
 {
-    let mut result = Vec::new();
+    let mut new_list = Vec::new();
     
-    for i in 0..arr.len()
+    // First, append elements from position n to end
+    let mut i = n;
+    while i < list.len()
         invariant
-            result@.len() == 2 * i,
-            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k] == elem,
-            forall|k: int| 0 <= k < i ==> #[trigger] result[2 * k + 1] == arr[k],
+            n <= i <= list.len(),
+            new_list@ == list@.subrange(n as int, i as int),
     {
-        result.push(elem);
-        result.push(arr[i]);
+        new_list.push(list[i]);
+        i += 1;
     }
     
-    result
+    // Then, append elements from start to position n
+    let mut j = 0;
+    while j < n
+        invariant
+            0 <= j <= n,
+            new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, j as int)),
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
 
 } // verus!

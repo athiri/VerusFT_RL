@@ -1,44 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn positive(s: Seq<int>) -> bool {
-    forall|u: int| 0 <= u < s.len() ==> s[u] >= 0
-}
-
-spec fn is_even(i: int) -> bool
-    recommends i >= 0
+//IMPL extract_rear_chars
+fn extract_rear_chars(s: &Vec<Vec<char>>) -> (result: Vec<char>)
+    // pre-conditions-start
+    requires
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+    // post-conditions-end
 {
-    i % 2 == 0
-}
-
-spec fn count_even(s: Seq<int>) -> int
-    recommends positive(s)
-    decreases s.len()
-{
-    if s.len() == 0 {
-        0 as int
-    } else {
-        (if s[s.len() - 1] % 2 == 0 { 1 as int } else { 0 as int }) + count_even(s.subrange(0, s.len() - 1))
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 2): added proper invariants to establish preconditions for array access */
+    while i < s.len()
+        invariant
+            i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+            forall|j: int| 0 <= j < s.len() ==> s[j].len() > 0,
+        decreases s.len() - i,
+    {
+        /* code modified by LLM (iteration 2): fixed type mismatch by removing unnecessary type casting in assertions */
+        assert(0 <= i < s.len());
+        assert(s[i].len() > 0);
+        assert(s[i].len() - 1 < s[i].len());
+        
+        let last_char = s[i][s[i].len() - 1];
+        result.push(last_char);
+        i += 1;
     }
+    
+    result
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+} // verus!
 
-// <vc-spec>
-fn mcount_even(v: &Vec<i32>) -> (n: i32)
-    requires positive(v@.map(|i: int, x: i32| x as int))
-    ensures n as int == count_even(v@.map(|i: int, x: i32| x as int))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

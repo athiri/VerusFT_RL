@@ -1,19 +1,35 @@
 use vstd::prelude::*;
 
-fn main() {}
 verus! {
 
-fn append(v: &Vec<u64>, elem: u64) -> (c: Vec<u64>)
+fn max_element(a: &Vec<i32>) -> (max: i32)
+    // pre-conditions-start
     requires
-        v.len() <= 100,
+        a.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        c@.len() == v@.len() + 1,
-        forall|i: int| (0 <= i && i < v.len()) ==> c[i] == v[i],
-        c@.last() == elem,
+        forall|i: int| 0 <= i < a.len() ==> a[i] <= max,
+        exists|i: int| 0 <= i < a.len() && a[i] == max,
+    // post-conditions-end
 {
-    let mut result = v.clone();
-    result.push(elem);
-    result
+    let mut max = a[0];
+    let mut idx = 0;
+    
+    while idx < a.len()
+        invariant
+            0 <= idx <= a.len(),
+            forall|i: int| 0 <= i < idx ==> a[i] <= max,
+            exists|i: int| 0 <= i < idx && a[i] == max,
+    {
+        if a[idx] > max {
+            max = a[idx];
+        }
+        idx += 1;
+    }
+    
+    max
 }
 
-} // verus!
+}
+fn main() {}

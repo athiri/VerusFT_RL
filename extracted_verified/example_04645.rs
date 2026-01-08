@@ -4,26 +4,33 @@ fn main() {}
 
 verus! {
 
-fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
     requires
-        arr.len() > 0,
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
     ensures
-        is_sorted == (forall|i: int, j: int| 0 <= i < j < arr.len() ==> (arr[i] <= arr[j])),
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-    let mut idx = 0;
-    /* code modified by LLM (iteration 1): Added decreases clause to fix verification error */
-    while idx < arr.len() - 1
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
         invariant
-            0 <= idx <= arr.len() - 1,
-            forall|i: int, j: int| 0 <= i < j <= idx ==> arr[i] <= arr[j],
-        decreases arr.len() - 1 - idx
+            result.len() == i,
+            i <= arr1.len(),
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
     {
-        if arr[idx] > arr[idx + 1] {
-            return false;
-        }
-        idx += 1;
+        let quotient = arr1[i] / arr2[i];
+        result.push(quotient);
+        i += 1;
     }
-    true
+    
+    result
 }
 
 } // verus!

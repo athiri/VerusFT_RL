@@ -1,52 +1,97 @@
+use vstd::arithmetic::mul::*;
+use vstd::math::abs;
 use vstd::prelude::*;
 
 verus! {
 
-spec fn is_space_comma_dot_spec(c: char) -> (result: bool) {
-    (c == ' ') || (c == ',') || (c == '.')
-}
-// pure-end
-
-spec fn inner_expr_replace_with_colon(str1: &Vec<char>, k: int) -> (result: char) {
-    if is_space_comma_dot_spec(str1[k]) {
-        ':'
-    } else {
-        str1[k]
-    }
-}
-// pure-end
-
-fn replace_with_colon(str1: &Vec<char>) -> (result: Vec<char>)
+proof fn lemma_cube_increases_helper(i: int)
     // post-conditions-start
     ensures
-        str1@.len() == result@.len(),
-        forall|k: int|
-            0 <= k < result.len() ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),
+        i >= 0 ==> (i * i * i) <= (i + 1) * (i + 1) * (i + 1),
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < str1.len()
-        invariant
-            0 <= i <= str1.len(),
-            result.len() == i,
-            forall|k: int| 0 <= k < i ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),
-        decreases str1.len() - i,
-    {
-        let c = str1[i];
-        if c == ' ' || c == ',' || c == '.' {
-            result.push(':');
-        } else {
-            result.push(c);
-        }
-        i += 1;
+    // impl-start
+    broadcast use group_mul_properties;
+
+    if (i > 0) {
+        assert((i + 1) * (i + 1) * (i + 1) == i * i * i + 3 * i * i + 3 * i + 1); // assert-line
+        assert(i * i * i + 3 * i * i + 3 * i + 1 > i * i * i); // assert-line
     }
-    
-    result
+    // impl-end
+}
+// pure-end
+
+proof fn lemma_cube_increases_params(i: int, j: int)
+    // post-conditions-start
+    ensures
+        0 <= i <= j ==> (i * i * i) <= (j * j * j),
+    // post-conditions-end
+    decreases j - i,
+{
+    // impl-start
+    if (i == j) {
+    }
+     else if (i < j) {
+        lemma_cube_increases_params(i, j - 1);
+        lemma_cube_increases_helper(j - 1);
+
+    }
+    // impl-end
+}
+// pure-end
+
+proof fn lemma_cube_increases()
+    // post-conditions-start
+    ensures
+        forall|i: int, j: int| 0 <= i <= j ==> #[trigger] (i * i * i) <= #[trigger] (j * j * j),
+    // post-conditions-end
+{
+    // impl-start
+    assert forall|i: int, j: int|
+        0 <= i <= j ==> #[trigger] (i * i * i) <= #[trigger] (j * j * j) by {
+        lemma_cube_increases_params(i, j);
+    }
+    // impl-end
+}
+// pure-end
+
+fn checked_cube(x: i32) -> (ret: Option<i32>)
+    // pre-conditions-start
+    requires
+        x >= 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret.is_some() ==> ret.unwrap() == x * x * x,
+        ret.is_none() ==> x * x * x > i32::MAX,
+    // post-conditions-end
+{
+    return None;  // TODO: Remove this line and implement the function body
 }
 
-} // verus!
+#[verifier::external_fn_specification]
+fn ex_abs(x: i32) -> (ret: i32)
+    requires
+        x != i32::MIN,
 
+    ensures
+        ret == abs(x as int),
+{
+    return 0;  // TODO: Remove this line and implement the function body
+}
+
+fn is_cube(x: i32) -> (ret: bool)
+    // pre-conditions-start
+    requires
+        x != i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret <==> exists|i: int| 0 <= i && abs(x as int) == #[trigger] (i * i * i),
+    // post-conditions-end
+{
+    return false;  // TODO: Remove this line and implement the function body
+}
+
+}
 fn main() {}

@@ -1,38 +1,52 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-spec fn char_swapcase(c: char) -> char;
-
-spec fn string_swapcase(s: Seq<char>) -> Seq<char>
-    decreases s.len()
-{
-    if s.len() == 0 {
-        Seq::<char>::empty()
-    } else {
-        seq![char_swapcase(s[0])] + string_swapcase(s.skip(1))
+    spec fn sorted_between(a: Seq<u32>, from: int, to: int) -> bool {
+        forall |i: int, j:int|  from <= i < j < to ==> a[i] <= a[j]
+    }
+ 
+ 
+    spec fn is_reorder_of<T>(r: Seq<int>, p: Seq<T>, s: Seq<T>) -> bool {
+    &&& r.len() == s.len()
+    &&& forall|i: int| 0 <= i < r.len() ==> 0 <= #[trigger] r[i] < r.len()
+    &&& forall|i: int, j: int| 0 <= i < j < r.len() ==> r[i] != r[j]
+    &&& p =~= r.map_values(|i: int| s[i])
+    }
+ 
+    fn test1(nums: &mut Vec<u32>)
+        ensures
+            sorted_between(nums@, 0, nums@.len() as int),
+            exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+    {
+        let n = nums.len();
+        for i in 0..n
+            invariant
+                sorted_between(nums@, 0, i as int),
+                forall|j: int, k: int| 0 <= j < i && i <= k < nums.len() ==> nums@[j] <= nums@[k],
+                nums@.len() == n,
+                exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+        {
+            let mut min_idx = i;
+            for j in (i + 1)..n
+                invariant
+                    i <= min_idx < n,
+                    forall|k: int| i <= k < j ==> nums@[min_idx as int] <= nums@[k],
+                    nums@.len() == n,
+                    sorted_between(nums@, 0, i as int),
+                    forall|k: int, l: int| 0 <= k < i && i <= l < nums.len() ==> nums@[k] <= nums@[l],
+                    exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+            {
+                if nums[j] < nums[min_idx] {
+                    min_idx = j;
+                }
+            }
+            
+            if min_idx != i {
+                let temp = nums[i];
+                nums.set(i, nums[min_idx]);
+                nums.set(min_idx, temp);
+            }
+        }
     }
 }
-
-fn swapcase(a: Vec<String>) -> (result: Vec<String>)
-    ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i < a.len() ==> result[i]@.len() == a[i]@.len(),
-        forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a[i]@.len() ==> 
-            #[trigger] result[i]@[j] == char_swapcase(a[i]@[j])
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
-fn main() {}

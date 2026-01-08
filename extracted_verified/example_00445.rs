@@ -1,30 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus!{
-// </vc-preamble>
+verus! {
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
-
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-
-	ensures
-		sum[0] == 2 * N,
-// </vc-spec>
-// <vc-code>
+//IMPL strlen
+fn strlen(string: &Vec<char>) -> (length: usize)
+    // post-conditions-start
+    ensures
+        length == string.len(),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    string.len()
 }
-// </vc-code>
 
 }
 fn main() {}

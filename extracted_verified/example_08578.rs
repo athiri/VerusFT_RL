@@ -1,33 +1,84 @@
-use vstd::prelude::*;
+#![feature(rustc_private)]
+#[macro_use]
+mod common;
+use common::*;
 
-verus! {
-
-fn cum_sum(a: &Vec<int>) -> (res: Vec<int>)
-    ensures
-        res.len() == a.len(),
-        a.len() > 0 ==> res[0] == a[0],
-        forall|i: int| 1 <= i < a.len() ==> res[i] == res[i-1] + a[i],
-{
-    let mut res: Vec<int> = Vec::new();
-    
-    for i in 0..a.len()
-        invariant
-            res.len() == i,
-            /* code modified by LLM (iteration 1): Added trigger annotation to fix quantifier trigger inference */
-            forall|j: int| 0 <= j < i ==> #[trigger] res[j] == if j == 0 { a[0] } else { res[j-1] + a[j] },
-    {
-        if i == 0 {
-            res.push(a[i]);
-        } else {
-            /* code modified by LLM (iteration 1): Fixed borrowing issue by accessing previous element before mutable push */
-            let prev_val = res[i-1];
-            res.push(prev_val + a[i]);
+// Adapted from auto_spec tests in syntax_attr.rs
+test_verify_one_file! {
+    #[test] test_auto_spec verus_code! {
+        #[vstd::contrib::auto_spec]
+        pub fn f(x: u32, y: u32) -> u32
+            requires
+                x < 100,
+                y < 100,
+        {
+            proof {
+                assert(true);
+            }
+            x + y
         }
-    }
-    
-    res
+
+        #[vstd::contrib::auto_spec]
+        pub fn f2(x: u32) -> u32
+            requires
+                x < 100,
+        {
+            f(x, 1)
+        }
+
+        struct S;
+
+        impl S {
+            #[vstd::contrib::auto_spec]
+            fn foo(&self, x: u32) -> u32 {
+                x / 2
+            }
+        }
+
+        proof fn lemma_f(x: u32, y: u32)
+            requires
+                x < 100,
+            ensures
+                y == 1 ==> f(x, y) == f2(x),
+                f(x, y) == f(y, x),
+                f2(x) == f2(x),
+                f(x, y) == (x + y) as u32,
+                f2(x) == x + 1,
+        {}
+
+        mod inner {
+            use super::*;
+            proof fn lemma_f(x: u32)
+                requires
+                    x < 100,
+                ensures
+                    f2(x) == (x + 1),
+            {}
+        }
+    } => Ok(())
 }
 
+test_verify_one_file_with_options! {
+    #[test] test_auto_spec_missing_use  ["no-auto-import-verus_builtin"] => verus_code! {
+        // fails if we don't say "use vstd::contrib::auto_spec;"
+        #[auto_spec]
+        fn foo(x: u32) -> u32 {
+            x / 2
+        }
+    } => Err(e) => assert_vir_error_msg(e, "cannot find attribute `auto_spec` in this scope")
 }
 
-fn main() {}
+test_verify_one_file! {
+    #[test] test_auto_spec_unsupported_body verus_code! {
+        use vstd::contrib::auto_spec;
+        #[auto_spec]
+        fn f(x: &mut u32, y: u32) -> u32
+            requires
+                x < 100,
+                y < 100,
+        {
+            *x = *x + y;
+            *x
+        }
+    } => Err(e) => assert_vir_error_msg(e, "The verifier does not yet support the following Rust feature")
+}

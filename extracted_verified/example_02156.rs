@@ -1,57 +1,75 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, m: int, k: int, a: int, b: int) -> bool {
-  n > 0 && m > 0 && k > 0 && 1 <= a <= n * m * k && 1 <= b <= n * m * k && a != b
+spec fn is_lower_case(c: u8) -> bool {
+    c >= 97 && c <= 122
 }
 
-spec fn get_entrance(apt: int, m: int, k: int) -> int
-  recommends apt >= 1, m > 0 && k > 0
+spec fn is_upper_case(c: u8) -> bool {
+    c >= 65 && c <= 90
+}
+
+spec fn count_uppercase_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-  (apt - 1) / (m * k)
+    if seq.len() == 0 {
+        0
+    } else {
+        count_uppercase_recursively(seq.drop_last()) + if is_upper_case(seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
 
-spec fn get_floor(apt: int, m: int, k: int) -> int
-  recommends apt >= 1, m > 0 && k > 0
+fn count_uppercase(text: &[u8]) -> (count: u64)
+    ensures
+        0 <= count <= text.len(),
+        count_uppercase_recursively(text@) == count,
 {
-  ((apt - 1) - get_entrance(apt, m, k) * m * k) / k
+    let mut count = 0u64;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count == count_uppercase_recursively(text@.subrange(0, i as int)),
+    {
+        if is_upper_case(text[i]) {
+            count = count + 1;
+        }
+        
+        proof {
+            assert(text@.subrange(0, i as int + 1) == text@.subrange(0, i as int).push(text@[i as int]));
+            lemma_count_recursive_push(text@.subrange(0, i as int), text@[i as int]);
+        }
+        
+        i = i + 1;
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    count
 }
 
-spec fn min_travel_time(floors: int) -> int
-  recommends floors >= 0
+proof fn lemma_count_recursive_push(seq: Seq<u8>, elem: u8)
+    ensures count_uppercase_recursively(seq.push(elem)) == count_uppercase_recursively(seq) + if is_upper_case(elem) { 1 as int } else { 0 as int }
 {
-  let stair_time = 5 * floors;
-  let elevator_time = 10 + floors;
-  if stair_time < elevator_time { stair_time } else { elevator_time }
+    if seq.len() == 0 {
+        assert(seq.push(elem).drop_last() == seq);
+        assert(seq.push(elem).last() == elem);
+    } else {
+        assert(seq.push(elem).drop_last() == seq.drop_last().push(elem));
+        assert(seq.push(elem).last() == elem);
+        lemma_count_recursive_push(seq.drop_last(), elem);
+    }
 }
 
-spec fn min_entrance_distance(entrance_a: int, entrance_b: int, n: int) -> int
-  recommends n > 0
-{
-  let clockwise = (entrance_b - entrance_a + n) % n;
-  let counterclockwise = (entrance_a - entrance_b + n) % n;
-  if clockwise <= counterclockwise { clockwise } else { counterclockwise }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, m: i8, k: i8, a: i8, b: i8) -> (result: i8)
-  requires valid_input(n as int, m as int, k as int, a as int, b as int)
-  ensures result as int >= 0
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

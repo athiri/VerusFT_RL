@@ -1,27 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    spec fn power(n: nat) -> nat
+        decreases n
+    {
+        if n == 0 { 1 } else { 2 * power((n - 1) as nat) }
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn diag(matrix: Vec<f32>, n: usize) -> (result: Vec<f32>)
-    requires 
-        matrix.len() == n * n,
-        n > 0,
-    ensures
-        result.len() == n,
-        forall|i: int| 0 <= i < n as int ==> result@[i] == matrix@[i * n as int + i],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn compute_power(n: u32) -> (y: u32)
+        requires n <= 30,
+        ensures y == power(n as nat),
+    {
+        let mut result = 1u32;
+        let mut i = 0u32;
+        
+        while i < n
+            invariant 
+                i <= n,
+                result == power(i as nat),
+        {
+            result = result * 2;
+            i = i + 1;
+        }
+        
+        result
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

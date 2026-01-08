@@ -1,39 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, a: int) -> bool {
-    1 <= n <= 10000 && 0 <= a <= 1000
-}
 
-spec fn can_pay_exactly(n: int, a: int) -> bool {
-    n % 500 <= a
-}
-
-spec fn valid_output(result: String) -> bool {
-    result@ == "Yes"@ || result@ == "No"@
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: i8) -> (result: String)
-    requires 
-        valid_input(n as int, a as int)
-    ensures 
-        valid_output(result) &&
-        ((result@ == "Yes"@) <==> can_pay_exactly(n as int, a as int))
-// </vc-spec>
-// <vc-code>
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
+    ensures
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
 {
-    assume(false);
-    unreached()
+    let mut new_list = Vec::new();
+    
+    // Copy elements before index k-1 (0-indexed)
+    let mut i = 0;
+    while i < k - 1
+        invariant
+            i <= k - 1,
+            new_list@.len() == i,
+            new_list@ == list@.subrange(0, i as int),
+    {
+        new_list.push(list[i]);
+        i += 1;
+    }
+    
+    // Copy elements from index k onwards (0-indexed), skipping the k-th element (1-indexed)
+    let mut j = k;
+    while j < list.len()
+        invariant
+            k <= j <= list.len(),
+            new_list@.len() == (k - 1) + (j - k),
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, j as int)
+            ),
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

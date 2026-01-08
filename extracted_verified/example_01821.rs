@@ -1,48 +1,71 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(positions: Seq<(int, int)>) -> bool {
-    positions.len() >= 1 && positions.len() <= 200000 &&
-    (forall|i: int| 0 <= i < positions.len() ==> 
-        1 <= #[trigger] positions[i].0 <= 1000 && 1 <= positions[i].1 <= 1000) &&
-    (forall|i: int, j: int| 0 <= i < j < positions.len() ==> 
-        #[trigger] positions[i] != #[trigger] positions[j])
-}
 
-spec fn count_attacking_pairs(positions: Seq<(int, int)>) -> int
-    recommends valid_input(positions)
-{
-    /* Count pairs (i,j) where i < j and bishops at positions[i] and positions[j] attack each other */
-    positions.len() * (positions.len() - 1) / 2 /* placeholder - actual implementation would count diagonal pairs */
-}
-
-spec fn valid_output(positions: Seq<(int, int)>, result: int) -> bool
-    recommends valid_input(positions)
-{
-    result == count_attacking_pairs(positions) && result >= 0
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve_bishops(positions: Vec<(i8, i8)>) -> (result: u64)
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
     requires
-        valid_input(positions@.map(|i, p: (i8, i8)| (p.0 as int, p.1 as int))),
+        l == vec.len(),
     ensures
-        valid_output(positions@.map(|i, p: (i8, i8)| (p.0 as int, p.1 as int)), result as int),
-        result >= 0,
-// </vc-spec>
-// <vc-code>
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    assume(false);
-    0
-}
-// </vc-code>
-
-
+    assert forall|k: int| 0 <= k < vec.len() implies #[trigger] vec[k] == vec.push(i)[k] by {
+        assert(vec.push(i)[k] == vec[k]);
+    }
+    assert(vec.push(i).index(l as int) == i);
 }
 
-fn main() {}
+fn contains(str: &[u8], key: u8) -> (result: bool)
+    ensures
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
+{
+    let mut j = 0;
+    while j < str.len()
+        invariant
+            forall|i: int| 0 <= i < j ==> str[i] != key,
+    {
+        if str[j] == key {
+            return true;
+        }
+        j += 1;
+    }
+    false
+}
+
+fn remove_chars(str1: &[u8], str2: &[u8]) -> (result: Vec<u8>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (str1@.contains(#[trigger] result[i]) && !str2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < str1.len() ==> (str2@.contains(#[trigger] str1[i]) || result@.contains(
+                #[trigger] str1[i],
+            )),
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < str1.len()
+        invariant
+            forall|j: int|
+                0 <= j < result.len() ==> (str1@.contains(#[trigger] result[j]) && !str2@.contains(
+                    #[trigger] result[j],
+                )),
+            forall|j: int|
+                0 <= j < i ==> (str2@.contains(#[trigger] str1[j]) || result@.contains(
+                    #[trigger] str1[j],
+                )),
+    {
+        let ch = str1[i];
+        if !contains(str2, ch) {
+            result.push(ch);
+        }
+        i += 1;
+    }
+    result
+}
+
+} // verus!

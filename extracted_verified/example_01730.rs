@@ -1,57 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_binary_string(s: Seq<char>) -> bool {
-    s.len() > 0 && 
-    (forall|i: int| 0 <= i < s.len() ==> s[i] == '0' || s[i] == '1') &&
-    (s == seq!['0'] || s[0] == '1')
+fn main() {
 }
 
-spec fn count_zeros(s: Seq<char>) -> int
-    decreases s.len()
+verus! {
+
+spec fn sum_negative_to(seq: Seq<i64>) -> int
+    decreases seq.len(),
 {
-    if s.len() == 0 { 
-        0int
-    } else { 
-        (if s[0] == '0' { 1int } else { 0int }) + count_zeros(s.subrange(1, s.len() as int))
+    if seq.len() == 0 {
+        0
+    } else {
+        sum_negative_to(seq.drop_last()) + if (seq.last() < 0) {
+            seq.last() as int
+        } else {
+            0 as int
+        }
     }
 }
 
-spec fn create_zero_seq(n: nat) -> Seq<char> {
-    Seq::new(n, |i: int| '0')
-}
-
-spec fn is_minimal_form(s: Seq<char>, result: Seq<char>) -> bool {
-    (s == seq!['0'] ==> result == seq!['0'])
-    &&
-    (s != seq!['0'] ==> result == seq!['1'] + create_zero_seq(count_zeros(s) as nat))
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: u8, s: Vec<char>) -> (result: Vec<char>)
-    requires 
-        n >= 1 && n <= 100,
-        s.len() == n as usize,
-        valid_binary_string(s@),
-    ensures 
-        valid_binary_string(result@),
-        is_minimal_form(s@, result@),
-// </vc-spec>
-// <vc-code>
+fn sum_negatives(arr: &Vec<i64>) -> (sum_neg: i128)
+    ensures
+        sum_negative_to(arr@) == sum_neg,
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    let mut sum: i128 = 0;
+    let mut i: usize = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            sum == sum_negative_to(arr@.take(i as int)),
+    {
+        if arr[i] < 0 {
+            sum = sum + arr[i] as i128;
+        }
+        i = i + 1;
+    }
+    
+    assert(arr@.take(arr@.len() as int) == arr@);
+    sum
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,42 +1,50 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-fn binary_search(a: &[int], circle: int) -> (n: usize)
-    requires
-        forall|i: int| 1 <= i < a.len() ==> a[i-1] < #[trigger] a[i],
-        forall|i: int, j: int| 0 <= i < j < a.len() ==> #[trigger] a[i] < #[trigger] a[j],
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    // post-conditions-start
     ensures
-        n <= a.len(),
-        forall|i: int| 0 <= i < n ==> #[trigger] a[i] < circle,
-        forall|i: int| n <= i < a.len() ==> circle <= #[trigger] a[i],
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+    // post-conditions-end
 {
-    assume(false);
-    0
+    for i in 0..arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
+    }
+    false
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn tangent(r: &[int], x: &[int]) -> (found: bool)
-    requires
-        forall|i: int| 1 <= i < x.len() ==> x[i-1] < #[trigger] x[i],
-        forall|i: int, j: int| 0 <= i < j < x.len() ==> #[trigger] x[i] < #[trigger] x[j],
+fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+    // post-conditions-start
     ensures
-        !found ==> forall|i: int, j: int| 
-            0 <= i < r.len() && 0 <= j < x.len() ==> #[trigger] r[i] != #[trigger] x[j],
-        found ==> exists|i: int, j: int|
-            0 <= i < r.len() && 0 <= j < x.len() && #[trigger] r[i] == #[trigger] x[j],
-// </vc-spec>
-// <vc-code>
+        forall|i: int|
+            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
+                #[trigger] shared[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result: Vec<i32> = Vec::new();
+    
+    for i in 0..list1.len()
+        invariant
+            forall|k: int| 0 <= k < result.len() ==> (list1@.contains(result[k]) && list2@.contains(result[k])),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+    {
+        let elem = list1[i];
+        if contains(list2, elem) && !contains(&result, elem) {
+            result.push(elem);
+        }
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

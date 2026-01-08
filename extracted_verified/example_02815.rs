@@ -2,40 +2,43 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)
-    // pre-conditions-start
-    requires
-        0 <= pos < a.len(),
-    // pre-conditions-end
+spec fn seq_max(a: Seq<i32>) -> (ret: i32)
+    decreases a.len(),
+{
+    if a.len() == 0 {
+        i32::MIN
+    } else if a.last() > seq_max(a.drop_last()) {
+        a.last()
+    } else {
+        seq_max(a.drop_last())
+    }
+}
+// pure-end
+
+fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
     // post-conditions-start
     ensures
-        result.len() == a.len() - 1,
-        forall|i: int| 0 <= i < pos ==> result[i] == a[i],
-        forall|i: int| pos <= i < result.len() ==> result[i] == a[i + 1],
+        result.len() == numbers.len(),
+        forall|i: int| 0 <= i < numbers.len() ==> result[i] == seq_max(numbers@.take(i + 1)),
     // post-conditions-end
 {
     let mut result = Vec::new();
+    let mut current_max = i32::MIN;
     
-    let mut i = 0;
-    while i < a.len()
+    for i in 0..numbers.len()
         invariant
-            i <= a.len(),
-            /* code modified by LLM (iteration 1): Fixed type mismatch by casting usize to int in conditional expression */
-            result.len() == if i <= pos { i as int } else { i as int - 1 },
-            forall|j: int| 0 <= j < result.len() && j < pos ==> result[j] == a[j],
-            forall|j: int| pos <= j < result.len() ==> result[j] == a[j + 1],
-        /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
-        decreases a.len() - i
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == seq_max(numbers@.take(j + 1)),
+            current_max == seq_max(numbers@.take(i as int)),
     {
-        if i != pos {
-            result.push(a[i]);
+        if numbers[i] > current_max {
+            current_max = numbers[i];
         }
-        i += 1;
+        result.push(current_max);
     }
     
     result
 }
 
-fn main() {}
 }
+fn main() {}

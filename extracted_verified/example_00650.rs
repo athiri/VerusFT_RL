@@ -1,27 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn convert_map_key(inputs: Map<nat, bool>, f: spec_fn(nat) -> nat) -> (r: Map<nat, bool>)
+fn smallest_num(nums: &Vec<i32>) -> (min: i32)
+    // pre-conditions-start
     requires
-        forall|n1: nat, n2: nat| 
-            #[trigger] f(n1) != #[trigger] f(n2) ==> n1 != n2,
+        nums.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        forall|k: nat| inputs.contains_key(k) <==> r.contains_key(f(k)),
-        forall|k: nat| inputs.contains_key(k) ==> r[f(k)] == inputs[k],
-// </vc-spec>
-// <vc-code>
+        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
+        exists|i: int| 0 <= i < nums.len() && min == nums[i],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut min = nums[0];
+    let mut j = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for termination proof */
+    while j < nums.len()
+        invariant
+            0 < j <= nums.len(),
+            forall|i: int| 0 <= i < j ==> min <= nums[i],
+            exists|i: int| 0 <= i < j && min == nums[i],
+        decreases nums.len() - j
+    {
+        if nums[j] < min {
+            min = nums[j];
+        }
+        j += 1;
+    }
+    
+    min
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

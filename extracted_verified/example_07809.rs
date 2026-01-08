@@ -1,43 +1,58 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Helper lemma for multiplication and division properties
-proof fn mul_div_lemma(x: int)
-    ensures 
-        (x * 3) % 3 == 0,
-        (x * 3) / 3 == x,
-        ((x * 3) / 3) * 3 == x * 3
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn longest_increasing_streak(nums: &Vec<i32>) -> (result: usize)
+    ensures
+        (nums.len() == 0 ==> result == 0),
+        result <= nums.len(),
+// </vc-spec>
+// <vc-code>
 {
-    // These are fundamental properties of integer arithmetic that Verus can prove automatically
-    // No explicit proof steps needed as these follow from the definition of division and modulo
-}
-
-spec fn triple_precond(x: int) -> bool {
-    true
-}
-
-spec fn triple_postcond(x: int, result: int) -> bool {
-    result / 3 == x && (result / 3) * 3 == result
-}
-
-fn triple(x: i32) -> (result: i32)
-    requires 
-        triple_precond(x as int),
-        -700000000 <= x <= 700000000
-    ensures 
-        triple_postcond(x as int, result as int)
-{
-    proof {
-        mul_div_lemma(x as int);
+    /* code modified by LLM (iteration 3): fixed arithmetic overflow and loop invariant maintenance */
+    if nums.len() == 0 {
+        return 0;
     }
-    x * 3
+    
+    let mut max_streak = 1;
+    let mut current_streak = 1;
+    let mut i = 1;
+    
+    while i < nums.len()
+        invariant
+            1 <= i <= nums.len(),
+            current_streak >= 1,
+            max_streak >= 1,
+            max_streak <= nums.len(),
+            current_streak <= i,
+        decreases nums.len() - i
+    {
+        if nums[i] > nums[i - 1] {
+            proof {
+                assert(current_streak < nums.len());
+            }
+            current_streak += 1;
+        } else {
+            current_streak = 1;
+        }
+        
+        if current_streak > max_streak {
+            max_streak = current_streak;
+        }
+        
+        i += 1;
+    }
+    
+    max_streak
 }
+// </vc-code>
 
-fn main() {
-    let result = triple(42);
-    /* code modified by LLM (iteration 1): removed println! as it's not supported in Verus */
-    // println!("Triple of 42 is: {}", result);
 }
-
-} // verus!
+fn main() {}

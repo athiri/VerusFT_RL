@@ -1,34 +1,53 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, m: int) -> bool {
-    n > 0 && m > 0
-}
-
-spec fn compute_happiness_sum(n: int, m: int) -> int
-    recommends n > 0 && m > 0
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    0
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            idx + i <= main.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: int, m: int) -> (output: int)
-    requires n > 0 && m > 0
-// </vc-spec>
-// <vc-code>
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    assume(false);
-    unreached()
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < idx ==> main@.subrange(k, k + sub@.len()) !=~= sub@,
+    {
+        if sub_array_at_index(main, sub, idx) {
+            return true;
+        }
+        idx += 1;
+    }
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

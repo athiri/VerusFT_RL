@@ -1,60 +1,61 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(lines: Seq<Seq<char>>) -> bool {
-    lines.len() >= 2 && lines[0].len() > 0 && lines[1].len() > 0
-}
-
-spec fn is_symmetric(first_row: Seq<char>, second_row: Seq<char>) -> bool {
-    reverse_seq(first_row) == second_row
-}
-
-spec fn split_lines(s: Seq<char>) -> Seq<Seq<char>> 
-    decreases s.len()
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    if s.len() == 0 {
-        seq![]
-    } else if s[0] == '\n' {
-        seq![seq![]] + split_lines(s.subrange(1, s.len() as int))
-    } else {
-        let rest = split_lines(s.subrange(1, s.len() as int));
-        if rest.len() == 0 {
-            seq![seq![s[0]]]
-        } else {
-            seq![rest[0].push(s[0])] + rest.subrange(1, rest.len() as int)
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases arr.len() - i,
+    {
+        if arr[i] == key {
+            return true;
         }
+        i += 1;
     }
+    false
 }
 
-spec fn reverse_seq(s: Seq<char>) -> Seq<char>
-    decreases s.len()
+fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
 {
-    if s.len() == 0 {
-        seq![]
-    } else {
-        reverse_seq(s.subrange(1, s.len() as int)).push(s[0])
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (arr1@.contains(#[trigger] result[k]) && arr2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases arr1.len() - i,
+    {
+        let element = arr1[i];
+        
+        // Check if element is in arr2 and not already in result
+        if contains(arr2, element) && !contains(&result, element) {
+            result.push(element);
+        }
+        
+        i += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(stdin_input: &str) -> (result: String)
-    requires stdin_input@.len() > 0
-    ensures result@ == "YES\n"@ || result@ == "NO\n"@
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    "NO\n".to_string()
-}
-// </vc-code>
-
-
+    
+    result
 }
 
-fn main() {}
+} // verus!

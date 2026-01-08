@@ -1,26 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn contains_consecutive_numbers(a: &Vec<i32>) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn has_only_one_distinct_element(a: &[i32]) -> (result: bool)
     ensures
-        result <==> exists|i: int| {
-            &&& 0 <= i < a.len() - 1
-            &&& #[trigger] a[i] + 1 == a[(i + 1) as int]
-        },
-// </vc-spec>
-// <vc-code>
+        result ==> forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() ==> a[i] == a[j],
+        !result ==> exists|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() && a[i] != a[j],
 {
-    assume(false);
-    unreached()
+    if a.len() <= 1 {
+        return true;
+    }
+    
+    let first = a[0];
+    for i in 1..a.len()
+        invariant
+            forall|k: int| 0 <= k < i ==> a[k] == first,
+    {
+        if a[i] != first {
+            return false;
+        }
+    }
+    
+    true
 }
-// </vc-code>
 
-}
 fn main() {}
+}

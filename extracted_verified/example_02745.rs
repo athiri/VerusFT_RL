@@ -2,30 +2,45 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn replace(a: &mut Vec<i32>, x: i32, y: i32)
+fn all_prefixes(s: &Vec<u8>) -> (prefixes: Vec<Vec<u8>>)
+    // post-conditions-start
     ensures
-        a.len() == old(a).len(),
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] == x ==> a[k] == y,
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] != x ==> a[k] == old(a)[k],
+        prefixes.len() == s.len(),
+        forall|i: int| #![auto] 0 <= i < s.len() ==> prefixes[i]@ == s@.subrange(0, i + 1),
+    // post-conditions-end
 {
+    /* code modified by LLM (iteration 2): added explicit type annotation to fix compilation error */
+    let mut prefixes: Vec<Vec<u8>> = Vec::new();
     let mut i = 0;
-    while i < a.len()
+    
+    /* code modified by LLM (iteration 2): added decreases clause for termination */
+    while i < s.len()
         invariant
-            0 <= i <= a.len(),
-            a.len() == old(a).len(),
-            forall|k: int| 0 <= k < i && old(a)[k] == x ==> a[k] == y,
-            forall|k: int| 0 <= k < i && old(a)[k] != x ==> a[k] == old(a)[k],
-            forall|k: int| i <= k < a.len() ==> a[k] == old(a)[k],
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases a.len() - i
+            prefixes.len() == i,
+            forall|j: int| #![auto] 0 <= j < i ==> prefixes[j]@ == s@.subrange(0, j + 1),
+        decreases s.len() - i
     {
-        if a[i] == x {
-            a.set(i, y);
+        /* code modified by LLM (iteration 2): added explicit type annotation for consistency */
+        let mut prefix: Vec<u8> = Vec::new();
+        let mut k = 0;
+        
+        /* code modified by LLM (iteration 2): added decreases clause for termination */
+        while k <= i
+            invariant
+                prefix.len() == k,
+                forall|l: int| #![auto] 0 <= l < k ==> prefix[l] == s[l],
+            decreases i + 1 - k
+        {
+            prefix.push(s[k]);
+            k += 1;
         }
-        i = i + 1;
+        
+        prefixes.push(prefix);
+        i += 1;
     }
+    
+    prefixes
 }
 
-fn main() {}
 }
+fn main() {}

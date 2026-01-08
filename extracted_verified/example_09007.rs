@@ -1,39 +1,127 @@
+use vstd::arithmetic::power2::*;
+use vstd::layout::is_power_2;
 use vstd::prelude::*;
+
+use vstd_extra::prelude::*;
+
+use super::*;
 
 verus! {
 
-// Helper function to count occurrences of an element in a sequence
-spec fn count_occurrences(n: i32, lst: Seq<i32>) -> nat {
-    lst.filter(|x: i32| x == n).len()
-}
+#[derive(Debug, Default)]
+pub struct PagingConsts {}
 
-// Precondition (trivially true in this case)  
-spec fn find_majority_element_precond(lst: Seq<i32>) -> bool {
-    true
-}
-
-// Main function to find majority element
-fn find_majority_element(lst: Vec<i32>) -> (result: i32)
-    requires find_majority_element_precond(lst@),
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// Postcondition specification
-spec fn find_majority_element_postcond(lst: Seq<i32>, result: i32) -> bool {
-    let n = lst.len();
-    
-    if result == -1 {
-        // No majority element exists - all elements appear at most n/2 times  
-        forall|x: i32| lst.contains(x) ==> #[trigger] count_occurrences(x, lst) <= n / 2
-    } else {
-        // result is the majority element and appears in the list
-        lst.contains(result) && 
-        count_occurrences(result, lst) > n / 2 && 
-        forall|x: i32| lst.contains(x) ==> (#[trigger] count_occurrences(x, lst) <= n / 2 || x == result)
+impl Clone for PagingConsts {
+    fn clone(&self) -> (res: Self)
+        returns
+            *self,
+    {
+        PagingConsts {  }
     }
 }
 
-fn main() {}
+impl PagingConstsTrait for PagingConsts {
+    // Expansion for BASE_PAGE_SIZE
+    #[verifier::inline]
+    open spec fn BASE_PAGE_SIZE_spec() -> usize {
+        4096
+    }
 
+    proof fn lemma_BASE_PAGE_SIZE_properties()
+        ensures
+            0 < Self::BASE_PAGE_SIZE_spec(),
+            is_power_2(Self::BASE_PAGE_SIZE_spec() as int),
+    {
+        lemma_pow2_is_power2_to64();
+    }
+
+    #[inline(always)]
+    fn BASE_PAGE_SIZE() -> (res: usize)
+        ensures
+            res == Self::BASE_PAGE_SIZE_spec(),
+    {
+        proof {
+            Self::lemma_BASE_PAGE_SIZE_properties();
+        }
+        4096
+    }
+
+    // Expansion for NR_LEVELS
+    #[verifier::inline]
+    open spec fn NR_LEVELS_spec() -> PagingLevel {
+        4
+    }
+
+    #[inline(always)]
+    fn NR_LEVELS() -> (res: PagingLevel)
+        ensures
+            res == Self::NR_LEVELS_spec(),
+    {
+        4
+    }
+
+    // Expansion for ADDRESS_WIDTH
+    #[verifier::inline]
+    open spec fn ADDRESS_WIDTH_spec() -> usize {
+        48
+    }
+
+    #[inline(always)]
+    fn ADDRESS_WIDTH() -> (res: usize)
+        ensures
+            res == Self::ADDRESS_WIDTH_spec(),
+    {
+        48
+    }
+
+    // Expansion for HIGHEST_TRANSLATION_LEVEL
+    #[verifier::inline]
+    open spec fn HIGHEST_TRANSLATION_LEVEL_spec() -> PagingLevel {
+        2
+    }
+
+    #[inline(always)]
+    fn HIGHEST_TRANSLATION_LEVEL() -> (res: PagingLevel)
+        ensures
+            res == Self::HIGHEST_TRANSLATION_LEVEL_spec(),
+    {
+        2
+    }
+
+    #[verifier::inline]
+    open spec fn VA_SIGN_EXT_spec() -> bool {
+        true
+    }
+
+    #[inline(always)]
+    fn VA_SIGN_EXT() -> bool {
+        true
+    }
+
+    // Expansion for PTE_SIZE
+    #[verifier::inline]
+    open spec fn PTE_SIZE_spec() -> usize {
+        8
+    }
+
+    proof fn lemma_PTE_SIZE_properties()
+        ensures
+            0 < Self::PTE_SIZE_spec() <= Self::BASE_PAGE_SIZE(),
+            is_power_2(Self::PTE_SIZE_spec() as int),
+    {
+        lemma_pow2_is_power2_to64();
+    }
+
+    #[inline(always)]
+    fn PTE_SIZE() -> (res: usize)
+        ensures
+            res == Self::PTE_SIZE_spec(),
+    {
+        proof {
+            Self::lemma_PTE_SIZE_properties();
+        }
+        8
+    }
 }
+
+} // verus!

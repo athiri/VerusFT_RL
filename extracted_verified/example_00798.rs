@@ -1,28 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    // Insertion sort.
+    //
+    // Author: Snorri Agnarsson, snorri@hi.is
+    // Translated to Verus
 
-// <vc-helpers>
-// </vc-helpers>
+    spec fn is_sorted(s: Seq<int>) -> bool {
+        forall|p: int, q: int| 0 <= p < q < s.len() ==> s[p] <= s[q]
+    }
 
-// <vc-spec>
-fn firstE(a: &[char]) -> (x: i32)
-    ensures
-        if a@.contains('e') {
-            0 <= x < a@.len() && a@[x as int] == 'e' && 
-            forall|i: int| 0 <= i < x ==> a@[i] != 'e'
-        } else {
-            x == -1
+    fn insertion_sort(s: &Vec<int>) -> (r: Vec<int>)
+        ensures 
+            s@.to_multiset() == r@.to_multiset(),
+            is_sorted(r@),
+    {
+        let mut result = Vec::new();
+        
+        for i in 0..s.len()
+            invariant
+                result@.to_multiset() == s@.subrange(0, i as int).to_multiset(),
+                is_sorted(result@),
+        {
+            let val = s[i];
+            let mut j = 0;
+            
+            // Find insertion position
+            while j < result.len() && result[j] <= val
+                invariant
+                    j <= result.len(),
+                    forall|k: int| 0 <= k < j ==> result@[k] <= val,
+            {
+                j += 1;
+            }
+            
+            // Insert val at position j
+            result.insert(j, val);
         }
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+        
+        result
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

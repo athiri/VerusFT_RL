@@ -1,57 +1,30 @@
 use vstd::prelude::*;
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
 
 verus! {
 
-fn reverse_to_k(list: &Vec<i32>, n: usize) -> (reversed_list: Vec<i32>)
-    requires
-        list@.len() > 0,
-        0 < n < list@.len(),
+#[verifier::loop_isolation(false)]
+fn has_only_one_distinct_element(a: &[i32]) -> (result: bool)
     ensures
-        reversed_list@ == list@.subrange(0, n as int).reverse().add(
-            list@.subrange(n as int, list.len() as int),
-        ),
+        result ==> forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() ==> a[i] == a[j],
+        !result ==> exists|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() && a[i] != a[j],
 {
-    let mut result = Vec::new();
-    
-    // Add the first n elements in reverse order
-    let mut i = n;
-    /* code modified by LLM (iteration 2): fixed invariant and added bounds check */
-    while i > 0
-        invariant
-            i <= n,
-            n < list@.len(),
-            result@.len() == (n - i) as int,
-            result@ == list@.subrange(i as int, n as int).reverse(),
-        decreases i,
-    {
-        i = i - 1;
-        /* code modified by LLM (iteration 2): added assertion to help verification */
-        assert(i < n);
-        assert(n < list@.len());
-        assert(i < list@.len());
-        result.push(list[i]);
+    if a.len() == 0 {
+        return true;
     }
     
-    // Add the remaining elements
-    let mut j = n;
-    /* code modified by LLM (iteration 2): updated invariant to match postcondition */
-    while j < list.len()
+    let first = a[0];
+    
+    for i in 1..a.len()
         invariant
-            n <= j <= list.len(),
-            result@.len() == (n + (j - n)) as int,
-            result@ == list@.subrange(0, n as int).reverse().add(
-                list@.subrange(n as int, j as int)
-            ),
-        decreases list.len() - j,
+            forall|k: int| 0 <= k < i ==> a[k] == first,
     {
-        result.push(list[j]);
-        j = j + 1;
+        if a[i] != first {
+            return false;
+        }
     }
     
-    result
+    true
 }
 
-} // verus!
+fn main() {}
+}

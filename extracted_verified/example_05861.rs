@@ -2,49 +2,24 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition: there exists an index i where a[i] equals e
-spec fn linear_search_precond(a: &Vec<i32>, e: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i as int] == e
-}
-
-// Postcondition specification
-spec fn linear_search_postcond(a: &Vec<i32>, e: i32, result: usize) -> bool {
-    result < a.len() && 
-    a[result as int] == e && 
-    forall|k: int| 0 <= k < result ==> a[k] != e
-}
-
-// Auxiliary function for linear search
-fn linear_search_aux(a: &Vec<i32>, e: i32, n: usize) -> (result: usize)
-    requires
-        n <= a.len(),
-        linear_search_precond(a, e),
-        forall|k: int| 0 <= k < n ==> a[k] != e,
-    ensures
-        linear_search_postcond(a, e, result),
-    decreases a.len() - n,
-{
-    if n < a.len() {
-        if a[n] == e {
-            n
-        } else {
-            linear_search_aux(a, e, n + 1)
-        }
+spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
+    if str1[i] == 32 {
+        ch
     } else {
-        // This case should never be reached due to precondition
-        // but we need to handle it for completeness
-        0
+        str1[i]
     }
 }
+// pure-end
 
-// Main linear search function
-fn linear_search(a: &Vec<i32>, e: i32) -> (result: usize)
-    requires
-        linear_search_precond(a, e),
+fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
+    // post-conditions-start
     ensures
-        linear_search_postcond(a, e, result),
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+    // post-conditions-end
 {
-    linear_search_aux(a, e, 0)
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

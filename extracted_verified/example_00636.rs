@@ -1,34 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn n_choose_2(n: int) -> int
+fn all_elements_equals(arr: &Vec<i32>, element: i32) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> (arr[i] == element)),
+    // post-conditions-end
 {
-    n * (n - 1) / 2
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> arr[j] == element
+    {
+        if arr[i] != element {
+            return false;
+        }
+    }
+    true
 }
 
-spec fn sum_range(lo: int, hi: int) -> int
-    decreases hi - lo
-{
-    if lo >= hi { 0 }
-    else { sum_range(lo, hi - 1) + hi - 1 }
-}
-// </vc-preamble>
+} // verus!
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn bubble_sort(a: &mut Vec<i32>) -> (n: usize) 
-    ensures n <= n_choose_2(a.len() as int) as usize
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

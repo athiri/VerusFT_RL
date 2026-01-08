@@ -1,53 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn max_value(s: Seq<char>) -> int {
-    max_value_up_to_index(s, s.len() as int)
+
+// ASCII --> space=32, comma=44 , dot=46 , colon=58
+spec fn is_space_comma_dot_spec(c: u8) -> bool {
+    (c == 32) || (c == 44) || (c == 46)
 }
 
-spec fn max_value_up_to_index(s: Seq<char>, up_to: int) -> int
-    decreases up_to when 0 <= up_to <= s.len()
+fn replace_with_colon(str1: &[u8]) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|k: int|
+            0 <= k < result.len() ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+                58  // ASCII -> colon=58
+            } else {
+                str1[k]
+            }),
 {
-    if up_to == 0 { 0 }
-    else {
-        let current_value = current_value_at_index(s, up_to);
-        let max_before = max_value_up_to_index(s, up_to - 1);
-        if current_value > max_before { current_value } else { max_before }
+    let mut result: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    /* code modified by LLM (iteration 1): added decreases clause */
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            result@.len() == index,
+            forall|k: int|
+                0 <= k < index ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+                    58  //ASCII -> colon=58
+                } else {
+                    str1[k]
+                }),
+        decreases str1.len() - index
+    {
+        if ((str1[index] == 32) || (str1[index] == 44) || (str1[index] == 46)) {
+            result.push(58);  //ASCII -> colon=58
+        } else {
+            result.push(str1[index]);
+        }
+        index += 1;
     }
+    result
 }
 
-spec fn current_value_at_index(s: Seq<char>, index: int) -> int
-    decreases index when 0 <= index <= s.len()
-{
-    if index == 0 { 0 }
-    else { 
-        current_value_at_index(s, index - 1) + (if s[index - 1 as nat] == 'I' { 1 } else { -1 })
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, s: Vec<char>) -> (result: i8)
-    requires 
-        1 <= n <= 100,
-        n as int == s@.len(),
-        forall|i: int| 0 <= i < s@.len() ==> s@[i] == 'I' || s@[i] == 'D',
-    ensures 
-        result >= 0,
-        result as int == max_value(s@),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    0
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

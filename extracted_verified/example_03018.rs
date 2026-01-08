@@ -2,42 +2,73 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
-    /* code modified by LLM (iteration 1): changed numeric comparison 32 to char comparison ' ' */
-    if str1[i] == ' ' {
-        ch
+spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> (result: int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
     } else {
-        str1[i]
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
 // pure-end
 
-fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
     // post-conditions-start
     ensures
-        str1@.len() == result@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+        count_frequency_rcr(arr@, key) == frequency,
+    // post-conditions-end
+{
+    let mut count = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            count == count_frequency_rcr(arr@.take(i as int), key),
+    {
+        if arr[i] == key {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        /* code modified by LLM (iteration 1): fixed type mismatch by casting nat to int */
+        assert(arr@.take(arr@.len() as int) == arr@);
+    }
+    
+    count
+}
+
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    // post-conditions-start
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
     // post-conditions-end
 {
     let mut result = Vec::new();
-    let mut idx = 0;
+    let mut i = 0;
     
-    /* code modified by LLM (iteration 2): added decreases clause for loop termination */
-    while idx < str1.len()
+    while i < arr.len()
         invariant
-            0 <= idx <= str1.len(),
-            result@.len() == idx,
-            forall|i: int| 0 <= i < idx ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
-        decreases str1.len() - idx,
+            0 <= i <= arr.len(),
+            result@ == arr@.take(i as int).filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
     {
-        /* code modified by LLM (iteration 1): changed numeric comparison 32 to char comparison ' ' */
-        if str1[idx] == ' ' {
-            result.push(ch);
-        } else {
-            result.push(str1[idx]);
+        let freq = count_frequency(arr, arr[i]);
+        if freq == 1 {
+            result.push(arr[i]);
         }
-        idx += 1;
+        i = i + 1;
+    }
+    
+    proof {
+        /* code modified by LLM (iteration 1): fixed type mismatch by casting nat to int */
+        assert(arr@.take(arr@.len() as int) == arr@);
     }
     
     result

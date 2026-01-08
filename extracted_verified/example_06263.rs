@@ -1,35 +1,17 @@
 use vstd::prelude::*;
-
-verus! {
-    // For demonstration with a concrete type that supports equality
-    fn compare_bool(a: bool, b: bool) -> (eq: bool)
-        requires true,
-        ensures
-            a == b ==> eq == true,
-            a != b ==> eq == false,
-    {
-        a == b
-    }
-    
-    // For integers
-    fn compare_int(a: int, b: int) -> (eq: bool)
-        requires true,
-        ensures
-            a == b ==> eq == true,
-            a != b ==> eq == false,
-    {
-        a == b
-    }
-    
-    // For natural numbers
-    fn compare_nat(a: nat, b: nat) -> (eq: bool)
-        requires true,
-        ensures
-            a == b ==> eq == true,
-            a != b ==> eq == false,
-    {
-        a == b
-    }
-}
-
 fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(c).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] <= 3 * N,
+{
+    // TODO: Remove this comment and implement the function body
+}
+}

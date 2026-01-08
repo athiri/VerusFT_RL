@@ -1,67 +1,59 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
-spec fn is_upper_case(c: u8) -> bool {
-    c >= 65 && c <= 90
+spec fn rotate_right_precond(l: Seq<i32>, n: nat) -> bool {
+    true
 }
 
-spec fn shift32_spec(c: u8) -> u8 {
-    (c + 32) as u8
+spec fn rotate_right_postcond(l: Seq<i32>, n: nat, result: Seq<i32>) -> bool {
+    &&& result.len() == l.len()
+    &&& (forall |i: int| 0 <= i < l.len() ==> {
+        let len = l.len();
+        let rotated_index = ((i - (n as int) + (len as int)) % (len as int));
+        #[trigger] result[i] == l[rotated_index]
+    })
 }
 
-spec fn is_lower_case(c: u8) -> bool {
-    c >= 97 && c <= 122
-}
-
-spec fn shift_minus_32_spec(c: u8) -> u8 {
-    (c - 32) as u8
-}
-
-spec fn to_toggle_case_spec(s: u8) -> u8 {
-    if is_lower_case(s) {
-        shift_minus_32_spec(s)
-    } else if is_upper_case(s) {
-        shift32_spec(s)
-    } else {
-        s
-    }
-}
-
-fn to_toggle_case(str1: &[u8]) -> (toggle_case: Vec<u8>)
-    ensures
-        str1@.len() == toggle_case@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+fn rotate_right(l: Vec<i32>, n: usize) -> (result: Vec<i32>)
+    requires rotate_right_precond(l@, n as nat)
+    ensures rotate_right_postcond(l@, n as nat, result@)
 {
-    let mut result = Vec::new();
-    let mut i = 0;
+    if l.len() == 0 {
+        return Vec::new();
+    }
     
-    /* code modified by LLM (iteration 1): added decreases clause for while loop */
-    while i < str1.len()
+    let len = l.len();
+    let mut result = Vec::with_capacity(len);
+    let effective_n = n % len; // Reduce n modulo len to handle cases where n >= len
+    
+    for i in 0..len
         invariant
-            i <= str1.len(),
             result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == to_toggle_case_spec(str1[j]),
-        decreases str1.len() - i
+            forall |j: int| 0 <= j < i ==> {
+                let rotated_index = ((j - (n as int) + (len as int)) % (len as int));
+                #[trigger] result@[j] == l@[rotated_index]
+            }
     {
-        let c = str1[i];
-        let toggled = if c >= 97 && c <= 122 {
-            // lowercase to uppercase
-            c - 32
-        } else if c >= 65 && c <= 90 {
-            // uppercase to lowercase  
-            c + 32
+        /* code modified by LLM (iteration 1): replaced int arithmetic with usize arithmetic for executable code */
+        let rotated_index = if i >= effective_n {
+            i - effective_n
         } else {
-            // leave unchanged
-            c
+            len - effective_n + i
         };
-        result.push(toggled);
-        i = i + 1;
+        result.push(l[rotated_index]);
+        
+        /* code modified by LLM (iteration 1): added proof block to establish correspondence between usize and int calculations */
+        proof {
+            let ghost_rotated_index = ((i as int - n as int + len as int) % len as int);
+            // The usize calculation is equivalent to the ghost int calculation
+            assert(rotated_index as int == ghost_rotated_index);
+        }
     }
     
     result
 }
 
-} // verus!
+}
+
+fn main() {}

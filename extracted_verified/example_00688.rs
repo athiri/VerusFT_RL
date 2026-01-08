@@ -1,67 +1,56 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn is_not_prefix_pred(pre: Seq<char>, str: Seq<char>) -> bool {
-    (pre.len() > str.len()) || 
-    pre != str.subrange(0, pre.len() as int)
-}
-
-fn is_prefix(pre: Seq<char>, str: Seq<char>) -> (res: bool)
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    // pre-conditions-start
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        !res <==> is_not_prefix_pred(pre, str),
-        res <==> is_prefix_predicate(pre, str),
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
+    // post-conditions-end
 {
-  assume(false);
-  false
+    let mut new_list = Vec::new();
+    
+    // Add elements from index 0 to k-1
+    let mut i = 0;
+    /* code modified by LLM (iteration 2): updated loop condition and invariant to ensure bounds are satisfied */
+    while i < k - 1
+        invariant
+            0 <= i <= k - 1,
+            k - 1 <= list.len(), // This follows from k < list.len()
+            new_list@ == list@.subrange(0, i as int),
+        decreases k - 1 - i,
+    {
+        /* code modified by LLM (iteration 2): access is safe because i < k-1 and k <= list.len() */
+        new_list.push(list[i]);
+        i += 1;
+    }
+    
+    // Add elements from index k to end
+    let mut j = k;
+    /* code modified by LLM (iteration 2): updated invariant to ensure bounds are satisfied */
+    while j < list.len()
+        invariant
+            k <= j <= list.len(),
+            k <= list.len(), // This follows from k < list.len()
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, j as int)
+            ),
+        decreases list.len() - j,
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
 
-spec fn is_prefix_predicate(pre: Seq<char>, str: Seq<char>) -> bool {
-  str.len() >= pre.len() && pre == str.subrange(0, pre.len() as int)
-}
+} // verus!
 
-spec fn is_substring_predicate(sub: Seq<char>, str: Seq<char>) -> bool {
-  str.len() >= sub.len() && 
-  exists|i: int| 0 <= i <= str.len() && #[trigger] is_prefix_predicate(sub, str.subrange(i, str.len() as int))
-}
-
-fn is_substring(sub: Seq<char>, str: Seq<char>) -> (res: bool)
-    ensures res == is_substring_predicate(sub, str)
-{
-  assume(false);
-  false
-}
-
-spec fn have_common_k_substring_predicate(k: nat, str1: Seq<char>, str2: Seq<char>) -> bool {
-  str1.len() >= k && str2.len() >= k && 
-  exists|i: int| 0 <= i <= str1.len() - k && 
-      #[trigger] is_substring_predicate(
-          str1.subrange(i, str1.len() as int).subrange(0, k as int), 
-          str2
-      )
-}
-
-spec fn max_common_substring_predicate(str1: Seq<char>, str2: Seq<char>, len: nat) -> bool {
-   forall|k: int| len < k <= str1.len() ==> !#[trigger] have_common_k_substring_predicate(k as nat, str1, str2)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn have_common_k_substring(k: nat, str1: Seq<char>, str2: Seq<char>) -> (found: bool)
-    ensures 
-        (str1.len() < k || str2.len() < k) ==> !found,
-        have_common_k_substring_predicate(k, str1, str2) == found,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

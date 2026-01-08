@@ -1,24 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn swap_bitvectors(x: u8, y: u8) -> (result: (u8, u8))
-    ensures 
-        result.0 == y,
-        result.1 == x,
-// </vc-spec>
-// <vc-code>
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+    // pre-conditions-start
+    requires
+        N > 0,
+        old(a).len() == N,
+        old(sum).len() == 1,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        sum[0] <= N,
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 0);
 }
-// </vc-code>
 
 }
+
 fn main() {}

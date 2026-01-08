@@ -2,42 +2,57 @@ use vstd::prelude::*;
 
 verus! {
 
-//IMPL all_sequence_equal_length
-fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
-    // pre-conditions-start
-    requires
-        seq.len() > 0,
-    // pre-conditions-end
+fn largest_smallest_integers(arr: &Vec<i32>) -> (res: (Option<i32>, Option<i32>))
     // post-conditions-start
     ensures
-        result == (forall|i: int, j: int|
-            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
-                == #[trigger] seq[j].len())),
+        ({
+            let (a, b) = res;
+            // If a is Some, it must be negative and in the array
+            (a.is_some() ==> (a.unwrap() < 0 && arr@.contains(a.unwrap()))) &&
+            // If a is Some, it must be the largest (closest to 0) negative number
+            (a.is_some() ==> forall|x: i32| arr@.contains(x) && x < 0 ==> x <= a.unwrap()) &&
+            // If a is None, there are no negative numbers in the array
+            (a.is_none() ==> forall|x: i32| arr@.contains(x) ==> x >= 0) &&
+            
+            // If b is Some, it must be positive and in the array  
+            (b.is_some() ==> (b.unwrap() > 0 && arr@.contains(b.unwrap()))) &&
+            // If b is Some, it must be the smallest positive number
+            (b.is_some() ==> forall|x: i32| arr@.contains(x) && x > 0 ==> x >= b.unwrap()) &&
+            // If b is None, there are no positive numbers in the array
+            (b.is_none() ==> forall|x: i32| arr@.contains(x) ==> x <= 0)
+        }),
     // post-conditions-end
 {
-    let first_len = seq[0].len();
-    
-    for k in 1..seq.len()
-        /* code modified by LLM (iteration 3): enhanced invariant to establish relationship between all checked elements */
+    // impl-start
+    let mut i: usize = 0;
+    let mut a = None;
+    let mut b = None;
+
+    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
+    while i < arr.len()
+        // invariants-start
         invariant
-            forall|i: int| (0 <= i < k) ==> seq[i].len() == first_len,
-            forall|i: int, j: int| (0 <= i < k && 0 <= j < k) ==> seq[i].len() == seq[j].len(),
+            0 <= i <= arr@.len(),
+            a.is_none() ==> forall|j: int| 0 <= j < i ==> arr@[j] >= 0,
+            a.is_some() ==> arr@.contains(a.unwrap()) && a.unwrap() < 0,
+            a.is_some() ==> forall|j: int| 0 <= j < i && arr@[j] < 0 ==> arr@[j] <= a.unwrap(),
+            b.is_none() ==> forall|j: int| 0 <= j < i ==> arr@[j] <= 0,
+            b.is_some() ==> arr@.contains(b.unwrap()) && b.unwrap() > 0,
+            b.is_some() ==> forall|j: int| 0 <= j < i && arr@[j] > 0 ==> arr@[j] >= b.unwrap(),
+        // invariants-end
+        decreases arr@.len() - i
     {
-        if seq[k].len() != first_len {
-            /* code modified by LLM (iteration 3): fixed type mismatch by using int casting for assertion */
-            assert(seq[0].len() != seq[k as int].len());
-            assert(!(forall|i: int, j: int| (0 <= i < seq.len() && 0 <= j < seq.len()) ==> seq[i].len() == seq[j].len()));
-            return false;
+        if arr[i] < 0 && (a.is_none() || arr[i] >= a.unwrap()) {
+            a = Some(arr[i]);
         }
+        if arr[i] > 0 && (b.is_none() || arr[i] <= b.unwrap()) {
+            b = Some(arr[i]);
+        }
+        i = i + 1;
     }
-    
-    /* code modified by LLM (iteration 3): added assertion to help prove postcondition when returning true */
-    assert(forall|i: int| (0 <= i < seq.len()) ==> seq[i].len() == first_len);
-    assert(forall|i: int, j: int| (0 <= i < seq.len() && 0 <= j < seq.len()) ==> seq[i].len() == seq[j].len());
-    
-    true
+    (a, b)
+    // impl-end
 }
 
-} // verus!
-
+}
 fn main() {}

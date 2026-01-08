@@ -1,34 +1,14 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn find(a: &[i32], key: i32) -> (i: i32)
-    ensures
-
-        0 <= i ==> (
-                    i < a.len() && 
-
-                    a[i as int] == key && 
-
-                    forall|k: int| 0 <= k < i ==> a[k] != key
-                   ),
-
-        i < 0 ==> 
-
-                forall|k: int| 0 <= k < a.len() ==> a[k] != key,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    //IMPL main_method
+    fn main_method(x_init: u32, y: u32) -> (z: u32)
+        requires 
+            (x_init as int) * (y as int) <= u32::MAX as int,
+        ensures z == 0
+    {
+        0
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

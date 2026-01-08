@@ -1,39 +1,33 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> bool {
-    (n % divisor) == 0
-}
-
-//IMPL is_non_prime
-fn is_non_prime(n: u64) -> (result: bool)
-    requires
-        n >= 2,
+#[verifier::loop_isolation(false)]
+fn xor_strings(a: Vec<char>, b: Vec<char>) -> (result: Vec<char>)
+    requires 
+        a.len() == b.len(),
+        forall|i: int| 0 <= i && i < a.len() ==> (a[i] == '0' || a[i] == '1'),
+        forall|i: int| 0 <= i && i < b.len() ==> (b[i] == '0' || b[i] == '1')
     ensures
-        result == (exists|k: int| 2 <= k < n && is_divisible(n as int, k)),
+        result.len() == a.len(),
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == (if a[i] == b[i] { '0' } else { '1' })
 {
-    let mut i: u64 = 2;
-    /* code modified by LLM (iteration 1): updated loop invariant to track that no divisors have been found so far */
-    while i < n
+    let mut result: Vec<char> = Vec::new();
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): Added decreases clause to fix verification error */
+    while i < a.len()
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
-        decreases n - i,
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == (if a[j] == b[j] { '0' } else { '1' })
+        decreases a.len() - i
     {
-        if n % i == 0 {
-            /* code modified by LLM (iteration 1): added assertion to help prove postcondition when returning true */
-            assert(is_divisible(n as int, i as int));
-            assert(2 <= i < n);
-            return true;
-        }
-        i = i + 1;
+        let bit = if a[i] == b[i] { '0' } else { '1' };
+        result.push(bit);
+        i += 1;
     }
-    /* code modified by LLM (iteration 1): added assertion to help prove postcondition when returning false */
-    assert(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k));
-    return false;
+    result
 }
 
-} // verus!
+fn main() {}
+}

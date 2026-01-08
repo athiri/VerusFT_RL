@@ -2,31 +2,42 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition specification
-pub open spec fn test_array_elements_precond(a: &Vec<i32>, j: usize) -> bool {
-    j < a.len()
+spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
+    /* code modified by LLM (iteration 1): changed 32 to ' ' to compare with char type */
+    if str1[i] == ' ' {
+        ch
+    } else {
+        str1[i]
+    }
 }
+// pure-end
 
-// Postcondition specification
-pub open spec fn test_array_elements_postcond(
-    a: &Vec<i32>, 
-    j: usize, 
-    result: &Vec<i32>
-) -> bool {
-    &&& result[j as int] == 60
-    &&& forall|k: int| 0 <= k < a.len() && k != j ==> result[k] == a[k]
-    &&& result.len() == a.len()
-}
-
-// Main function
-pub fn test_array_elements(a: &Vec<i32>, j: usize) -> (result: Vec<i32>)
-    requires 
-        test_array_elements_precond(a, j)
+fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
+    // post-conditions-start
     ensures
-        test_array_elements_postcond(a, j, &result)
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+    // post-conditions-end
 {
-    let mut result = a.clone();
-    result.set(j, 60);
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < str1.len()
+        invariant
+            idx <= str1.len(),
+            result@.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+    {
+        /* code modified by LLM (iteration 1): changed 32 to ' ' to compare with char type */
+        if str1[idx] == ' ' {
+            result.push(ch);
+        } else {
+            result.push(str1[idx]);
+        }
+        idx += 1;
+    }
+    
     result
 }
 

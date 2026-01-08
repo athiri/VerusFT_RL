@@ -1,17 +1,23 @@
 use vstd::prelude::*;
-
-verus! {
-    fn main_method(n: i32, k: i32) -> (k_out: i32)
-        requires 
-            n > 0,
-            k > n,
-            n <= 100,    
-            k <= 200,
-        ensures 
-            k_out >= 0,
-    {
-        k
-    }
-}
-
 fn main() {}
+
+verus!{
+fn conditional_average(vals_1: &Vec<u64>, vals_2: &Vec<u64>, conds_1: &Vec<bool>, conds_2: &Vec<bool>, avgs: &mut Vec<u64>) 
+    requires 
+        vals_1.len() == vals_2.len(),
+        vals_1.len() == conds_1.len(),
+        vals_1.len() == conds_2.len(),
+        forall |idx:int| 0 <= idx < vals_1.len() ==> conds_1[idx] || conds_2[idx],
+        forall |idx:int| 0 <= idx < vals_1.len() ==> vals_1[idx] < 1000,
+        forall |idx:int| 0 <= idx < vals_2.len() ==> vals_2[idx] < 1000,
+    ensures
+        avgs.len() == vals_1.len(),
+        forall |idx:int| 0 <= idx < vals_1.len() ==> (
+            (conds_1[idx] && conds_2[idx] ==> avgs[idx] == (vals_1[idx] + vals_2[idx]) / 2) &&
+            (conds_1[idx] && !conds_2[idx] ==> avgs[idx] == vals_1[idx]) &&
+            (!conds_1[idx] && conds_2[idx] ==> avgs[idx] == vals_2[idx])
+        )
+{
+    // TODO: Remove this comment and implement the function body
+}
+}

@@ -1,77 +1,67 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-spec fn abs_value(x: int) -> nat {
-    if x < 0 { (-x) as nat } else { x as nat }
-}
-
-spec fn count_digits(n: nat) -> nat
-    recommends n >= 0
-    decreases n
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    if n < 10 { 1nat } else { 1nat + count_digits(n / 10) }
-}
-
-spec fn is_even_digit(d: nat) -> bool
-    recommends d < 10
-{
-    d % 2 == 0
-}
-
-spec fn count_even_digits(n: nat) -> nat
-    recommends n >= 0
-    decreases n
-{
-    if n < 10 {
-        if is_even_digit(n) { 1nat } else { 0nat }
-    } else {
-        (if is_even_digit(n % 10) { 1nat } else { 0nat }) + count_even_digits(n / 10)
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added decreases clause to fix termination verification */
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+        decreases sub.len() - i,
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
     }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, (idx + sub@.len())) =~= sub@);
+    
+    return true;
 }
 
-spec fn count_odd_digits(n: nat) -> nat
-    recommends n >= 0
-    decreases n
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    if n < 10 {
-        if !is_even_digit(n) { 1nat } else { 0nat }
-    } else {
-        (if !is_even_digit(n % 10) { 1nat } else { 0nat }) + count_odd_digits(n / 10)
+    let mut idx = 0;
+    /* code modified by LLM (iteration 4): added explicit trigger annotation to fix quantifier trigger inference error */
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < idx ==> #[trigger] main@.subrange(k, k + sub@.len()) != sub@,
+        decreases main.len() - sub.len() + 1 - idx,
+    {
+        if sub_array_at_index(main, sub, idx) {
+            assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+            return true;
+        }
+        idx += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn even_odd_count(num: i8) -> (result: (i8, i8))
-    ensures 
-        result.0 >= 0 && result.1 >= 0 &&
-        result.0 + result.1 >= 1 &&
-        ({
-            let abs_num = abs_value(num as int);
-            result.0 as nat == count_even_digits(abs_num) &&
-            result.1 as nat == count_odd_digits(abs_num)
-        }) &&
-        result.0 + result.1 == count_digits(abs_value(num as int)) as i8 &&
-        (num == 0 ==> (result.0 == 1 && result.1 == 0)) &&
-        (abs_value(num as int) == abs_value((-num) as int) ==> 
-            (result.0 as nat == count_even_digits(abs_value((-num) as int)) && 
-             result.1 as nat == count_odd_digits(abs_value((-num) as int))))
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    (0, 0)
-    // impl-end
-}
-// </vc-code>
-
-
+    
+    assert(forall|k: int| 0 <= k <= (main.len() - sub.len()) ==> 
+           main@.subrange(k, k + sub@.len()) != sub@);
+    
+    return false;
 }
 
-fn main() {}
+} // verus!

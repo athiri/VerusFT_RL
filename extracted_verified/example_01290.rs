@@ -1,32 +1,28 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn int_abs(x: int) -> int {
-    if x >= 0 { x } else { -x }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn allclose(a: Vec<i8>, b: Vec<i8>, rtol: i8, atol: i8) -> (result: bool)
-    requires 
-        a.len() == b.len(),
-        rtol >= 0,
-        atol >= 0,
-    ensures 
-        result == (forall|i: int| 0 <= i < a@.len() ==> 
-            int_abs((a[i] - b[i]) as int) <= (atol as int + rtol as int * int_abs(b[i] as int)))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
+    requires 
+        forall |k1:int,k2:int| 0 <= k1 < k2 < v.len() ==> v[k1] != v[k2]
+    ensures
+        forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+        forall |k:int| 0 <= k < v.len() && v[k] <= e ==> result@.contains(v[k]),
+{  
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < v.len()
+        invariant
+            0 <= i <= v.len(),
+            forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+            forall |k:int| 0 <= k < i && v[k] <= e ==> result@.contains(v[k]),
+    {
+        if v[i] <= e {
+            result.push(v[i]);
+        }
+        i = i + 1;
+    }
+    
+    result
+}
+}

@@ -1,34 +1,37 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn two_sum(nums: &Vec<i32>, target: i32) -> (result: Vec<usize>)
-    requires 
-        nums.len() >= 2,
-        exists|i: int, j: int| 0 <= j < i < nums.len() && nums[i] + nums[j] == target,
-        forall|i1: int, j1: int, i2: int, j2: int| 
-            (0 <= j1 < i1 < nums.len() && nums[i1] + nums[j1] == target &&
-             0 <= j2 < i2 < nums.len() && nums[i2] + nums[j2] == target) ==> 
-            (i1 == i2 && j1 == j2),
-    ensures
-        result.len() == 2,
-        result[0] < nums.len(),
-        result[1] < nums.len(),
-        result[0] < result[1],
-        nums[result[0] as int] + nums[result[1] as int] == target,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus! {
+
+fn extract_rear_chars(s: &Vec<Vec<u8>>) -> (result: Vec<u8>)
+    requires
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    ensures
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 3): enhanced loop invariants to carry forward precondition about non-empty strings */
+    while i < s.len()
+        invariant
+            i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+            forall|k: int| 0 <= k < s.len() ==> s[k].len() > 0,
+        decreases s.len() - i,
+    {
+        /* code modified by LLM (iteration 3): fixed type casting issue by casting to int properly */
+        assert(0 <= i < s.len());
+        assert((s[i].len() as int) > 0);
+        let last_char = s[i][s[i].len() - 1];
+        result.push(last_char);
+        i += 1;
+    }
+    
+    result
+}
+
+} // verus!

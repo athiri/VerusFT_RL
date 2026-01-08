@@ -1,30 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    /* 
+    * Formal verification of a simple algorithm to find the maximum value in an array.
+    * FEUP, MIEIC, MFES, 2020/21.
+    * Translated from Dafny to Verus
+    */
 
-spec fn is_odd(n: int) -> bool {
-    n % 2 != 0
+    // Finds the maximum value in a non-empty array.
+    fn findMax(a: &[i32]) -> (max: i32)
+        requires a.len() > 0,
+        ensures 
+            exists|k: int| 0 <= k < a.len() && max == a[k],
+            forall|k: int| 0 <= k < a.len() ==> max >= a[k]
+    {
+        let mut max = a[0];
+        let mut i = 1;
+        
+        while i < a.len()
+            invariant
+                0 <= i <= a.len(),
+                exists|k: int| 0 <= k < i && max == a[k],
+                forall|k: int| 0 <= k < i ==> max >= a[k]
+        {
+            if a[i] > max {
+                max = a[i];
+            }
+            i = i + 1;
+        }
+        
+        max
+    }
+
+    // Test cases checked statically.
+    fn testFindMax() {
+        let a1 = [1, 3, 2];
+        let max1 = findMax(&a1);
+        assert(max1 == 3);
+        
+        let a2 = [5];
+        let max2 = findMax(&a2);
+        assert(max2 == 5);
+        
+        let a3 = [10, 10, 10];
+        let max3 = findMax(&a3);
+        assert(max3 == 10);
+        
+        let a4 = [7, 1, 9, 3];
+        let max4 = findMax(&a4);
+        assert(max4 == 9);
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn filter_odd_numbers(arr: &[int]) -> (odd_list: Vec<int>)
-    ensures 
-
-        forall|i: int| 0 <= i < odd_list.len() ==> is_odd(odd_list[i]) && arr@.contains(odd_list[i]),
-
-        forall|i: int| 0 <= i < arr.len() && is_odd(arr[i]) ==> odd_list@.contains(arr[i]),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

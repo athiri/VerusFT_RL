@@ -1,32 +1,31 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+}
 
 verus! {
 
-fn find_first_odd(arr: &Vec<u32>) -> (index: Option<usize>)
+fn get_first_elements(arr: &Vec<Vec<i32>>) -> (result: Vec<i32>)
+    requires
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() > 0,
     ensures
-        if let Some(idx) = index {
-            idx < arr.len() && arr@[idx as int] % 2 == 1 && forall|k: int| 0 <= k < idx as int ==> (arr@[k] % 2 == 0)
-        } else {
-            forall|k: int| 0 <= k < arr.len() ==> (arr@[k] % 2 == 0)
-        },
+        arr.len() == result.len(),
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] result[i] == #[trigger] arr[i][0],
 {
-    let mut index = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while index < arr.len()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr.len()
         invariant
-            0 <= index <= arr.len(),
-            forall|k: int| 0 <= k < index as int ==> (arr@[k] % 2 == 0),
-        decreases arr.len() - index,
+            0 <= i <= arr.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] arr[j][0],
     {
-        /* code modified by LLM (iteration 2): fixed array access using regular indexing instead of @ operator in exec code */
-        if arr[index] % 2 != 0 {
-            return Some(index);
-        }
-        index += 1;
+        result.push(arr[i][0]);
+        i += 1;
     }
-    None
+    
+    result
 }
 
 } // verus!

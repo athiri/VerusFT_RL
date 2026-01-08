@@ -2,72 +2,95 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn is_upper_case(c: char) -> (result:bool) {
-    c >= 'A' && c <= 'Z'
-}
-// pure-end
-
-spec fn shift32_spec(c: char) -> (result:char) {
-    ((c as u8) + 32) as char
-}
-// pure-end
-
-spec fn is_lower_case(c: char) -> (result:bool) {
-    c >= 'a' && c <= 'z'
-}
-// pure-end
-
-spec fn shift_minus_32_spec(c: char) -> (result:char) {
-    ((c as u8) - 32) as char
-}
-// pure-end
-
-spec fn to_toggle_case_spec(s: char) -> (result:char) {
-    if is_lower_case(s) {
-        shift_minus_32_spec(s)
-    } else if is_upper_case(s) {
-        shift32_spec(s)
-    } else {
-        s
-    }
-}
-// pure-end
-
-fn to_toggle_case(str1: &Vec<char>) -> (toggle_case: Vec<char>)
+fn string_eq(s1: &str, s2: &str) -> (result: bool)
     // post-conditions-start
     ensures
-        str1@.len() == toggle_case@.len(),
+        result <==> s1@ == s2@,
+    // post-conditions-end
+{
+    s1 == s2
+}
+
+fn check_substring(s: &str, sub: &str) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> exists|i: int|
+            0 <= i <= s@.len() - sub@.len() && s@.subrange(i, #[trigger] (i + sub@.len())) == sub@,
+    // post-conditions-end
+{
+    if sub.len() == 0 {
+        return true;
+    }
+    if sub.len() > s.len() {
+        return false;
+    }
+    
+    let mut i = 0;
+    while i <= s.len() - sub.len()
+        invariant
+            0 <= i <= s@.len() - sub@.len() + 1,
+            forall|j: int| 0 <= j < i ==> s@.subrange(j, j + sub@.len()) != sub@,
+    {
+        /* code modified by LLM (iteration 1): replaced slice indexing with character-by-character comparison */
+        let mut matches = true;
+        let mut j = 0;
+        while j < sub.len()
+            invariant
+                0 <= j <= sub@.len(),
+                matches <==> (forall|k: int| 0 <= k < j ==> s@[i + k] == sub@[k]),
+                i + sub@.len() <= s@.len(),
+        {
+            if s.as_bytes()[i + j] != sub.as_bytes()[j] {
+                matches = false;
+                break;
+            }
+            j += 1;
+        }
+        
+        if matches {
+            proof {
+                assert(forall|k: int| 0 <= k < sub@.len() ==> s@[i + k] == sub@[k]);
+                assert(s@.subrange(i as int, i as int + sub@.len()) == sub@);
+            }
+            return true;
+        }
+        i += 1;
+    }
+    false
+}
+
+fn filter_by_substring<'a>(strings: &Vec<&'a str>, substring: &str) -> (res: Vec<&'a str>)
+    // post-conditions-start
+    ensures
         forall|i: int|
-            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+            0 <= i < strings@.len() && (exists|j: int|
+                0 <= j <= strings@[i]@.len() - substring@.len() && strings[i]@.subrange(
+                    j,
+                    #[trigger] (j + substring@.len()),
+                ) == substring@) ==> res@.contains(#[trigger] (strings[i])),
     // post-conditions-end
 {
     let mut result = Vec::new();
     let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < str1.len()
+    while i < strings.len()
         invariant
-            0 <= i <= str1.len(),
-            result@.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == to_toggle_case_spec(str1[j]),
-        decreases str1.len() - i
+            0 <= i <= strings@.len(),
+            forall|k: int|
+                0 <= k < i && (exists|j: int|
+                    0 <= j <= strings@[k]@.len() - substring@.len() && strings[k]@.subrange(
+                        j,
+                        j + substring@.len(),
+                    ) == substring@) ==> result@.contains(strings[k]),
     {
-        let c = str1[i];
-        let toggled_c = if c >= 'a' && c <= 'z' {
-            ((c as u8) - 32) as char
-        } else if c >= 'A' && c <= 'Z' {
-            ((c as u8) + 32) as char
-        } else {
-            c
-        };
-        
-        result.push(toggled_c);
+        if check_substring(strings[i], substring) {
+            result.push(strings[i]);
+        }
         i += 1;
     }
     
     result
 }
 
-} // verus!
-
+}
 fn main() {}

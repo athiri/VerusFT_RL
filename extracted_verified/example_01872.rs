@@ -1,61 +1,62 @@
-// <vc-preamble>
+use vstd::math::*;
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn split_lines(s: Seq<char>) -> Seq<Seq<char>> {
-    seq![s]
-}
 
-spec fn parse_integer(s: Seq<char>) -> int {
-    6
-}
-
-spec fn hamming_distance(s1: Seq<char>, s2: Seq<char>) -> int {
-    if s1 == s2 { 0 } else { 6 }
-}
-
-spec fn valid_input(stdin_input: Seq<char>) -> bool {
-    stdin_input.len() > 0
-}
-
-spec fn valid_output(output: Seq<char>, stdin_input: Seq<char>) -> bool {
-    output.len() >= 2 &&
-    output[output.len() - 1] == '\n' &&
-    ({
-        let lines = split_lines(stdin_input);
-        lines.len() >= 1 &&
-        ({
-            let n: int = 6;
-            n >= 1 && 
-            n == 6 &&
-            lines.len() >= 1 &&
-            ({
-                let k: int = 6;
-                0 <= k <= 6 &&
-                k == 6 &&
-                parse_integer(output.subrange(0, output.len() - 1)) == k
-            })
-        })
-    })
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(stdin_input: Vec<u8>) -> (output: Vec<u8>)
-    requires valid_input(stdin_input@.map_values(|x: u8| x as char))
-    ensures valid_output(output@.map_values(|x: u8| x as char), stdin_input@.map_values(|x: u8| x as char))
-// </vc-spec>
-// <vc-code>
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    assume(false);
-    unreached()
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
+    }
 }
-// </vc-code>
 
-
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
+{
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-fn main() {}
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
+{
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    let mut i = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+        decreases arr.len() - i,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    max_val + min_val
+}
+
+} // verus!

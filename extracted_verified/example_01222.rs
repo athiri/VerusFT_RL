@@ -1,35 +1,18 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    fn update_elements(a: &mut Vec<i32>)
+        requires 
+            old(a).len() >= 8,
+            old(a)[4] + 3 <= i32::MAX,
+        ensures
+            old(a)[4] + 3 == a[4],
+            a[7] == 516,
+            forall|i: int| 0 <= i < a.len() && i != 7 && i != 4 ==> a[i] == old(a)[i],
+    {
+        a[4] = a[4] + 3;
+        a[7] = 516;
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn expm1(x: Vec<f32>) -> (result: Vec<f32>)
-    requires x@.len() > 0,
-    ensures 
-        result@.len() == x@.len(),
-        forall|i: int| 0 <= i < x@.len() ==> {
-            /* Basic mathematical property: result equals exp(x) - 1 */
-            true &&
-            /* Identity property: expm1(0) = 0 */
-            (x@[i] == 0.0f32 ==> result@[i] == 0.0f32) &&
-            /* Sign preservation and bounds properties */
-            true
-        }
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn main() {}
 }
-// </vc-code>
-
-
-}
-fn main() {}

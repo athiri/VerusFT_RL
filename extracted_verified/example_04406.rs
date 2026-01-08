@@ -1,27 +1,22 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
+spec fn is_divisible(n: int, divisor: int) -> bool {
+    (n % divisor) == 0
+}
+
+fn is_non_prime(n: u64) -> (result: bool)
+    requires
+        n >= 2,
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        result == (exists|k: int| 2 <= k < n && is_divisible(n as int, k)),
 {
-    let mut idx = 0;
-    while idx < arr.len()
-        invariant
-            0 <= idx <= arr.len(),
-            forall|i: int| 0 <= i < idx ==> ((i % 2) == (arr[i] % 2)),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases arr.len() - idx
-    {
-        if (idx % 2) != (arr[idx] % 2) {
-            return false;
-        }
-        idx += 1;
-    }
-    true
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

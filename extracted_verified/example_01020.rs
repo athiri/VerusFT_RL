@@ -1,41 +1,52 @@
-// <vc-preamble>
 use vstd::prelude::*;
+use vstd::multiset::*;
 
 verus! {
-// </vc-preamble>
+    spec fn partition(m: Multiset<int>) -> (Multiset<int>, int, Multiset<int>)
+        recommends m.len() > 0
+    {
+        let p = m.choose();
+        let m_prime = m.remove(p);
+        let (pre, post) = partition_helper(m_prime, p, Multiset::empty(), Multiset::empty());
+        (pre, p, post)
+    }
 
-// <vc-helpers>
-// </vc-helpers>
+    spec fn partition_helper(m_prime: Multiset<int>, p: int, pre: Multiset<int>, post: Multiset<int>) -> (Multiset<int>, Multiset<int>)
+        decreases m_prime.len()
+    {
+        if m_prime.len() == 0 {
+            (pre, post)
+        } else {
+            let temp = m_prime.choose();
+            let m_new = m_prime.remove(temp);
+            if temp <= p {
+                partition_helper(m_new, p, pre.add(Multiset::singleton(temp)), post)
+            } else {
+                partition_helper(m_new, p, pre, post.add(Multiset::singleton(temp)))
+            }
+        }
+    }
 
-// <vc-spec>
-spec fn seed_sequence_spec(entropy: Seq<u32>, spawn_key: Seq<u32>, pool_size: usize) -> Seq<u32>;
+    spec fn quickselect(m: Multiset<int>, k: nat) -> (Multiset<int>, int, Multiset<int>)
+        recommends k < m.len()
+        decreases m.len()
+    {
+        let (pre, kth, post) = partition(m);
+        if pre.len() == k {
+            (pre, kth, post)
+        } else if k > pre.len() {
+            let k_new = (k - pre.len() - 1) as nat;
+            let (pre_prime, p, post_prime) = quickselect(post, k_new);
+            let new_pre = pre.add(Multiset::singleton(kth)).add(pre_prime);
+            let new_post = post.sub(pre_prime).sub(Multiset::singleton(p));
+            (new_pre, p, new_post)
+        } else {
+            let (pre_prime, p, post_prime) = quickselect(pre, k);
+            let new_pre = pre.sub(Multiset::singleton(p)).sub(post_prime);
+            let new_post = post.add(Multiset::singleton(kth)).add(post_prime);
+            (new_pre, p, new_post)
+        }
+    }
 
-fn seed_sequence(entropy: Vec<u32>, spawn_key: Vec<u32>, pool_size: usize) -> (result: Vec<u32>)
-    requires spawn_key.len() == 0,
-    ensures 
-        /* Reproducibility property: same inputs produce same outputs */
-        forall|entropy2: Seq<u32>, spawn_key2: Seq<u32>| 
-            entropy@ == entropy2 && spawn_key@ == spawn_key2 ==> 
-            seed_sequence_spec(entropy2, spawn_key2, pool_size) == result@,
-        /* Non-degeneracy: output depends on input when entropy is present */
-        entropy.len() > 0 ==> 
-            exists|modified_entropy: Seq<u32>| 
-                modified_entropy != entropy@ &&
-                seed_sequence_spec(modified_entropy, spawn_key@, pool_size) != result@,
-        /* Well-defined output: result has the correct size */
-        result.len() == pool_size,
-        /* Result specification matches */
-        result@ == seed_sequence_spec(entropy@, spawn_key@, pool_size)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn main() {}
 }
-// </vc-code>
-
-
-}
-fn main() {}

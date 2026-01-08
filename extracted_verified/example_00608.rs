@@ -1,31 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::multiset::Multiset;
 
-verus! {
-// </vc-preamble>
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn partition(Ghost(m): Ghost<Multiset<int>>) -> (res: (Ghost<Multiset<int>>, Ghost<int>, Ghost<Multiset<int>>))
-    requires m.len() > 0
-    ensures 
-        ({
-            let (Ghost(pre), Ghost(p), Ghost(post)) = res;
-            &&& m.contains(p)
-            &&& m == pre.add(Multiset::singleton(p)).add(post)
-            &&& forall|z: int| pre.contains(z) ==> z <= p
-            &&& forall|z: int| post.contains(z) ==> z >= p
-        })
-// </vc-spec>
-// <vc-code>
+fn myfun(a: &mut Vec<usize>, sum: &mut Vec<usize>, N: usize) 
+	// pre-conditions-start
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 0);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

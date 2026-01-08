@@ -1,60 +1,58 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    // MFES, Exam 8/Sept/20201, Exercise 5 
 
-// <vc-helpers>
-// </vc-helpers>
+    spec fn seq_equal_prefix(a: Seq<i32>, b: Seq<i32>, len: int) -> bool {
+        forall|k: int| 0 <= k < len ==> a[k] == b[k]
+    }
 
-// <vc-spec>
-/* Structure representing NumPy print options */
-struct PrintOptions {
-    /* Number of digits of precision for floating point output */
-    precision: u8,
-    /* Total number of array elements which trigger summarization */
-    threshold: u8,
-    /* Number of array items in summary at beginning and end */
-    edgeitems: u8,
-    /* Number of characters per line for line breaks */
-    linewidth: u8,
-    /* Whether to suppress small floating point values */
-    suppress: bool,
-    /* String representation of floating point not-a-number */
-    nanstr: Vec<char>,
-    /* String representation of floating point infinity */
-    infstr: Vec<char>,
-    /* Controls printing of the sign of floating-point types */
-    sign: Vec<char>,
-    /* Controls interpretation of precision option */
-    floatmode: Vec<char>,
-    /* Legacy printing mode setting */
-    legacy: Option<Vec<char>>,
+    // Computes the length (i) of the longest common prefix (initial subarray) 
+    // of two sequences a and b. 
+    fn longest_prefix(a: &[i32], b: &[i32]) -> (i: usize)
+        ensures 
+            i <= a.len() && i <= b.len(),
+            seq_equal_prefix(a@, b@, i as int),
+            i < a.len() && i < b.len() ==> a@[i as int] != b@[i as int]
+    {
+        let mut i: usize = 0;
+        let min_len = if a.len() < b.len() { a.len() } else { b.len() };
+        
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        while i < min_len
+            invariant
+                i <= min_len,
+                min_len <= a.len(),
+                min_len <= b.len(),
+                seq_equal_prefix(a@, b@, i as int)
+            decreases min_len - i
+        {
+            if a[i] != b[i] {
+                break;
+            }
+            i += 1;
+        }
+        
+        i
+    }
+ 
+    // Test method with an example.
+    fn test_longest_prefix() {
+        let a = [1, 2, 3, 4, 5];
+        let b = [1, 2, 3, 7, 8];
+        let result = longest_prefix(&a, &b);
+        assert(result == 3);
+        
+        let c = [1, 2, 3];
+        let d = [1, 2, 3, 4, 5];
+        let result2 = longest_prefix(&c, &d);
+        assert(result2 == 3);
+        
+        let e = [1, 2];
+        let f = [3, 4];
+        let result3 = longest_prefix(&e, &f);
+        assert(result3 == 0);
+    }
+
+    fn main() {}
 }
-
-fn get_printoptions() -> (result: PrintOptions)
-    ensures
-        result.precision as nat > 0,
-        result.threshold as nat > 0,
-        result.edgeitems as nat > 0,
-        result.linewidth as nat > 0,
-        result.nanstr@.len() > 0,
-        result.infstr@.len() > 0,
-        (result.sign@ == seq!['-'] || result.sign@ == seq!['+'] || result.sign@ == seq![' ']),
-        (result.floatmode@ == seq!['f','i','x','e','d'] ||
-         result.floatmode@ == seq!['u','n','i','q','u','e'] ||
-         result.floatmode@ == seq!['m','a','x','p','r','e','c'] ||
-         result.floatmode@ == seq!['m','a','x','p','r','e','c','_','e','q','u','a','l'])
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-fn main() {}

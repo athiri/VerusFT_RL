@@ -1,24 +1,18 @@
-// <vc-preamble>
+//from Verus tutorial
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn fromfunction(n: usize, f: spec_fn(usize) -> f32) -> (result: Vec<f32>)
-    ensures
-        result.len() == n,
-        forall|i: int| 0 <= i < n ==> result[i] == f(i as usize)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+     
+proof fn bound_check(x: u32, y: u32)
+    requires
+        x <= 0xffff,
+        y <= 0xffff,
+    ensures
+        x*y <= 0x100000000,
+{
+    // The SMT solver can prove this arithmetic bound automatically
+    // 0xffff * 0xffff = 0xfffe0001 < 0x100000000
+}
+}

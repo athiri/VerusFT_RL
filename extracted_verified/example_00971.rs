@@ -1,33 +1,71 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    fn fillK(a: &[int], n: usize, k: int, c: usize) -> (b: bool)
+        requires 
+            c <= n,
+            n == a.len(),
+        ensures true,
+    {
+        let mut count: usize = 0;
+        let mut i: usize = 0;
+        
+        while i < n
+            invariant 
+                i <= n,
+                count <= i,
+                count <= c,
+        {
+            if a[i] == k {
+                count = count + 1;
+                if count >= c {
+                    return true;
+                }
+            }
+            i = i + 1;
+        }
+        
+        count >= c
+    }
 
-spec fn sum(s: Seq<int>, n: nat) -> int
-    recommends n <= s.len()
-    decreases n
-{
-    if s.len() == 0 || n == 0 {
-        0
-    } else {
-        s[0] + sum(s.subrange(1, s.len() as int), (n - 1) as nat)
+    fn containsSubString(a: &[char], b: &[char]) -> (pos: isize)
+        requires 
+            b.len() <= a.len(),
+        ensures true,
+    {
+        if b.len() == 0 {
+            return 0;
+        }
+        
+        let mut i: usize = 0;
+        
+        while i + b.len() <= a.len()
+            invariant i <= a.len()
+        {
+            let mut j: usize = 0;
+            let mut found = true;
+            
+            while j < b.len()
+                invariant 
+                    j <= b.len(),
+                    i + j < a.len() || j == b.len(),
+            {
+                if i + j >= a.len() || a[i + j] != b[j] {
+                    found = false;
+                    break;
+                }
+                j = j + 1;
+            }
+            
+            if found {
+                return i as isize;
+            }
+            
+            i = i + 1;
+        }
+        
+        -1
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn below_zero(ops: Seq<int>) -> (result: bool)
-    ensures result <==> exists|n: nat| n <= ops.len() && sum(ops, n) < 0
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

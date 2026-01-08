@@ -1,15 +1,20 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		sum[0] == 4 * N,
+
+verus! {
+
+fn abs(x: i32) -> (result: i32)
+    ensures
+        result >= 0,
+        result == x || result == -x,
 {
-    sum.set(0, 4 * N as i32);
+    if x >= 0 {
+        x
+    } else if x == i32::MIN {
+        i32::MAX
+    } else {
+        -x
+    }
 }
+
+fn main() {}
 }

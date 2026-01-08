@@ -1,24 +1,50 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_even_at_even_index(arr: &Vec<usize>) -> (result: bool)
-
+//IMPL unique_better
+#[verifier::loop_isolation(false)]
+fn unique_better(a: &[i32]) -> (result: Vec<i32>)
+    // pre-conditions-start
+    requires
+        forall|i: int, j: int|
+            #![trigger a[i], a[j]]
+            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
-// </vc-spec>
-// <vc-code>
+        forall|i: int, j: int|
+            #![trigger result[i], result[j]]
+            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    
+    while i < a.len()
+        invariant
+            0 <= i <= a.len(),
+            forall|k: int, l: int|
+                #![trigger result[k], result[l]]
+                0 <= k && k < l && l < result.len() ==> result[k] < result[l],
+        decreases a.len() - i
+    {
+        let current = a[i];
+        
+        /* code modified by LLM (iteration 4): Only add current element if it's different from the last element in result */
+        if result.len() == 0 || current != result[result.len() - 1] {
+            /* code modified by LLM (iteration 4): Added assertion to prove current > last element when result is non-empty */
+            if result.len() > 0 {
+                assert(current > result[result.len() - 1]);
+            }
+            result.push(current);
+        }
+        
+        i = i + 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
 fn main() {}
+}

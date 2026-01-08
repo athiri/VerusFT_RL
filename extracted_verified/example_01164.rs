@@ -1,26 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn numpy_radians(x: Vec<f32>) -> (result: Vec<f32>)
-    ensures
-        result.len() == x.len(),
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn square(n: u32) -> (r: u32)
+        requires n <= 46340,
+        ensures r == n * n,
+    {
+        n * n
+    }
 }
-// </vc-code>
 
-
+#[verifier::external]
+fn main() {
+    let result = square(100);
+    println!("Square of 100 is: {}", result);
 }
-fn main() {}

@@ -1,71 +1,65 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition: array must have more than 1 element
-pub open spec fn secondSmallest_precond(s: &Vec<i32>) -> bool {
-    s.len() > 1
-}
+// <vc-helpers>
+/* helper modified by LLM (iteration 2): fix type mismatches by casting lengths to int for Seq indexing and ranges */
+proof fn lemma_seq_push_index_old<T>(s: Seq<T>, x: T, i: int)
+    requires
+        0 <= i < s.len() as int,
+    ensures
+        (s.push(x))[i] == s[i],
+{}
 
-// Postcondition: result exists in array and is the second smallest  
-pub open spec fn secondSmallest_postcond(s: &Vec<i32>, result: i32) -> bool {
-    // Result exists in the array
-    (exists |i: int| 0 <= i < s.len() && s[i] == result) &&
-    // There exists a smaller element
-    (exists |j: int| 0 <= j < s.len() && s[j] < result &&
-        // All other elements are >= result
-        (forall |k: int| 0 <= k < s.len() && s[k] != s[j] ==> s[k] >= result))
-}
+/* helper modified by LLM (iteration 2): fix type mismatches by casting lengths to int for Seq indexing */
+proof fn lemma_seq_push_index_new<T>(s: Seq<T>, x: T)
+    ensures
+        (s.push(x))[s.len() as int] == x,
+{}
 
-fn secondSmallestAux(s: &Vec<i32>, i: usize, minIdx: usize, secondIdx: usize) -> (result: i32)
-    requires 
-        s.len() > 1,
-        i <= s.len(),
-        minIdx < s.len(),
-        secondIdx < s.len(),
-        minIdx != secondIdx,
-        minIdx < i, // minIdx is always from already processed elements
-        secondIdx < i, // secondIdx is always from already processed elements
-    ensures 
-        exists |j: int| 0 <= j < s.len() && s[j] == result,
-    decreases s.len() - i,
+// </vc-helpers>
+
+// <vc-spec>
+fn concatenate(a: Vec<f32>, b: Vec<f32>) -> (result: Vec<f32>)
+    ensures
+        result.len() == a.len() + b.len(),
+        forall|i: int| 0 <= i < a.len() ==> result[i] == a[i],
+        forall|j: int| 0 <= j < b.len() ==> result[a.len() + j] == b[j],
+// </vc-spec>
+// <vc-code>
 {
-    if i == s.len() {
-        return s[secondIdx];
+    /* code modified by LLM (iteration 2): switched to usize indices and used seq-view invariants for correctness */
+    let mut result = Vec::<f32>::new();
+    let mut i: usize = 0;
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            result.len() == i,
+            forall|k: int| 0 <= k < i as int ==> result@[k] == a@[k],
+        decreases (a.len() as int) - (i as int)
+    {
+        let ai = a[i];
+        result.push(ai);
+        i = i + 1;
     }
-    
-    let current = s[i];
-    let min_val = s[minIdx];
-    let second_val = s[secondIdx];
-    
-    if current < min_val {
-        // New minimum found, old minimum becomes second
-        secondSmallestAux(s, i + 1, i, minIdx)
-    } else if current < second_val && current != min_val {
-        // New second minimum found
-        secondSmallestAux(s, i + 1, minIdx, i)
-    } else {
-        // No change
-        secondSmallestAux(s, i + 1, minIdx, secondIdx)
+    let mut j: usize = 0;
+    while j < b.len()
+        invariant
+            j <= b.len(),
+            result.len() == a.len() + j,
+            forall|k: int| 0 <= k < a.len() as int ==> result@[k] == a@[k],
+            forall|k: int| 0 <= k < j as int ==> result@[(a.len() as int) + k] == b@[k],
+        decreases (b.len() as int) - (j as int)
+    {
+        let bj = b[j];
+        result.push(bj);
+        j = j + 1;
     }
+    result
 }
+// </vc-code>
 
-pub fn secondSmallest(s: &Vec<i32>) -> (result: i32)
-    requires secondSmallest_precond(s),
-    ensures 
-        // At minimum, the result exists in the array
-        exists |j: int| 0 <= j < s.len() && s[j] == result,
-{
-    // Initialize with first two elements
-    let (minIdx, secondIdx) = if s[0] <= s[1] {
-        (0, 1)
-    } else {
-        (1, 0)
-    };
-    
-    secondSmallestAux(s, 2, minIdx, secondIdx)
 }
-
-} // verus!
-
 fn main() {}

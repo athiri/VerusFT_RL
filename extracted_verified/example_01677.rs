@@ -1,88 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
+
+fn main() {
+}
 
 verus! {
-spec fn valid_input(h: int, n: int, platforms: Seq<int>) -> bool {
-    h >= 1 && n >= 1 && platforms.len() >= n && n > 0 && platforms.len() > 0 && platforms[0] == h
-}
 
-spec fn valid_crystal_count(crystals: int, n: int) -> bool {
-    crystals >= 0 && crystals <= n - 1
-}
-
-spec fn count_crystals_needed(h: int, platforms: Seq<int>) -> int {
-    if platforms.len() >= 1 && platforms[0] == h && h >= 1 {
-        if platforms.len() == 1 {
-            0
-        } else {
-            count_crystals_needed_up_to(h, platforms.push(0), (platforms.len() - 1) as int)
-        }
-    } else {
-        0
-    }
-}
-
-spec fn count_crystals_needed_up_to(h: int, arr: Seq<int>, up_to: int) -> int
-    decreases up_to
+fn find_odd_numbers(arr: &Vec<u32>) -> (odd_numbers: Vec<u32>)
+    ensures
+        odd_numbers@ == arr@.filter(|x: u32| x % 2 != 0),
 {
-    if arr.len() >= 1 && 0 <= up_to && up_to < arr.len() && arr[0] == h && h >= 1 {
-        if up_to == 0 {
-            0
-        } else {
-            let cur_pos = simulate_position_up_to(h, arr, up_to - 1);
-            let prev_crystals = count_crystals_needed_up_to(h, arr, up_to - 1);
-            if cur_pos == arr[up_to as int] {
-                prev_crystals
-            } else if up_to + 1 < arr.len() && arr[(up_to + 1) as int] == arr[up_to as int] - 1 {
-                prev_crystals
-            } else {
-                prev_crystals + 1
-            }
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            result@ == arr@.subrange(0, i as int).filter(|x: u32| x % 2 != 0),
+        decreases arr.len() - i
+    {
+        if arr[i] % 2 != 0 {
+            result.push(arr[i]);
         }
-    } else {
-        0
+        i += 1;
     }
+    
+    result
 }
 
-spec fn simulate_position_up_to(h: int, arr: Seq<int>, up_to: int) -> int
-    decreases up_to
-{
-    if arr.len() >= 1 && 0 <= up_to && up_to < arr.len() && arr[0] == h && h >= 1 {
-        if up_to == 0 {
-            h
-        } else {
-            let prev_pos = simulate_position_up_to(h, arr, up_to - 1);
-            if prev_pos == arr[up_to as int] {
-                prev_pos
-            } else if up_to + 1 < arr.len() && arr[(up_to + 1) as int] == arr[up_to as int] - 1 {
-                arr[up_to as int] - 1
-            } else {
-                prev_pos
-            }
-        }
-    } else {
-        h
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: String) -> (result: String)
-    requires input@.len() > 0
-    ensures result@.len() >= 0
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

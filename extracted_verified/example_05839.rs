@@ -1,64 +1,83 @@
 use vstd::prelude::*;
 
 verus! {
-
-spec fn abs_spec(i: int) -> int {
-    if i < 0 { -i } else { i }
-}
-
-fn abs(i: i32) -> (res: i32)
-    requires
-        i != i32::MIN,
-    ensures
-        i < 0 ==> res == -i,
-        i >= 0 ==> res == i
+spec fn fibo(n: int) -> (result:nat)
+    decreases n
 {
-    if i < 0 {
-        -i
+    if n <= 0 { 0 } else if n == 1 { 1 }
+    else { fibo(n - 2) + fibo(n - 1) }
+}
+// pure-end
+
+spec fn fibo_fits_i32(n: int) -> (result:bool) {
+    fibo(n) < 0x8000_0000
+}
+// pure-end
+
+proof fn fibo_is_monotonic(i: int, j: int)
+    // pre-conditions-start
+    requires
+        i <= j,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        fibo(i) <= fibo(j),
+    decreases j - i
+    // post-conditions-end
+{
+    if i == j {
+        // trivially true
+    } else if j <= 0 {
+        // fibo(i) = fibo(j) = 0
+    } else if j == 1 {
+        if i <= 0 {
+            // fibo(i) = 0, fibo(j) = 1
+        } else {
+            // i = j = 1, already handled above
+        }
     } else {
-        i
+        // j >= 2, so fibo(j) = fibo(j-2) + fibo(j-1)
+        if i <= j - 1 {
+            fibo_is_monotonic(i, j - 1);
+            // fibo(i) <= fibo(j-1) <= fibo(j-2) + fibo(j-1) = fibo(j)
+        }
     }
 }
+// pure-end
 
-#[verifier::loop_isolation(false)]
-fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+fn fibonacci(n: usize) -> (ret: Vec<i32>)
+    // pre-conditions-start
     requires
-        threshold > 0,
-        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+        fibo_fits_i32(n as int),
+        n >= 2,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+        forall |i: int| 2 <= i < n ==> #[trigger] ret@[i] ==  fibo(i), 
+        ret@.len() == n,
+    // post-conditions-end
 {
-    let mut i = 0;
-    while i < numbers.len()
+    let mut result = Vec::new();
+    
+    // Initialize with fibo(0) = 0 and fibo(1) = 1
+    result.push(0);
+    result.push(1);
+    
+    let mut i = 2;
+    while i < n
         invariant
-            0 <= i <= numbers.len(),
-            forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers[x] - numbers[y]) >= threshold
-        /* code modified by LLM (iteration 1): added decreases clause for termination */
-        decreases numbers.len() - i
+            result@.len() == i,
+            i >= 2,
+            i <= n,
+            forall |j: int| 0 <= j < i ==> result@[j] == fibo(j),
     {
-        let mut j = 0;
-        while j < numbers.len()
-            invariant
-                0 <= i < numbers.len(),
-                0 <= j <= numbers.len(),
-                forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers[x] - numbers[y]) >= threshold,
-                /* code modified by LLM (iteration 1): cast i and j to int for specification indexing */
-                forall|y: int| 0 <= y && y < j && (i as int) != y ==> abs_spec(numbers[i as int] - numbers[y]) >= threshold
-            decreases numbers.len() - j
-        {
-            if i != j {
-                let diff = numbers[i] - numbers[j];
-                let abs_diff = if diff < 0 { -diff } else { diff };
-                if abs_diff < threshold {
-                    return true;
-                }
-            }
-            j += 1;
-        }
+        let fib_val = result[i - 2] + result[i - 1];
+        result.push(fib_val);
         i += 1;
     }
-    false
+    
+    result
+}
 }
 
 fn main() {}
-}

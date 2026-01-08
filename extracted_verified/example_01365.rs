@@ -1,28 +1,18 @@
-// <vc-preamble>
+//from Verus tutorial
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn polyvander3d(x: Vec<f64>, y: Vec<f64>, z: Vec<f64>, x_deg: usize, y_deg: usize, z_deg: usize) -> (result: Vec<Vec<f64>>)
-    requires 
-        x@.len() == y@.len(),
-        y@.len() == z@.len(),
-        x@.len() > 0,
-    ensures
-        result@.len() == x@.len(),
-        forall|p: int| 0 <= p < result@.len() ==> result@[p].len() == (x_deg + 1) * (y_deg + 1) * (z_deg + 1)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+     
+proof fn bound_check(x: u32, y: u32)
+    requires
+        x <= 0xffff,
+        y <= 0xffff,
+    ensures
+        x*y <= 0x100000000,
+{
+    // The SMT solver can prove this arithmetic bound automatically
+    // 0xffff * 0xffff = 0xfffe0001 < 0x100000000
+}
+}

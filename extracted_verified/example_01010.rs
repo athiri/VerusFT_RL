@@ -1,41 +1,62 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    // Author of question: Snorri Agnarsson
+    // Permalink of question: https://rise4fun.com/Dafny/0HRr
 
-// <vc-helpers>
-// </vc-helpers>
+    // Author of solution:    Alexander Guðmundsson
+    // Permalink of solution: https://rise4fun.com/Dafny/8pxWd
 
-// <vc-spec>
-fn hermroots(c: Vec<f32>) -> (roots: Vec<f32>)
-    requires c.len() > 0,
-    ensures
-        /* Basic size property */
-        roots.len() == c.len() - 1,
-        /* For n = 1 (constant polynomial), no roots */
-        c.len() == 1 ==> roots.len() == 0,
-        /* For n = 2 (linear polynomial c₀ + c₁·H₁(x) where H₁(x) = 2x) */
-        c.len() == 2 ==> (
-            roots.len() == 1
-            /* In practice: roots[0] = -0.5 * c[0] / c[1] when c[1] ≠ 0 */
-        ),
-        /* Roots are sorted for n > 2 - abstract property */
-        c.len() > 2 ==> true,
-        /* Mathematical property: roots are zeros of the Hermite polynomial */
-        /* Each r in roots satisfies: Σᵢ c[i] * Hᵢ(r) ≈ 0 */
-        /* Numerical accuracy: the companion matrix method is stable */
-        true
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    // Translated from Dafny to Verus
+
+    /// SearchRecursive translated from Dafny
+    /// Searches for element x in sequence a[i..j) using recursion
+    /// Returns index of rightmost occurrence of x, or -1 if not found
+    spec fn search_recursive(a: Seq<int>, i: int, j: int, x: int) -> int
+        decreases j - i
+    {
+        if !(0 <= i && i <= j && j <= a.len()) {
+            -1  // precondition violation
+        } else if j == i {
+            -1
+        } else if a.index(j - 1) == x {
+            j - 1
+        } else {
+            search_recursive(a, i, j - 1, x)
+        }
+    }
+
+    /// Helper function for search_loop
+    /// Implements the while loop logic recursively for spec functions
+    spec fn search_loop_helper(a: Seq<int>, i: int, j: int, x: int, t: int) -> int
+        decreases t
+    {
+        if !(0 <= i && i <= j && j <= a.len() && i <= t && t <= j) {
+            -1  // precondition violation
+        } else if t > i {
+            if a.index(t - 1) == x {
+                t - 1
+            } else {
+                search_loop_helper(a, i, j, x, t - 1)
+            }
+        } else {
+            -1
+        }
+    }
+
+    /// SearchLoop translated from Dafny
+    /// Searches for element x in sequence a[i..j) using iteration (modeled recursively)
+    /// Returns index of rightmost occurrence of x, or -1 if not found
+    spec fn search_loop(a: Seq<int>, i: int, j: int, x: int) -> int
+    {
+        if !(0 <= i && i <= j && j <= a.len()) {
+            -1  // precondition violation
+        } else if i == j {
+            -1
+        } else {
+            search_loop_helper(a, i, j, x, j)
+        }
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

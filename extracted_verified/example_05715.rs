@@ -1,30 +1,42 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
 
-fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
-    ensures
-        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
+spec fn three_distinct_spec(s: Seq<char>, i: int) -> (ret:bool)
+    recommends
+        0 < i && i + 1 < s.len(),
 {
-    let mut index = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while index < arr.len()
-        invariant
-            0 <= index <= arr.len(),
-            forall|i: int| 0 <= i < index ==> number > arr[i],
-        decreases arr.len() - index,
-    {
-        if number <= arr[index] {
-            return false;
-        }
-        index += 1;
-    }
-    
-    true
+    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i] != s[i + 1])
+}
+// pure-end
+
+fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
+    // pre-conditions-start
+    requires
+        0 < i && i + 1 < s.len(),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        is <==> three_distinct_spec(s@, i as int),
+    // post-conditions-end
+{
+    return false;  // TODO: Remove this line and implement the function body
 }
 
-} // verus!
+spec fn happy_spec(s: Seq<char>) -> (ret:bool) {
+    s.len() >= 3 && (forall|i: int| 0 < i && i + 1 < s.len() ==> three_distinct_spec(s, i))
+}
+// pure-end
+
+#[verifier::loop_isolation(false)]
+fn is_happy(s: &Vec<char>) -> (happy: bool)
+    // post-conditions-start
+    ensures
+        happy <==> happy_spec(s@),
+    // post-conditions-end
+{
+    return false;  // TODO: Remove this line and implement the function body
+}
+
+}
+fn main() {}

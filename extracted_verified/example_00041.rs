@@ -1,36 +1,25 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-spec fn is_alpha_char(c: char) -> bool {
-    ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
-}
-
-spec fn string_is_alpha(s: Seq<char>) -> bool {
-    s.len() > 0 && forall|i: int| 0 <= i < s.len() ==> is_alpha_char(s[i])
-}
-
-fn is_alpha(input: Vec<String>) -> (ret: Vec<bool>)
-    ensures
-        ret.len() == input.len(),
-        forall|i: int| 0 <= i < input.len() ==> 
-            ret[i] == string_is_alpha(input[i]@)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+spec fn f(seq: Seq<u64>, i: int) -> bool {
+    seq[i] == i + 2
+}
+
+//IMPL get_element_check_property
+fn get_element_check_property(arr: Vec<u64>, i: usize) -> (ret: u64)
+    requires
+        arr.len() > 0,
+        0 < i < arr@.len(),
+        forall |i: int| f(arr@, i),
+    ensures
+        ret == i + 2,
+        ret == arr@[i as int],
+{
+    /* code modified by LLM (iteration 1): Added assertion to help Dafny instantiate the quantifier for the specific index i */
+    assert(f(arr@, i as int));
+    arr[i]
+}
+}

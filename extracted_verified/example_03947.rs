@@ -1,23 +1,43 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
-
-fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
-    ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
-{
-    for idx in 0..arr.len()
-        invariant
-            forall|i: int| 0 <= i < idx ==> arr[i] != k,
+    fn up_while_less(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
     {
-        if arr[idx] == k {
-            return true;
-        }
+    return 0;  // TODO: Remove this line and implement the function body
     }
-    false
+
+    fn up_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
+
+    fn down_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
+
+    fn down_while_greater(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
+
+    fn quotient()
+    {
+    // TODO: Remove this comment and implement the function body
+    }
+
+    fn quotient1()
+    {
+    // TODO: Remove this comment and implement the function body
+    }
 }
 
-} // verus!
+fn main() {}

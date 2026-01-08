@@ -1,27 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn test_array_elements(a: &mut Vec<i32>, j: usize)
-    requires 
-        j < old(a).len(),
-    ensures 
-        a.len() == old(a).len(),
-        a[j as int] == 60,
-        forall|k: int| 0 <= k < a.len() && k != j ==> a[k] == old(a)[k],
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] == 4 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum[0] = 4 * (N as i32);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

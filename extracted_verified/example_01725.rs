@@ -1,39 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() == 6 && forall|i: int| 0 <= i < 6 ==> 'a' <= #[trigger] s[i] <= 'z'
-}
-
-spec fn is_coffee_like(s: Seq<char>) -> bool 
-recommends valid_input(s)
+fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: Vec<i32>)
+    requires
+        first.len() > 0,
+    ensures
+        replaced_list@ == first@.subrange(0, first.len() - 1).add(second@),
 {
-    s[2] == s[3] && s[4] == s[5]
+    let mut result = Vec::new();
+    
+    // Add all elements from first except the last one
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for first while loop */
+    while i < first.len() - 1
+        invariant
+            0 <= i <= first.len() - 1,
+            result@ == first@.subrange(0, i as int),
+        decreases first.len() - 1 - i
+    {
+        result.push(first[i]);
+        i += 1;
+    }
+    
+    // Add all elements from second
+    let mut j = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for second while loop */
+    while j < second.len()
+        invariant
+            0 <= j <= second.len(),
+            result@ == first@.subrange(0, first.len() - 1).add(second@.subrange(0, j as int)),
+        decreases second.len() - j
+    {
+        result.push(second[j]);
+        j += 1;
+    }
+    
+    result
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: String)
-    requires 
-        valid_input(s@)
-    ensures 
-        result@ =~= seq!['Y', 'e', 's'] || result@ =~= seq!['N', 'o'],
-        is_coffee_like(s@) <==> result@ =~= seq!['Y', 'e', 's']
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

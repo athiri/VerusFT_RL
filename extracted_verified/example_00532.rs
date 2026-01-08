@@ -1,50 +1,51 @@
-// <vc-preamble>
-#![verifier::loop_isolation(false)]
-use vstd::math::*;
 use vstd::prelude::*;
 
 verus! {
 
-spec fn max_rcur(seq: Seq<i32>) -> (result: int)
-    decreases seq.len(),
-{
-    if seq.len() <= 1 {
-        seq.first() as int
-    } else {
-        max(seq.last() as int, max_rcur(seq.drop_last()))
-    }
-}
-
-spec fn min_rcur(seq: Seq<i32>) -> (result: int)
-    decreases seq.len(),
-{
-    if seq.len() <= 1 {
-        seq.first() as int
-    } else {
-        min(seq.last() as int, min_rcur(seq.drop_last()))
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn difference_max_min(arr: &Vec<i32>) -> (diff: i32)
-
+fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
+    // pre-conditions-start
     requires
-        arr.len() > 0,
-        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
-
+        list@.len() > 0,
+        0 < n < list@.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        diff == max_rcur(arr@) - min_rcur(arr@),
-// </vc-spec>
-// <vc-code>
+        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut new_list = Vec::new();
+    
+    // First, append elements from index n to end
+    let mut i = n;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i < list.len()
+        invariant
+            0 < n < list@.len(),
+            n <= i <= list@.len(),
+            new_list@ == list@.subrange(n as int, i as int),
+        decreases list@.len() - i,
+    {
+        new_list.push(list[i]);
+        i += 1;
+    }
+    
+    // Then, append elements from index 0 to n-1
+    let mut j = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while j < n
+        invariant
+            0 < n < list@.len(),
+            0 <= j <= n,
+            new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, j as int)),
+        decreases n - j,
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

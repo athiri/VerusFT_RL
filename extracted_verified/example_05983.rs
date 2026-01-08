@@ -2,50 +2,44 @@ use vstd::prelude::*;
 
 verus! {
 
-// Helper function to check if a number is odd
-spec fn is_odd(x: int) -> bool {
-    x % 2 != 0
-}
-
-// Precondition: array must be non-empty  
-spec fn find_first_odd_precond(a: &Vec<i32>) -> bool {
-    a.len() > 0
-}
-
-// Postcondition specification that matches the Lean version exactly
-spec fn find_first_odd_postcond(a: &Vec<i32>, result: Option<usize>) -> bool {
-    match result {
-        Some(idx) => {
-            &&& idx < a.len()
-            &&& is_odd(a[idx as int] as int)  
-            &&& forall|j: int| 0 <= j < idx ==> !is_odd(a[j] as int)
-        }
-        None => forall|i: int| 0 <= i < a.len() ==> !is_odd(a[i] as int)
-    }
-}
-
-// Implementation function that finds the first odd element
-fn find_first_odd(a: &Vec<i32>) -> (result: Option<usize>)
-    requires find_first_odd_precond(a)
-    ensures find_first_odd_postcond(a, result)
+fn unique_all(arr: &[i32]) -> (ret: Vec<i32>)
+    ensures
+        ret.len() <= arr.len(),
+        forall|i: int| 0 <= i < arr.len() ==> exists|j: int| 0 <= j < ret.len() && #[trigger] ret[j] == #[trigger] arr[i],
+        forall|i: int, j: int| 0 <= i < ret.len() && 0 <= j < i ==> ret[i] != ret[j],
 {
-    let mut i = 0;
-    while i < a.len()
+    let mut result = Vec::new();
+    
+    for i in 0..arr.len()
         invariant
-            i <= a.len(),
-            forall|j: int| 0 <= j < i ==> !is_odd(a[j] as int)
-        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-        decreases a.len() - i
+            result.len() <= i,
+            forall|k: int| 0 <= k < i ==> exists|j: int| 0 <= j < result.len() && result[j] == arr[k],
+            forall|p: int, q: int| 0 <= p < result.len() && 0 <= q < p ==> result[p] != result[q],
     {
-        /* code modified by LLM (iteration 1): fixed type casting to use native i32 % operator in executable code */
-        if a[i] % 2 != 0 {
-            return Some(i);
+        let mut found = false;
+        
+        for j in 0..result.len()
+            invariant
+                /* code modified by LLM (iteration 1): use usize directly instead of int conversion for array indexing */
+                forall|k: int| 0 <= k < j ==> result[k] != arr[i as int],
+                found == exists|k: int| 0 <= k < j && result[k] == arr[i as int],
+        {
+            /* code modified by LLM (iteration 1): use usize directly instead of int conversion for array indexing */
+            if result[j] == arr[i] {
+                found = true;
+                break;
+            }
         }
-        i += 1;
+        
+        if !found {
+            /* code modified by LLM (iteration 1): use usize directly instead of int conversion for array indexing */
+            result.push(arr[i]);
+        }
     }
-    None
+    
+    result
+}
+
 }
 
 fn main() {}
-
-} // verus!

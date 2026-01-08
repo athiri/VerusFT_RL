@@ -2,48 +2,64 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn unique(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        forall|i: int, j: int|
-            #![trigger a[i], a[j]]
-            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
-    ensures
-        forall|i: int, j: int|
-            #![trigger result[i], result[j]]
-            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
+spec fn spec_fibfib(n: nat) -> (ret: nat)
+    decreases n,
 {
-    let mut result = Vec::new();
-    
-    if a.len() == 0 {
-        return result;
+    if (n == 0) {
+        0
+    } else if (n == 1) {
+        0
+    } else if (n == 2) {
+        1
+    } else {
+        spec_fibfib((n - 1) as nat) + spec_fibfib((n - 2) as nat) + spec_fibfib((n - 3) as nat)
+    }
+}
+// pure-end
+
+fn fibfib(x: u32) -> (ret: Option<u32>)
+    // post-conditions-start
+    ensures
+        ret.is_some() ==> spec_fibfib(x as nat) == ret.unwrap(),
+    // post-conditions-end
+{
+    if x == 0 {
+        return Some(0);
+    } else if x == 1 {
+        return Some(0);
+    } else if x == 2 {
+        return Some(1);
     }
     
-    result.push(a[0]);
+    let mut a: u32 = 0;  // fibfib(0)
+    let mut b: u32 = 0;  // fibfib(1)
+    let mut c: u32 = 1;  // fibfib(2)
     
-    let mut i = 1;
-    /* code modified by LLM (iteration 1): Added decreases clause to fix compilation error */
-    while i < a.len()
+    let mut i: u32 = 3;
+    while i <= x
         invariant
-            0 <= i <= a.len(),
-            result.len() >= 1,
-            result[result.len() - 1] == a[i - 1],
-            forall|k: int, l: int|
-                #![trigger result[k], result[l]]
-                0 <= k && k < l && l < result.len() ==> result[k] < result[l],
-            forall|k: int|
-                #![trigger result[k]]
-                0 <= k < result.len() ==> exists|j: int| 0 <= j < i && result[k] == a[j],
-        decreases a.len() - i
+            3 <= i <= x + 1,
+            a == spec_fibfib((i - 3) as nat),
+            b == spec_fibfib((i - 2) as nat),
+            c == spec_fibfib((i - 1) as nat),
     {
-        if a[i] != result[result.len() - 1] {
-            result.push(a[i]);
-        }
-        i += 1;
+        let sum_ab = match a.checked_add(b) {
+            Some(s) => s,
+            None => return None,
+        };
+        let next = match sum_ab.checked_add(c) {
+            Some(s) => s,
+            None => return None,
+        };
+        
+        a = b;
+        b = c;
+        c = next;
+        i = i + 1;
     }
     
-    result
+    Some(c)
 }
 
-fn main() {}
 }
+fn main() {}

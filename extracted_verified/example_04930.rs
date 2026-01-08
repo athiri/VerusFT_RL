@@ -3,30 +3,16 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn array_product(a: Vec<i32>, b: Vec<i32>) -> (result: Vec<i64>) by (nonlinear_arith)
+fn last_position(a: &[i32], elem: i32) -> (result: usize)
     requires
-        a.len() == b.len(),
+        0 < a.len() < 100_000,
+        exists|i: int| 0 <= i < a.len() && a[i] == elem,
     ensures
-        result.len() == a.len(),
-        forall|i: int| #![auto] 0 <= i && i < a.len() ==> result[i] == (a[i] as i64) * (b[i] as i64),
+        0 <= result < a.len(),
+        forall|i: int| result < i < a.len() ==> a[i] != elem,
+        a[result as int] == elem,
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix termination verification */
-    while idx < a.len()
-        invariant
-            idx <= a.len(),
-            result.len() == idx,
-            forall|i: int| #![auto] 0 <= i && i < idx ==> result[i] == (a[i] as i64) * (b[i] as i64),
-        decreases a.len() - idx,
-    {
-        let product = (a[idx] as i64) * (b[idx] as i64);
-        result.push(product);
-        idx += 1;
-    }
-    
-    result
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
 fn main() {}

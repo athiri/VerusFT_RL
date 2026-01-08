@@ -1,29 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-#[verifier::loop_isolation(false)]
-fn binary_search(arr: &[i32], target: i32) -> (result: Option<usize>)
-    requires
-        forall|i: int, j: int| 0 <= i && i < j && j < arr.len() ==> arr[i] <= arr[j],
+fn all_elements_equals(arr: &Vec<i32>, element: i32) -> (result: bool)
+    // post-conditions-start
     ensures
-        match result {
-            Some(index) => arr[index as int] == target && arr.len() > 0 && index < arr.len(),
-            None => forall|i: int| 0 <= i && i < arr.len() ==> arr[i] != target,
-        },
-// </vc-spec>
-// <vc-code>
+        result == (forall|i: int| 0 <= i < arr.len() ==> (arr[i] == element)),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> arr[j] == element
+    {
+        if arr[i] != element {
+            return false;
+        }
+    }
+    true
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

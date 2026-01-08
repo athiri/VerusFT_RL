@@ -1,43 +1,71 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn is_digit(c: char) -> (result: bool) {
-    (c as u8) >= 48 && (c as u8) <= 57
+spec fn is_upper_case(c: char) -> (result:bool) {
+    c >= 'A' && c <= 'Z'
 }
+// pure-end
 
-spec fn count_digits_recursively(seq: Seq<char>) -> (result: int)
-    decreases seq.len(),
-{
-    if seq.len() == 0 {
-        0
+spec fn is_lower_case(c: char) -> (result:bool) {
+    c >= 'a' && c <= 'z'
+}
+// pure-end
+
+spec fn shift_plus_32_spec(c: char) -> (result:char) {
+    ((c as u8) + 32) as char
+}
+// pure-end
+
+spec fn shift_minus_32_spec(c: char) -> (result:char) {
+    ((c as u8) - 32) as char
+}
+// pure-end
+
+spec fn flip_case_spec(c: char) -> (result:char) {
+    if is_lower_case(c) {
+        shift_minus_32_spec(c)
+    } else if is_upper_case(c) {
+        shift_plus_32_spec(c)
     } else {
-        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
-            1 as int
-        } else {
-            0 as int
-        }
+        c
     }
 }
-// </vc-preamble>
+// pure-end
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn count_digits(text: &Vec<char>) -> (count: usize)
-
+fn flip_case(str: &[char]) -> (flipped_case: Vec<char>)
+    // post-conditions-start
     ensures
-        0 <= count <= text.len(),
-        count_digits_recursively(text@) == count,
-// </vc-spec>
-// <vc-code>
+        str@.len() == flipped_case@.len(),
+        forall|i: int| 0 <= i < str.len() ==> flipped_case[i] == flip_case_spec(#[trigger] str[i]),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < str.len()
+        invariant
+            i <= str.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == flip_case_spec(str[j]),
+        decreases str.len() - i
+    {
+        let c = str[i];
+        let flipped = if c >= 'a' && c <= 'z' {
+            ((c as u8) - 32) as char
+        } else if c >= 'A' && c <= 'Z' {
+            ((c as u8) + 32) as char
+        } else {
+            c
+        };
+        
+        result.push(flipped);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
 fn main() {}

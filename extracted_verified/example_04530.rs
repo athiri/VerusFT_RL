@@ -1,21 +1,34 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // Example usage
+    let arr1 = vec![5, 3, 8];
+    let arr2 = vec![2, 1, 6];
+    let result = is_smaller(&arr1, &arr2);
+    println!("Result: {}", result);
+}
 
 verus! {
 
-fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
+fn is_smaller(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
+    requires
+        arr1.len() == arr2.len(),
     ensures
-        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
+        result == (forall|i: int| 0 <= i < arr1.len() ==> arr1[i] > arr2[i]),
 {
-    for i in 0..arr.len()
+    let mut index = 0;
+    
+    while index < arr1.len()
         invariant
-            forall|j: int| 0 <= j < i ==> number > arr[j],
+            0 <= index <= arr1.len(),
+            forall|i: int| 0 <= i < index ==> arr1[i] > arr2[i],
     {
-        if arr[i] >= number {
+        if arr1[index] <= arr2[index] {
             return false;
         }
+        index = index + 1;
     }
+    
     true
 }
 

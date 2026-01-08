@@ -2,45 +2,123 @@ use vstd::prelude::*;
 
 verus! {
 
-fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
+proof fn lemma_increasing_sum_params(s: Seq<u32>, i: int, j: int)
     // pre-conditions-start
     requires
-        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-        0 <= (s1@.len() * 3) <= i32::MAX,
+        0 <= i <= j <= s.len(),
     // pre-conditions-end
     // post-conditions-start
     ensures
-        res@.len() == s1@.len() * 3,
-        forall|i: int|
-            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
-                == s3[i]),
+        spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
+    decreases j - i,
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
-
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < s1.len()
-        invariant
-            result@.len() == idx * 3,
-            idx <= s1@.len(),
-            s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-            forall|i: int| 0 <= i < idx ==> (
-                result[3 * i] == s1[i] && 
-                result[3 * i + 1] == s2[i] && 
-                result[3 * i + 2] == s3[i]
-            ),
-        decreases s1@.len() - idx
-    {
-        result.push(s1[idx]);
-        result.push(s2[idx]);
-        result.push(s3[idx]);
-        idx += 1;
+    // impl-start
+    if (i < j) {
+        assert(spec_sum(s.subrange(0, j - 1)) <= spec_sum(s.subrange(0, j))) by {
+            assert(s.subrange(0, j).drop_last() == s.subrange(0, j - 1));
+        }
+        lemma_increasing_sum_params(s, i, j - 1);
     }
+    // impl-end
+}
+// pure-end
 
-    result
+proof fn lemma_increasing_sum(s: Seq<u32>)
+    // post-conditions-start
+    ensures
+        forall|i: int, j: int|
+            #![trigger spec_sum(s.subrange(0, i)), spec_sum(s.subrange(0, j))]
+            0 <= i <= j <= s.len() ==> spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
+    // post-conditions-end
+{
+    // impl-start
+    assert forall|i: int, j: int|
+        #![trigger spec_sum(s.subrange(0, i)), spec_sum(s.subrange(0, j))]
+        0 <= i <= j <= s.len() ==> spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)) by {
+        if (0 <= i <= j <= s.len()) {
+            lemma_increasing_sum_params(s, i, j);
+        }
+    }
+    // impl-end
+}
+// pure-end
+
+spec fn spec_sum(s: Seq<u32>) -> (ret:int) {
+    s.fold_left(0, |x: int, y| x + y)
+}
+// pure-end
+
+fn sum_lesser_than_limit(qs: &Vec<u32>, w: u32) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> spec_sum(qs@) <= w,
+    // post-conditions-end
+{
+    let mut sum: u64 = 0;
+    let mut i = 0;
+    while i < qs.len()
+        invariant
+            0 <= i <= qs.len(),
+            sum == spec_sum(qs@.subrange(0, i as int)),
+            sum <= u32::MAX as u64,
+    {
+        if sum > w as u64 {
+            return false;
+        }
+        sum = sum + qs[i] as u64;
+        i = i + 1;
+    }
+    sum <= w as u64
 }
 
-} // verus!
+fn palindrome(qs: &Vec<u32>) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> qs@ =~= qs@.reverse(),
+    // post-conditions-end
+{
+    let len = qs.len();
+    let mut i = 0;
+    while i < len / 2
+        invariant
+            0 <= i <= len / 2,
+            forall|k: int| 0 <= k < i ==> qs@[k] == qs@[len - 1 - k],
+    {
+        if qs[i] != qs[len - 1 - i] {
+            return false;
+        }
+        i = i + 1;
+    }
+    proof {
+        assert forall|k: int| 0 <= k < len ==> qs@[k] == qs@.reverse()[k] by {
+            if 0 <= k < len {
+                if k < len / 2 {
+                    assert(qs@[k] == qs@[len - 1 - k]);
+                    assert(qs@.reverse()[k] == qs@[len - 1 - k]);
+                } else {
+                    let mirror_k = len - 1 - k;
+                    assert(0 <= mirror_k < len / 2);
+                    assert(qs@[mirror_k] == qs@[len - 1 - mirror_k]);
+                    assert(qs@[mirror_k] == qs@[k]);
+                    assert(qs@.reverse()[k] == qs@[len - 1 - k]);
+                    assert(qs@.reverse()[k] == qs@[mirror_k]);
+                }
+            }
+        }
+        assert(qs@ =~= qs@.reverse());
+    }
+    true
+}
 
+fn will_it_fly(qs: &Vec<u32>, w: u32) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> qs@ =~= qs@.reverse() && spec_sum(qs@) <= w,
+    // post-conditions-end
+{
+    palindrome(qs) && sum_lesser_than_limit(qs, w)
+}
+
+}
 fn main() {}

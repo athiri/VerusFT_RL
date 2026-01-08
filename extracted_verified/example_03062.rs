@@ -1,49 +1,46 @@
 use vstd::prelude::*;
 
 verus! {
-    fn barrier(v: &[int], p: usize) -> (b: bool)
-        requires 
-            v.len() > 0,
-            p < v.len(),
-        ensures 
-            b == (forall|k: int, l: int| 0 <= k <= p && p < l < v.len() ==> v[k] < v[l])
-    {
-        let mut i = 0;
-        /* code modified by LLM (iteration 3): fixed overflow and invariant issues */
-        // Check if p is the last element - if so, the barrier property is trivially true
-        if p >= v.len() - 1 {
-            return true;
+
+spec fn min_spec(seq: Seq<i32>) -> (result: int)
+    recommends
+        0 < seq.len(),
+    decreases seq.len(),
+{
+    if seq.len() == 1 {
+        seq[0] as int
+    } else if seq.len() == 0 {
+        0
+    } else {
+        let later_min = min_spec(seq.drop_first());
+        if seq[0] <= later_min {
+            seq[0] as int
+        } else {
+            later_min as int
         }
-        
-        while i <= p
-            invariant
-                0 <= i <= p + 1,
-                i <= v.len(),
-                p < v.len() - 1,  // This ensures p + 1 < v.len()
-                forall|k: int, l: int| 0 <= k < i && p < l < v.len() ==> v[k] < v[l]
-            decreases p + 1 - i
-        {
-            let mut j = p + 1;
-            while j < v.len()
-                invariant
-                    0 <= i <= p,
-                    i < v.len(),
-                    p + 1 <= j <= v.len(),
-                    p < v.len() - 1,  // Ensures p + 1 is valid
-                    forall|l: int| p < l < j ==> v[i as int] < v[l],
-                    forall|k: int, l: int| 0 <= k < i && p < l < v.len() ==> v[k] < v[l]
-                decreases v.len() - j
-            {
-                /* code modified by LLM (iteration 3): bounds are now guaranteed by invariants */
-                if v[i] >= v[j] {
-                    return false;
-                }
-                j += 1;
-            }
-            i += 1;
-        }
-        true
     }
 }
+// pure-end
+
+fn second_smallest(numbers: &Vec<i32>) -> (indices: (usize, usize))
+    // pre-conditions-start
+    requires
+        numbers.len() >= 2,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        forall|k: int|
+            0 <= k < numbers.len() && k != indices.0 && numbers[indices.0 as int] == min_spec(
+                numbers@,
+            ) ==> (#[trigger] numbers[k] >= numbers[indices.1 as int]),
+        exists|k: int|
+            0 <= k < numbers.len() && k != indices.0 && (#[trigger] numbers[k]
+                == numbers[indices.1 as int]),
+    // post-conditions-end
+{
+    return 0;  // TODO: Remove this line and implement the function body
+}
+
+} // verus!
 
 fn main() {}

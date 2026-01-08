@@ -1,12 +1,63 @@
 use vstd::prelude::*;
+
+verus! {
+
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (result:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '<' => (x + 1, b),
+                    '>' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
+}
+// pure-end
+
+spec fn spec_bracketing(brackets: Seq<char>) -> (result:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
+    // pre-conditions-start
+    requires
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret <==> spec_bracketing(brackets@),
+    // post-conditions-end
+{
+    let mut count: i32 = 0;
+    let mut i = 0;
+    
+    while i < brackets.len()
+        invariant
+            0 <= i <= brackets.len(),
+            count >= 0,
+            spec_bracketing_helper(brackets@.subrange(0, i as int)) == (count as int, true),
+    {
+        let c = brackets.as_bytes()[i] as char;
+        if c == '<' {
+            count += 1;
+        } else if c == '>' {
+            if count == 0 {
+                return false;
+            }
+            count -= 1;
+        }
+        i += 1;
+    }
+    
+    count == 0
+}
+
+} // verus!
 fn main() {}
-verus!{
-pub fn havoc_inline_post(v: &mut Vec<u32>, a: u32, b: bool)
-    requires 
-        forall |k:int| 0 <= k < old(v).len() ==> old(v)[k] > 0,
-        a > 0,
-        b == false,
-{  
-    // Function body can be empty since there are no postconditions to satisfy
-}
-}

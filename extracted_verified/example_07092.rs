@@ -1,42 +1,76 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
-    requires
-        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-        0 <= (s1@.len() * 3) <= i32::MAX,
-    ensures
-        res@.len() == s1@.len() * 3,
-        forall|i: int|
-            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
-                == s3[i]),
+// Helper function to check if a character is space, comma, or dot (spec version)
+spec fn is_space_comma_dot_spec(c: char) -> bool {
+    c == ' ' || c == ',' || c == '.'
+}
+
+// Helper function to check if a character is space, comma, or dot (exec version)
+fn is_space_comma_dot(c: char) -> (result: bool)
+    ensures result == is_space_comma_dot_spec(c)
+{
+    c == ' ' || c == ',' || c == '.'
+}
+
+// Precondition - always true in this case
+spec fn replace_with_colon_precond(s: Seq<char>) -> bool {
+    true
+}
+
+// Postcondition specification
+spec fn replace_with_colon_postcond(s: Seq<char>, result: Seq<char>) -> bool {
+    result.len() == s.len() &&
+    forall|i: int| #![trigger s.index(i)] #![trigger result.index(i)] 
+        0 <= i < s.len() ==> {
+            let old_char = s.index(i);
+            let new_char = result.index(i);
+            if is_space_comma_dot_spec(old_char) {
+                new_char == ':'
+            } else {
+                new_char == old_char
+            }
+        }
+}
+
+// Main function that replaces spaces, commas, and dots with colons
+fn replace_with_colon(s: &Vec<char>) -> (result: Vec<char>)
+    requires replace_with_colon_precond(s@)
+    ensures replace_with_colon_postcond(s@, result@)
 {
     let mut result = Vec::new();
-    let mut idx = 0;
+    let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-    while idx < s1.len()
-        invariant
-            0 <= idx <= s1.len(),
-            s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-            result@.len() == idx * 3,
-            forall|i: int| 0 <= i < idx ==> (
-                result[3 * i] == s1[i] && 
-                result[3 * i + 1] == s2[i] && 
-                result[3 * i + 2] == s3[i]
-            ),
-        decreases s1.len() - idx
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < s.len()
+        invariant 
+            0 <= i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> {
+                let old_char = s@.index(j);
+                let new_char = result@.index(j);
+                if is_space_comma_dot_spec(old_char) {
+                    new_char == ':'
+                } else {
+                    new_char == old_char
+                }
+            }
+        decreases s.len() - i
     {
-        result.push(s1[idx]);
-        result.push(s2[idx]);
-        result.push(s3[idx]);
-        idx += 1;
+        let c = s[i];
+        if is_space_comma_dot(c) {
+            result.push(':');
+        } else {
+            result.push(c);
+        }
+        i += 1;
     }
     
     result
 }
 
 } // verus!
+
+fn main() {
+}

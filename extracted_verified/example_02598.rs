@@ -1,40 +1,35 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn max_difference(arr: &Vec<i32>) -> (diff: i32)
+#[verifier::loop_isolation(false)]
+fn smallest_missing_number(s: &[i32]) -> (v: i32)
     requires
-        arr.len() > 0,
-        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+        forall|i: int, j: int| 0 <= i < j < s.len() ==> s[i] <= s[j],
+        forall|i: int| 0 <= i < s.len() ==> s[i] >= 0,
+        s.len() <= 100_000,
     ensures
-        forall|i: int, j: int| 0 <= i < arr.len() && 0 <= j < arr.len() ==> arr[i] - arr[j] <= diff,
+        0 <= v,
+        forall|i: int| 0 <= i < s.len() ==> s[i] != v,
+        forall|k: int| 0 <= k < v && s[k] != v ==> exists|j: int| 0 <= j < s.len() && #[trigger] s[j] == k,
 {
-    let mut max_val = arr[0];
-    let mut min_val = arr[0];
-    let mut idx = 1;
+    let mut i: usize = 0;
     
-    while idx < arr.len()
+    /* code modified by LLM (iteration 1): fixed trigger annotation by moving it to the outer quantifier */
+    while i < s.len()
         invariant
-            1 <= idx <= arr.len(),
-            forall|k: int| 0 <= k < idx ==> arr[k] <= max_val,
-            forall|k: int| 0 <= k < idx ==> min_val <= arr[k],
-            exists|k: int| 0 <= k < idx && arr[k] == max_val,
-            exists|k: int| 0 <= k < idx && arr[k] == min_val,
-        /* code modified by LLM (iteration 1): added decreases clause for termination */
-        decreases arr.len() - idx
+            0 <= i <= s.len(),
+            forall|k: int| #[trigger] (0 <= k < i) ==> exists|j: int| 0 <= j < s.len() && s[j] == k,
+        decreases s.len() - i
     {
-        if arr[idx] > max_val {
-            max_val = arr[idx];
+        if s[i] > i as i32 {
+            return i as i32;
         }
-        if arr[idx] < min_val {
-            min_val = arr[idx];
-        }
-        idx += 1;
+        i = i + 1;
     }
     
-    max_val - min_val
+    s.len() as i32
 }
 
-} // verus!
+fn main() {}
+}

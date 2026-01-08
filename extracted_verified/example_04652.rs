@@ -1,63 +1,32 @@
 use vstd::prelude::*;
+
 fn main() {}
 
 verus! {
 
-spec fn is_upper_case(c: u8) -> bool {
-    c >= 65 && c <= 90
-}
-
-spec fn shift32_spec(c: u8) -> u8 {
-    (c + 32) as u8
-}
-
-spec fn is_lower_case(c: u8) -> bool {
-    c >= 97 && c <= 122
-}
-
-spec fn shift_minus_32_spec(c: u8) -> u8 {
-    (c - 32) as u8
-}
-
-spec fn to_toggle_case_spec(s: u8) -> u8 {
-    if is_lower_case(s) {
-        shift_minus_32_spec(s)
-    } else if is_upper_case(s) {
-        shift32_spec(s)
-    } else {
-        s
-    }
-}
-
-fn to_toggle_case(str1: &[u8]) -> (toggle_case: Vec<u8>)
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
     ensures
-        str1@.len() == toggle_case@.len(),
+        result.len() == arr1.len(),
         forall|i: int|
-            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
     let mut result = Vec::new();
     let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-    while i < str1.len()
+    while i < arr1.len()
         invariant
-            i <= str1.len(),
             result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == to_toggle_case_spec(str1[j]),
-        decreases str1.len() - i
+            i <= arr1.len(),
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
     {
-        let c = str1[i];
-        let toggled = if c >= 97 && c <= 122 {
-            // lowercase to uppercase
-            c - 32
-        } else if c >= 65 && c <= 90 {
-            // uppercase to lowercase
-            c + 32
-        } else {
-            // unchanged
-            c
-        };
-        result.push(toggled);
+        let quotient = arr1[i] / arr2[i];
+        result.push(quotient);
         i += 1;
     }
     

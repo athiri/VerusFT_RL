@@ -2,48 +2,52 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn pairs_sum_to_zero(nums: &[i32], target: i32) -> (found: bool)
-    // pre-conditions-start
-    requires
-        nums.len() >= 2,
-        forall|i: int, j: int|
-            0 <= i < j < nums.len() ==> nums[i] + nums[j] <= i32::MAX && nums[i] + nums[j]
-                >= i32::MIN,
-    // pre-conditions-end
+spec fn is_upper_case(c: char) -> (ret:bool) {
+    c >= 'A' && c <= 'Z'
+}
+// pure-end
+
+spec fn count_uppercase_sum(seq: Seq<char>) -> (ret:int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        count_uppercase_sum(seq.drop_last()) + if is_upper_case(seq.last()) {
+            seq.last() as int
+        } else {
+            0 as int
+        }
+    }
+}
+// pure-end
+
+fn digit_sum(text: &[char]) -> (sum: u128)
     // post-conditions-start
     ensures
-        found <==> exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
+        count_uppercase_sum(text@) == sum,
     // post-conditions-end
 {
+    let mut sum: u128 = 0;
     let mut i = 0;
-    while i < nums.len()
+    
+    while i < text.len()
         invariant
-            0 <= i <= nums.len(),
-            forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
-        /* code modified by LLM (iteration 1): added decreases clause to prove termination */
-        decreases nums.len() - i
+            0 <= i <= text.len(),
+            sum == count_uppercase_sum(text@.subrange(0, i as int)),
     {
-        let mut j = i + 1;
-        while j < nums.len()
-            invariant
-                0 <= i < nums.len(),
-                i + 1 <= j <= nums.len(),
-                forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
-                /* code modified by LLM (iteration 1): fixed type mismatch by casting i to int in invariant */
-                forall|jj: int| (i as int) < jj < j ==> nums[i as int] + nums[jj] != target,
-            /* code modified by LLM (iteration 1): added decreases clause to prove termination */
-            decreases nums.len() - j
-        {
-            if nums[i] + nums[j] == target {
-                return true;
-            }
-            j += 1;
+        if is_upper_case(text[i]) {
+            sum = sum + text[i] as u128;
         }
-        i += 1;
+        i = i + 1;
     }
-    false
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    sum
 }
 
-}
+} // verus!
 fn main() {}

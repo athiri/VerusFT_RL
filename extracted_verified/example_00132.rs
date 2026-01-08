@@ -1,25 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn generate_integers(a: i8, b: i8) -> (result: Vec<i8>)
-    ensures (forall|i: int| 0 <= i < result@.len() ==> result@[i] % 2 == 0) &&
-            (forall|i: int| 0 <= i < result@.len() ==> (result@[i] == 2 || result@[i] == 4 || result@[i] == 6 || result@[i] == 8))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    Vec::new()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+		N < 1000,
+	ensures
+		sum[0] <= 5 * N,
+{
+    sum.set(0, 0);
+}
+}

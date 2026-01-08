@@ -1,41 +1,33 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn all_characters_same(char_arr: &[u8]) -> (result: bool)
+fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
+    requires
+        v.len() <= 100_000,
+        forall|i: int, j: int| 0 <= i < j < v.len() ==> v[i] <= v[j],
+        0 <= c <= f + 1 <= v.len(),
+        forall|k: int| 0 <= k < c ==> v[k] <= elem,
+        forall|k: int| f < k < v.len() ==> v[k] > elem,
     ensures
-        result == (forall|i: int|
-            1 <= i < char_arr@.len() ==> char_arr[0] == #[trigger] char_arr[i]),
+        -1 <= p < v.len(),
+        forall|u: int| 0 <= u <= p ==> v[u] <= elem,
+        forall|w: int| p < w < v.len() ==> v[w] > elem,
+    decreases f - c + 1
 {
-    if char_arr.len() == 0 {
-        return true;
+    if c > f {
+        return c - 1;
     }
     
-    let first_char = char_arr[0];
+    let mid = c + (f - c) / 2;
     
-    for i in 1..char_arr.len()
-        invariant
-            /* code modified by LLM (iteration 3): Fixed invariant to use first_char consistently */
-            first_char == char_arr[0],
-            forall|j: int| 1 <= j < i ==> first_char == #[trigger] char_arr[j],
-    {
-        if char_arr[i] != first_char {
-            /* code modified by LLM (iteration 3): Fixed assertion to use consistent variable and prove the negation */
-            assert(first_char != char_arr[i as int]);
-            assert(char_arr[0] != char_arr[i as int]);
-            assert(1 <= i < char_arr@.len());
-            assert(!(forall|k: int| 1 <= k < char_arr@.len() ==> char_arr[0] == #[trigger] char_arr[k]));
-            return false;
-        }
-        /* code modified by LLM (iteration 3): Added assertion to maintain invariant */
-        assert(first_char == char_arr[i as int]);
+    if v[mid as usize] <= elem {
+        binary_search_recursive(v, elem, mid + 1, f)
+    } else {
+        binary_search_recursive(v, elem, c, mid - 1)
     }
-    
-    /* code modified by LLM (iteration 3): Added assertion to prove postcondition when returning true */
-    assert(forall|j: int| 1 <= j < char_arr@.len() ==> char_arr[0] == #[trigger] char_arr[j]);
-    true
 }
 
-} // verus!
+
+fn main() {}
+}

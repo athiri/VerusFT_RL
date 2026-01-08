@@ -1,36 +1,48 @@
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn binary_search(v: &Vec<u64>, k: u64) -> (r: usize)
-    requires
-        forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        exists|i:int| 0 <= i < v.len() && k == v[i],
-    ensures
-        r < v.len(),
-        k == v[r as int],
-{
-    let mut low: usize = 0;
-    let mut high: usize = v.len() - 1;
-    
-    /* code modified by LLM (iteration 1): Added decreases clause to fix loop verification error */
-    loop
-        invariant
-            low <= high,
-            high < v.len(),
-            exists|i:int| low <= i <= high && k == v[i],
-            forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        decreases high - low
-    {
-        let mid = low + (high - low) / 2;
-        
-        if v[mid] == k {
-            return mid;
-        } else if v[mid] < k {
-            low = mid + 1;
-        } else {
-            high = mid - 1;
-        }
+verus! {
+
+spec fn is_divisible(n: int, divisor: int) -> (ret:bool) {
+    (n % divisor) == 0
+}
+// pure-end
+
+spec fn is_prime(n: int) -> (ret:bool) {
+    if n < 2 {
+        false
+    } else {
+        (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k))
     }
 }
+// pure-end
+
+fn prime_length(str: &[char]) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == is_prime(str.len() as int),
+    // post-conditions-end
+{
+    /* code modified by LLM (iteration 1): Fixed type usage - use usize for executable code and convert to int for spec */
+    let n = str.len();
+    
+    if n < 2 {
+        return false;
+    }
+    
+    let mut i: usize = 2;
+    while i < n
+        invariant
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
+    {
+        if n % i == 0 {
+            return false;
+        }
+        i = i + 1;
+    }
+    
+    true
 }
+
+} // verus!
+fn main() {}

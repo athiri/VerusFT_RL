@@ -2,44 +2,42 @@ use vstd::prelude::*;
 
 verus! {
 
-// Helper function to filter a list by a specific value (equivalent to Lean's filterlist)
-fn filterlist(x: i32, nums: &Vec<i32>) -> (result: Vec<i32>)
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn replace(arr: &mut Vec<i32>, k: i32)
+    ensures 
+        forall|i: int| 0 <= i < old(arr).len() ==> old(arr)[i] > k ==> arr[i] == -1,
+        forall|i: int| 0 <= i < old(arr).len() ==> old(arr)[i] <= k ==> arr[i] == old(arr)[i],
+// </vc-spec>
+// <vc-code>
 {
-    return Vec::new();  // TODO: Remove this line and implement the function body
+    let n = arr.len();
+    let mut i: usize = 0;
+    while i < n
+        invariant
+            0 <= i as int,
+            i as int <= n as int,
+            arr.len() == n,
+            n as int == old(arr).len(),
+            forall|j: int| 0 <= j && j < i as int ==> (
+                if old(arr)[j] > k { arr[j] == -1 } else { arr[j] == old(arr)[j] }
+            ),
+            forall|j: int| i as int <= j && j < n as int ==> arr[j] == old(arr)[j]
+        decreases n as int - i as int
+    {
+        let x = arr[i];
+        assert(x == old(arr)[i as int]);
+        if x > k {
+            arr.set(i, -1);
+        }
+        i += 1;
+    }
 }
-
-// Count how many times a value appears in the sequence
-spec fn count_in_seq(s: Seq<i32>, x: i32) -> nat {
-    s.filter(|y: i32| y == x).len()
-}
-
-// Precondition specification
-spec fn find_single_number_precond(nums: Seq<i32>) -> bool {
-    &&& (forall|x: i32| nums.contains(x) ==> {
-        let count = count_in_seq(nums, x);
-        count == 1 || count == 2
-    })
-    &&& (exists|x: i32| nums.contains(x) && count_in_seq(nums, x) == 1)
-    &&& (forall|x: i32, y: i32| 
-        nums.contains(x) && nums.contains(y) && 
-        count_in_seq(nums, x) == 1 && count_in_seq(nums, y) == 1 ==> 
-        x == y)
-}
-
-// Main function that finds the single number
-fn find_single_number(nums: &Vec<i32>) -> (result: i32)
-    requires nums.len() > 0,
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// Postcondition specification  
-spec fn find_single_number_postcond(nums: Seq<i32>, result: i32) -> bool {
-    &&& nums.len() > 0
-    &&& count_in_seq(nums, result) == 1  
-    &&& (forall|x: i32| nums.contains(x) ==> (x == result || count_in_seq(nums, x) == 2))
-}
+// </vc-code>
 
 fn main() {}
 
-} // verus!
+}

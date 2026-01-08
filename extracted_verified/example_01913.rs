@@ -1,37 +1,33 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() == 3 && forall|i: int| 0 <= i < input.len() ==> input[i] == 'A' || input[i] == 'B'
-}
 
-spec fn bus_service_exists(input: Seq<char>) -> bool
-    recommends valid_input(input)
-{
-    input[0] != input[1] || input[1] != input[2]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<char>)
+fn smallest_num(nums: &Vec<i32>) -> (min: i32)
     requires
-        valid_input(input@),
+        nums.len() > 0,
     ensures
-        result@ == seq!['Y', 'e', 's'] <==> bus_service_exists(input@),
-        result@ == seq!['Y', 'e', 's'] || result@ == seq!['N', 'o'],
-// </vc-spec>
-// <vc-code>
+        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
+        exists|i: int| 0 <= i < nums.len() && min == nums[i],
 {
-    assume(false);
-    unreached()
+    let mut min = nums[0];
+    let mut idx = 1;
+    
+    while idx < nums.len()
+        invariant
+            1 <= idx <= nums.len(),
+            forall|i: int| 0 <= i < idx ==> min <= nums[i],
+            exists|i: int| 0 <= i < idx && min == nums[i],
+    {
+        if nums[idx] < min {
+            min = nums[idx];
+        }
+        idx += 1;
+    }
+    
+    min
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

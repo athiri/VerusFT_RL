@@ -1,45 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // Example usage
+    let text1 = b"hello";
+    let text2 = b"hello Z world";
+    let text3 = b"hello z world";
+    
+    println!("contains_z({:?}) = {}", std::str::from_utf8(text1).unwrap(), contains_z(text1));
+    println!("contains_z({:?}) = {}", std::str::from_utf8(text2).unwrap(), contains_z(text2));
+    println!("contains_z({:?}) = {}", std::str::from_utf8(text3).unwrap(), contains_z(text3));
+}
+
 verus! {
-spec fn valid_input(w: int, h: int, k: int) -> bool {
-    w >= 3 && h >= 3 && w <= 100 && h <= 100 && 
-    k >= 1 && k <= ((if w <= h { w } else { h }) + 1) / 4 &&
-    w - 4 * k >= 3 && h - 4 * k >= 3
-}
 
-spec fn perimeter(w: int, h: int) -> int {
-    w * 2 + (h - 2) * 2
-}
-
-spec fn compute_sum(w: int, h: int, k: int) -> int
-    decreases k when k > 0
+fn contains_z(text: &[u8]) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
 {
-    if k <= 0 { 0 }
-    else { 
-        perimeter(w, h) + compute_sum(w - 4, h - 4, k - 1)
+    let mut i = 0;
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            forall|j: int| 0 <= j < i ==> !(text[j] == 90 || text[j] == 122),
+    {
+        if text[i] == 90 || text[i] == 122 {
+            return true;
+        }
+        i += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn gild_cells(w: i8, h: i8, k: i8) -> (result: i8)
-    requires valid_input(w as int, h as int, k as int)
-    ensures result as int == compute_sum(w as int, h as int, k as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
+    false
 }
 
-fn main() {}
+} // verus!

@@ -1,40 +1,35 @@
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
-    spec fn exp(x: int, e: int) -> int
-        decreases e
-    {
-        if e >= 0 {
-            if e == 0 { 1 } else { x * exp(x, e - 1) }
+
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
         } else {
-            arbitrary() // undefined behavior for negative e
+            0 as int
         }
-    }
-
-    // This proof function corresponds to the ensures clause in the original Dafny function
-    proof fn exp_positive_property(x: int, e: int)
-        requires x > 0, e >= 0,
-        ensures exp(x, e) > 0,
-        decreases e
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    proof fn exp3_lemma(n: int) 
-        requires n >= 1,
-        ensures (exp(3, n) - 1) % 2 == 0,
-        decreases n
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    proof fn mult8_lemma(n: int)
-        requires n >= 1,
-        ensures (exp(3, 2 * n) - 1) % 8 == 0,
-        decreases n
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
     }
 }
 
-fn main() {}
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
+{
+    return 0;  // TODO: Remove this line and implement the function body
+}
+
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

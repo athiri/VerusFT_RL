@@ -1,32 +1,25 @@
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
-    requires    
-        exists |q:int| 0 <= q < v.len() && v[q] % 2 == 1
+verus! {
+
+// Helper function to compute LCM of two integers (uninterpreted specification function)
+#[verifier::external_body]
+spec fn lcm_int(a: int, b: int) -> int {
+    unimplemented!()
+}
+
+// Method specification (translation of the Dafny method)
+fn lcm(a: &[i32], b: &[i32]) -> (res: Vec<i32>)
+    requires 
+        a.len() == b.len(),
+        forall|i: int| 0 <= i < a.len() ==> a[i] >= 0 && b[i] >= 0,
     ensures
-        odd_index < v.len()
+        res.len() == a.len(),
+        forall|i: int| 0 <= i < a.len() ==> lcm_int(a[i] as int, b[i] as int) == res[i] as int,
 {
-    let mut i = 0;
-    while i < v.len()
-        invariant 
-            i <= v.len(),
-            exists |q:int| 0 <= q < v.len() && v[q] % 2 == 1,
-            /* code modified by LLM (iteration 1): added invariant to ensure odd number exists in remaining range */
-            exists |q:int| i <= q < v.len() && v[q] % 2 == 1
-        /* code modified by LLM (iteration 2): added decreases clause for loop termination */
-        decreases v.len() - i
-    {
-        if v[i] % 2 == 1 {
-            return i;
-        }
-        i += 1;
-    }
-    /* code modified by LLM (iteration 1): replaced unreachable!() with assert false proof since loop invariant guarantees we find odd number */
-    proof {
-        assert(false);
-    }
-    0
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
+
 }
+
+fn main() {}

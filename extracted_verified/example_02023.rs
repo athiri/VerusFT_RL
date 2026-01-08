@@ -1,58 +1,76 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(n: int, a: Seq<int>, p: Seq<char>) -> bool {
-    n >= 2 &&
-    a.len() == n &&
-    p.len() == n - 1 &&
-    (forall|i: int| 0 <= i < p.len() ==> #[trigger] p[i] == '0' || #[trigger] p[i] == '1') &&
-    (forall|i: int| 0 <= i < a.len() ==> 1 <= #[trigger] a[i] <= n) &&
-    a.to_set() =~= Set::new(|i: int| 1 <= i <= n)
-}
+fn main() {}
 
-spec fn max_up_to(a: Seq<int>, i: int) -> int
-    recommends 0 <= i < a.len()
-    decreases i when i >= 0
+verus! {
+
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
 {
-    if i == 0 { 
-        a[0] 
-    } else if i > 0 && a[i] > max_up_to(a, i-1) { 
-        a[i] 
-    } else if i > 0 { 
-        max_up_to(a, i-1) 
+    if seq.len() == 0 {
+        0
     } else {
-        a[0]
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
 
-spec fn can_sort(n: int, a: Seq<int>, p: Seq<char>) -> bool
-    recommends valid_input(n, a, p)
-{
-    forall|i: int| 0 <= i < n - 1 ==> 
-        (#[trigger] p[i] == '0' ==> max_up_to(a, i) <= i + 1)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: Vec<i8>, p: Vec<char>) -> (result: String)
-    requires
-        valid_input(n as int, a@.map(|i, x| x as int), p@),
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
     ensures
-        result@ == seq!['Y', 'E', 'S'] || result@ == seq!['N', 'O'],
-        (result@ == seq!['Y', 'E', 'S']) <==> can_sort(n as int, a@.map(|i, x| x as int), p@),
-// </vc-spec>
-// <vc-code>
+        count_frequency_rcr(arr@, key) == frequency,
 {
-    assume(false);
-    unreached()
+    let mut count = 0;
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            count == count_frequency_rcr(arr@.take(i as int), key),
+        decreases arr.len() - i,
+    {
+        if arr[i] == key {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.take(arr.len() as int) == arr@);
+    }
+    
+    count
 }
-// </vc-code>
 
-
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result@ == arr@.take(i as int).filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+        decreases arr.len() - i,
+    {
+        let count = count_frequency(arr, arr[i]);
+        if count == 1 {
+            result.push(arr[i]);
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.take(arr.len() as int) == arr@);
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

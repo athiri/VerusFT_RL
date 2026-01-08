@@ -2,98 +2,148 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn count_identical(s1: Seq<i32>, s2: Seq<i32>, s3: Seq<i32>) -> (result: int)
-    decreases s1.len(), s2.len(), s3.len(),
-{
-    if s1.len() == 0 || s2.len() == 0 || s3.len() == 0 {
-        0
+spec fn single_digit_number_to_char(n: nat) -> (result:char) {
+    if n == 0 {
+        '0'
+    } else if n == 1 {
+        '1'
+    } else if n == 2 {
+        '2'
+    } else if n == 3 {
+        '3'
+    } else if n == 4 {
+        '4'
+    } else if n == 5 {
+        '5'
+    } else if n == 6 {
+        '6'
+    } else if n == 7 {
+        '7'
+    } else if n == 8 {
+        '8'
     } else {
-        count_identical(s1.drop_last(), s2.drop_last(), s3.drop_last()) + if (s1.last() == s2.last()
-            && s2.last() == s3.last()) {
-            1 as int
-        } else {
-            0 as int
-        }
+        '9'
     }
 }
-
-/* code modified by LLM (iteration 1): completely rewrote lemma to properly handle the relationship between spec function and subranges */
-proof fn lemma_count_identical_extend(s1: Seq<i32>, s2: Seq<i32>, s3: Seq<i32>, i: int)
-    requires
-        s1.len() == s2.len() == s3.len(),
-        0 <= i < s1.len(),
-    ensures
-        count_identical(s1.subrange(0, i + 1), s2.subrange(0, i + 1), s3.subrange(0, i + 1)) == 
-        count_identical(s1.subrange(0, i), s2.subrange(0, i), s3.subrange(0, i)) + 
-        (if s1[i] == s2[i] && s2[i] == s3[i] { 1int } else { 0int }),
-    decreases i,
-{
-    let sub1 = s1.subrange(0, i + 1);
-    let sub2 = s2.subrange(0, i + 1);
-    let sub3 = s3.subrange(0, i + 1);
-    
-    // Key insight: the spec function works from the end, so we need to show
-    // that the last element of our subrange corresponds to position i
-    assert(sub1.last() == s1[i]);
-    assert(sub2.last() == s2[i]);
-    assert(sub3.last() == s3[i]);
-    
-    // Show that dropping the last element gives us the subrange up to i
-    assert(sub1.drop_last() == s1.subrange(0, i));
-    assert(sub2.drop_last() == s2.subrange(0, i));
-    assert(sub3.drop_last() == s3.subrange(0, i));
-    
-    // The spec function definition directly gives us the result
-    assert(count_identical(sub1, sub2, sub3) == 
-           count_identical(sub1.drop_last(), sub2.drop_last(), sub3.drop_last()) + 
-           (if sub1.last() == sub2.last() && sub2.last() == sub3.last() { 1int } else { 0int }));
-}
-
 // pure-end
 
-fn count_identical_position(arr1: &Vec<i32>, arr2: &Vec<i32>, arr3: &Vec<i32>) -> (count: usize)
+spec fn number_to_char(n: nat) -> (result:Seq<char>)
+    decreases n,
+{
+    if (n == 0) {
+        seq![]
+    } else {
+        number_to_char(n / 10).add(seq![single_digit_number_to_char(n % 10)])
+    }
+}
+// pure-end
+
+spec fn string_sequence(n: nat) -> (result:Seq<char>)
+    decreases n,
+{
+    if n == 0 {
+        seq!['0']
+    } else {
+        string_sequence((n - 1) as nat).add(seq![' '].add(number_to_char(n)))
+    }
+}
+// pure-end
+
+proof fn sanity_check() {
+    // impl-start
+    assert(string_sequence(1) == seq!['0', ' ', '1']) by (compute);
+    assert(string_sequence(3) == seq!['0', ' ', '1', ' ', '2', ' ', '3']) by (compute);
+    assert(string_sequence(12) == seq![
+        '0',
+        ' ',
+        '1',
+        ' ',
+        '2',
+        ' ',
+        '3',
+        ' ',
+        '4',
+        ' ',
+        '5',
+        ' ',
+        '6',
+        ' ',
+        '7',
+        ' ',
+        '8',
+        ' ',
+        '9',
+        ' ',
+        '1',
+        '0',
+        ' ',
+        '1',
+        '1',
+        ' ',
+        '1',
+        '2',
+    ]) by (compute);
+    assert((number_to_char(158) == seq!['1', '5', '8'])) by (compute);
+    // impl-end
+}
+// pure-end
+
+fn single_digit_number_to_char_impl(n: u8) -> (output: char)
     // pre-conditions-start
     requires
-        arr1.len() == arr2.len() && arr2.len() == arr3.len(),
+        0 <= n <= 9,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        0 <= count <= arr1.len(),
-        count_identical(arr1@, arr2@, arr3@) == count,
+        single_digit_number_to_char(n as nat) == output,
     // post-conditions-end
 {
-    let mut count = 0;
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): updated loop invariant and added proof steps to maintain invariant */
-    while i < arr1.len()
-        invariant
-            0 <= i <= arr1.len(),
-            0 <= count <= i,
-            arr1.len() == arr2.len() && arr2.len() == arr3.len(),
-            count == count_identical(arr1@.subrange(0, i as int), arr2@.subrange(0, i as int), arr3@.subrange(0, i as int)),
-        decreases arr1.len() - i,
-    {
-        /* code modified by LLM (iteration 1): added proof step before updating count */
-        proof {
-            lemma_count_identical_extend(arr1@, arr2@, arr3@, i as int);
-        }
-        
-        if arr1[i] == arr2[i] && arr2[i] == arr3[i] {
-            count = count + 1;
-        }
-        i = i + 1;
+    match n {
+        0 => '0',
+        1 => '1',
+        2 => '2',
+        3 => '3',
+        4 => '4',
+        5 => '5',
+        6 => '6',
+        7 => '7',
+        8 => '8',
+        _ => '9',
     }
-    
-    /* code modified by LLM (iteration 1): added assertion to help prove postcondition */
-    assert(i == arr1.len());
-    assert(arr1@.subrange(0, i as int) == arr1@);
-    assert(arr2@.subrange(0, i as int) == arr2@);
-    assert(arr3@.subrange(0, i as int) == arr3@);
-    
-    count
+}
+
+fn number_to_char_impl(n: u8) -> (char_vec: Vec<char>)
+    // post-conditions-start
+    ensures
+        char_vec@ == number_to_char(n as nat),
+    // post-conditions-end
+{
+    if n == 0 {
+        Vec::new()
+    } else {
+        let mut result = number_to_char_impl(n / 10);
+        let digit_char = single_digit_number_to_char_impl(n % 10);
+        result.push(digit_char);
+        result
+    }
+}
+
+fn string_sequence_impl(n: u8) -> (string_seq: Vec<char>)
+    // post-conditions-start
+    ensures
+        string_seq@ == string_sequence(n as nat),
+    // post-conditions-end
+{
+    if n == 0 {
+        vec!['0']
+    } else {
+        let mut result = string_sequence_impl(n - 1);
+        result.push(' ');
+        let mut num_chars = number_to_char_impl(n);
+        result.append(&mut num_chars);
+        result
+    }
 }
 
 } // verus!
-
 fn main() {}

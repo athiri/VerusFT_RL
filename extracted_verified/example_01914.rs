@@ -1,44 +1,61 @@
-// <vc-preamble>
+#![verifier::loop_isolation(false)]
+use vstd::math::*;
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_rectangle_parts(a: int, b: int, n: int) -> bool {
-    a > 0 && b > 0 && a != b && 2 * a + 2 * b == n
-}
 
-spec fn count_valid_rectangles(n: int) -> int
-    recommends n > 0
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    if n % 2 == 1 { 0 }
-    else if n % 4 == 2 { n / 4 }
-    else { n / 4 - 1 }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
+    }
 }
 
-spec fn valid_input(n: int) -> bool {
-    n > 0
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-    requires valid_input(n as int)
-    ensures 
-        result as int == count_valid_rectangles(n as int) &&
-        (n as int % 2 == 1 ==> result as int == 0) &&
-        (n as int % 2 == 0 && n as int % 4 == 2 ==> result as int == n as int / 4) &&
-        (n as int % 2 == 0 && n as int % 4 == 0 ==> result as int == n as int / 4 - 1)
-// </vc-spec>
-// <vc-code>
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    assume(false);
-    unreached()
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
-// </vc-code>
 
-
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
+{
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    let mut i = 1;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    max_val + min_val
 }
 
-fn main() {}
+} // verus!

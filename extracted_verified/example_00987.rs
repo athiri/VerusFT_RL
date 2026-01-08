@@ -1,35 +1,26 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-spec fn sorted(a: &[int]) -> bool {
-    sorted_a(a, a.len() as int)
+    fn find(a: &[i32], key: i32) -> (index: i32)
+        requires a.len() < 0x8000_0000,
+        ensures
+            -1 <= index < a.len(),
+            index != -1 ==> 0 <= index < a.len() && a[index as int] == key && (forall|i: int| 0 <= i < index ==> a[i] != key),
+            index == -1 ==> (forall|i: int| 0 <= i < a.len() ==> a[i] != key)
+    {
+        let mut i = 0;
+        while i < a.len()
+            invariant
+                0 <= i <= a.len(),
+                forall|j: int| 0 <= j < i ==> a[j] != key,
+        {
+            if a[i] == key {
+                return i as i32;
+            }
+            i += 1;
+        }
+        return -1;
+    }
 }
 
-spec fn sorted_a(a: &[int], i: int) -> bool {
-    0 <= i <= a.len() && 
-    forall|k: int| #![trigger a[k]] 0 < k < i ==> a[(k-1) as int] <= a[k]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn look_for_min(a: &[int], i: usize) -> (m: usize)
-    requires 
-        0 <= i < a.len(),
-    ensures
-        i <= m < a.len(),
-        forall|k: int| #![trigger a[k]] i <= k < a.len() ==> a[k] >= a[m as int],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

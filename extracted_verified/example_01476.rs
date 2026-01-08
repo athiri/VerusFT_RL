@@ -1,43 +1,98 @@
-// <vc-preamble>
+/*
+Based on this Rust program.
+https://github.com/TheAlgorithms/Rust/blob/master/src/backtracking/permutations.rs
+
+Verus does not support "continue", "for", !vec, and clone.
+So, I refactored the original code accordingly.
+
+Spec and loop invariants are added to prove no buffer overflow.
+
+No spec/invariant is needed to prove no arithmetic under/overflow.
+*/
+
+/*
+The permutations problem involves finding all possible permutations
+of a given collection of distinct integers. For instance, given [1, 2, 3],
+the goal is to generate permutations like
+ [1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], and [3, 2, 1].
+ This implementation uses a backtracking algorithm to generate all possible permutations.
+*/
+  
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
+ 
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
+    fn main() {
+        // Example usage of the permutation function
+        let nums = vec![1, 2, 3];
+        let perms = permute(nums);
+    }
 
-// <vc-spec>
-spec fn bitwise_or_int(x: i32, y: i32) -> i32 {
-    x
+    #[verifier::external_body]
+    fn myVecClone(v: &Vec<i32>) -> Vec<i32> {
+        v.clone()
+    }
+
+    pub fn permute(nums: Vec<i32>) -> Vec<Vec<i32>> {
+        let mut result = Vec::new();
+        let mut current_permutation = Vec::new();
+        let mut used = Vec::new();
+        
+        // Initialize used vector with false values
+        let mut i = 0;
+        while i < nums.len()
+        invariant
+            i <= nums.len(),
+            used.len() == i,
+        {
+            used.push(false);
+            i = i + 1;
+        }
+        
+        backtrack(&nums, &mut current_permutation, &mut used, &mut result);
+        result
+    }
+
+    fn backtrack(
+        nums: &Vec<i32>,
+        current_permutation: &mut Vec<i32>,
+        used: &mut Vec<bool>,
+        result: &mut Vec<Vec<i32>>,
+    ) 
+    requires
+        nums.len() == old(used).len(),
+    ensures
+        used.len() == old(used).len(),    
+    {
+        // Base case: if current permutation is complete
+        if current_permutation.len() == nums.len() {
+            let perm_clone = myVecClone(current_permutation);
+            result.push(perm_clone);
+            return;
+        }
+        
+        // Try each unused number
+        let mut i = 0;
+        while i < nums.len()
+        invariant
+            i <= nums.len(),
+            nums.len() == used.len(),
+            current_permutation.len() <= nums.len(),
+        {
+            if !used[i] {
+                // Choose
+                used.set(i, true);
+                current_permutation.push(nums[i]);
+                
+                // Explore
+                backtrack(nums, current_permutation, used, result);
+                
+                // Unchoose (backtrack)
+                current_permutation.pop();
+                used.set(i, false);
+            }
+            i = i + 1;
+        }
+    }
 }
-
-spec fn bitwise_and_int(x: i32, y: i32) -> i32 {
-    x
-}
-
-spec fn bitwise_or_vec(x: Seq<i32>, y: Seq<i32>) -> Seq<i32>
-    recommends x.len() == y.len()
-{
-    Seq::new(x.len(), |i: int| x[i])
-}
-
-fn bitwise_or_fn(x1: Vec<i32>, x2: Vec<i32>) -> (result: Vec<i32>)
-    requires x1.len() == x2.len(),
-    ensures 
-        result.len() == x1.len(),
-        forall|i: int| 0 <= i < result.len() ==> result[i] == bitwise_or_int(x1[i], x2[i]),
-        forall|i: int| 0 <= i < result.len() && x2[i] == 0 ==> result[i] == x1[i],
-        forall|i: int| 0 <= i < result.len() && x1[i] == 0 ==> result[i] == x2[i],
-        forall|i: int| 0 <= i < result.len() && (x1[i] == -1i32 || x2[i] == -1i32) ==> result[i] == -1i32,
-        result@ == bitwise_or_vec(x1@, x2@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
-fn main() {}

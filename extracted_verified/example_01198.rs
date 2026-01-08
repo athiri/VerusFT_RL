@@ -1,32 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mgrid(start: i8, stop: i8, step: i8, n: usize) -> (result: Vec<i8>)
-    requires
-        step > 0,
-        start < stop,
-        n == ((stop as int - start as int) / step as int) as usize,
-    ensures
-        result@.len() == n,
-        forall|i: int| 0 <= i < result@.len() ==> #[trigger] result@[i] == start as int + i * step as int,
-        forall|i: int| 0 <= i < result@.len() ==> #[trigger] result@[i] < stop as int,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn match_strings(s: Vec<char>, p: Vec<char>) -> (b: bool)
+        requires s.len() == p.len(),
+        ensures b <==> forall|n: int| 0 <= n < s.len() ==> 
+            s[n] == p[n] || p[n] == '?'
+    {
+        let mut i = 0;
+        while i < s.len()
+            invariant 
+                0 <= i <= s.len(),
+                forall|n: int| 0 <= n < i ==> s[n] == p[n] || p[n] == '?'
+        {
+            if s[i] != p[i] && p[i] != '?' {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

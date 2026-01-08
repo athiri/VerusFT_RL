@@ -1,34 +1,45 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn extract_rear_chars(s: &Vec<Vec<u8>>) -> (result: Vec<u8>)
+#[verifier::loop_isolation(false)]
+fn pairs_sum_to_zero(nums: &[i32], target: i32) -> (found: bool)
+    // pre-conditions-start
     requires
-        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+        nums.len() >= 2,
+        forall|i: int, j: int|
+            0 <= i < j < nums.len() ==> nums[i] + nums[j] <= i32::MAX && nums[i] + nums[j]
+                >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        s.len() == result.len(),
-        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+        found <==> exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
+    // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while i < s.len()
+    let mut i: usize = 0;
+    while i < nums.len() - 1
         invariant
-            0 <= i <= s.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
-            forall|k: int| 0 <= k < s.len() ==> s[k].len() > 0,
-        decreases s.len() - i,
+            0 <= i <= nums.len() - 1,
+            forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
     {
-        let last_char = s[i][s[i].len() - 1];
-        result.push(last_char);
+        let mut j: usize = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < nums.len() - 1,
+                i + 1 <= j <= nums.len(),
+                forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
+                /* code modified by LLM (iteration 1): fixed syntax by adding missing comma and correcting invariant format */
+                forall|jj: int| (i as int < jj < j as int) ==> (nums[i as int] + nums[jj] != target),
+        {
+            if nums[i] + nums[j] == target {
+                return true;
+            }
+            j += 1;
+        }
         i += 1;
     }
-    
-    result
+    false
 }
 
-} // verus!
+}
+fn main() {}

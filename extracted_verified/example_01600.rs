@@ -1,76 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // Example usage of element_wise_divide
+    let arr1 = vec![10, 20, 30];
+    let arr2 = vec![2, 4, 5];
+    let result = element_wise_divide(&arr1, &arr2);
+    println!("Result: {:?}", result);
+}
 
 verus! {
 
-spec fn exp_int(x: nat, y: nat) -> nat
-  decreases y
+fn element_wise_divide(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] / arr2[i]) <= i32::MAX),
+    ensures
+        result@.len() == arr1@.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-  if y == 0 { 1nat } else { x * exp_int(x, (y - 1) as nat) }
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            result@.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
+    {
+        let quotient = arr1[i] / arr2[i];
+        result.push(quotient);
+        i += 1;
+    }
+    
+    result
 }
 
-spec fn valid_bit_string(s: Seq<char>) -> bool {
-  forall|i: int| 0 <= i < s.len() ==> (s[i] == '0' || s[i] == '1')
-}
-
-spec fn str2int(s: Seq<char>) -> nat
-  decreases s.len()
-{
-  if s.len() == 0 { 
-    0nat 
-  } else { 
-    2nat * str2int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat })
-  }
-}
-
-fn add(s1: Seq<char>, s2: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(s1) && valid_bit_string(s2)
-  ensures 
-    valid_bit_string(res) && str2int(res) == str2int(s1) + str2int(s2)
-{
-  assume(false);
-  unreached()
-}
-
-fn div_mod(dividend: Seq<char>, divisor: Seq<char>) -> (res: (Seq<char>, Seq<char>))
-  requires 
-    valid_bit_string(dividend) && valid_bit_string(divisor) && str2int(divisor) > 0
-  ensures 
-    valid_bit_string(res.0) && valid_bit_string(res.1) &&
-    str2int(res.0) == str2int(dividend) / str2int(divisor) &&
-    str2int(res.1) == str2int(dividend) % str2int(divisor)
-{
-  assume(false);
-  unreached()
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mod_exp_pow2(sx: Vec<char>, sy: Vec<char>, n: u8, sz: Vec<char>) -> (res: Vec<char>)
-  requires 
-    valid_bit_string(sx@) && valid_bit_string(sy@) && valid_bit_string(sz@) &&
-    (str2int(sy@) == exp_int(2nat, n as nat) || str2int(sy@) == 0) &&
-    sy@.len() == n as int + 1 &&
-    str2int(sz@) > 1
-  ensures 
-    valid_bit_string(res@) &&
-    str2int(res@) == exp_int(str2int(sx@), str2int(sy@)) % str2int(sz@)
-  decreases n
-// </vc-spec>
-// <vc-code>
-{
-  // impl-start
-  assume(false);
-  unreached()
-  // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

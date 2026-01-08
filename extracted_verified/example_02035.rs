@@ -1,58 +1,59 @@
-// <vc-preamble>
+use vstd::math::*;
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn count_non_zero_digits(n: int) -> int
-    decreases n when n >= 0
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    if n == 0 { 0 }
-    else if n % 10 == 0 { count_non_zero_digits(n / 10) }
-    else { 1 + count_non_zero_digits(n / 10) }
-}
-
-spec fn count_numbers_with_k_non_zero_digits(n: int, k: int) -> int
-{
-    count_range(n, k, 1, n)
-}
-
-spec fn count_range(n: int, k: int, start: int, end: int) -> int
-    decreases if end < start { 0int } else { end - start + 1 }
-{
-    if start > end { 0 }
-    else if count_non_zero_digits(start) == k { 
-        1 + count_range(n, k, start + 1, end)
-    } else { 
-        count_range(n, k, start + 1, end)
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
     }
 }
 
-spec fn valid_input(n: int, k: int) -> bool
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    n >= 1 && k >= 1 && k <= 3
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn count_numbers_with_exactly_k_non_zero_digits(n: i8, k: i8) -> (count: i8)
-requires
-    valid_input(n as int, k as int)
-ensures
-    count as int == count_numbers_with_k_non_zero_digits(n as int, k as int),
-    count as int >= 0,
-    count as int <= n as int
-// </vc-spec>
-// <vc-code>
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
 {
-    assume(false);
-    unreached()
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    
+    let mut i = 1;
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len()
+        invariant
+            1 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+        decreases arr.len() - i,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i += 1;
+    }
+    
+    max_val + min_val
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

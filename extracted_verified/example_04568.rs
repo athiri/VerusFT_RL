@@ -1,46 +1,28 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+}
 
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+fn find_even_numbers(arr: &Vec<u32>) -> (even_numbers: Vec<u32>)
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
-{
-    for i in 0..arr.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
-    {
-        if arr[i] == key {
-            return true;
-        }
-    }
-    false
-}
-
-fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
-    ensures
-        forall|i: int|
-            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
-                #[trigger] shared[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
+        even_numbers@ == arr@.filter(|x: u32| x % 2 == 0),
 {
     let mut result = Vec::new();
+    let mut i = 0;
     
-    for i in 0..list1.len()
+    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+    while i < arr.len()
         invariant
-            forall|k: int|
-                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
-                    #[trigger] result[k],
-                )),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+            result@ == arr@.subrange(0, i as int).filter(|x: u32| x % 2 == 0),
+            i <= arr.len(),
+        decreases arr.len() - i,
     {
-        let elem = list1[i];
-        if contains(list2, elem) && !contains(&result, elem) {
-            result.push(elem);
+        if arr[i] % 2 == 0 {
+            result.push(arr[i]);
         }
+        i += 1;
     }
     
     result

@@ -1,17 +1,29 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
 
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
-	requires 
-		old(a).len() == N,
-		old(sum).len() == 1,
-		N > 0,
-		N < 1000,
-	ensures
-		sum[0] <= 2 * N,
+verus! {
+
+#[verifier::loop_isolation(false)]
+fn is_non_prime(n: u32) -> (result: bool)
+    requires
+        n >= 2,
+    ensures
+        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    sum.set(0, 0);
+    let mut i = 2;
+    while i < n
+        invariant
+            2 <= i <= n,
+            /* code modified by LLM (iteration 1): added trigger annotation to fix quantifier trigger inference */
+            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
+        decreases n - i
+    {
+        if n % i == 0 {
+            return true;
+        }
+        i += 1;
+    }
+    false
 }
+
+fn main() {}
 }

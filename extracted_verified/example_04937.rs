@@ -3,11 +3,14 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn arithmetic_weird() -> (result: i32)
+fn barrier(arr: &[i32], p: usize) -> (result: bool)
+    requires
+        arr.len() > 0,
+        0 <= p < arr.len(),
     ensures
-        result < 10
+        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
 {
-    9
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 fn main() {}

@@ -1,32 +1,47 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn det(a: Vec<Vec<i8>>) -> (result: i8)
-    requires 
-        a.len() > 0,
-        forall|i: int| 0 <= i < a@.len() ==> a@[i].len() == a@.len(),
-    ensures
-        /* For 1x1 matrices, the determinant is the single element */
-        a@.len() == 1 ==> result as int == a@[0][0],
-        /* For 2x2 matrices, the determinant is ad - bc */
-        a@.len() == 2 ==> result as int == a@[0][0] * a@[1][1] - a@[0][1] * a@[1][0],
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    spec fn sorted_between(a: Seq<u32>, from: int, to: int) -> bool {
+        forall |i: int, j:int|  from <= i < j < to ==> a[i] <= a[j]
+    }
+ 
+ 
+    spec fn is_reorder_of<T>(r: Seq<int>, p: Seq<T>, s: Seq<T>) -> bool {
+    &&& r.len() == s.len()
+    &&& forall|i: int| 0 <= i < r.len() ==> 0 <= #[trigger] r[i] < r.len()
+    &&& forall|i: int, j: int| 0 <= i < j < r.len() ==> r[i] != r[j]
+    &&& p =~= r.map_values(|i: int| s[i])
+    }
+ 
+    fn test1(nums: &mut Vec<u32>)
+        ensures
+            sorted_between(nums@, 0, nums@.len() as int),
+            exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+    {
+        let n = nums.len();
+        for i in 0..n
+            invariant
+                forall|k: int, l: int| 0 <= k < i && i <= l < n ==> nums@[k] <= nums@[l],
+                sorted_between(nums@, 0, i as int),
+                nums@.len() == old(nums)@.len(),
+                exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+        {
+            for j in (i+1)..n
+                invariant
+                    i < n,
+                    forall|k: int| i <= k < j ==> nums@[i as int] <= nums@[k],
+                    forall|k: int, l: int| 0 <= k < i && i <= l < n ==> nums@[k] <= nums@[l],
+                    sorted_between(nums@, 0, i as int),
+                    nums@.len() == old(nums)@.len(),
+                    exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+            {
+                if nums[j] < nums[i] {
+                    let temp = nums[i];
+                    nums.set(i, nums[j]);
+                    nums.set(j, temp);
+                }
+            }
+        }
+    }
 }
-// </vc-code>
-
-
-}
-fn main() {}

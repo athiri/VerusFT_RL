@@ -1,27 +1,37 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, N: i32, m: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-	ensures
-		forall |k:int| 0 <= k < N ==> a[k] <= N,
+
+verus! {
+
+#[verifier::loop_isolation(false)]
+fn barrier(arr: &[i32], p: usize) -> (result: bool)
+    requires
+        arr.len() > 0,
+        0 <= p < arr.len(),
+    ensures
+        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
 {
     let mut i = 0;
-    while i < a.len()
+    while i <= p
         invariant
-            0 <= i <= a.len(),
-            a.len() == N,
-            forall |k:int| 0 <= k < i ==> a[k] <= N,
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases a.len() - i,
+            0 <= i <= p + 1,
+            forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
     {
-        if a[i] > N {
-            a.set(i, N);
+        let mut j = p + 1;
+        while j < arr.len()
+            invariant
+                p + 1 <= j <= arr.len(),
+                forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
+                forall|l: int| p < l < j ==> arr[i] < arr[l],
+        {
+            if arr[i] >= arr[j] {
+                return false;
+            }
+            j += 1;
         }
         i += 1;
     }
+    true
 }
+
+fn main() {}
 }

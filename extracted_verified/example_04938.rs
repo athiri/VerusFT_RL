@@ -2,32 +2,58 @@ use vstd::prelude::*;
 
 verus! {
 
-fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
-    requires
-        v.len() <= 100_000,
-        forall|i: int, j: int| 0 <= i < j < v.len() ==> v[i] <= v[j],
-        0 <= c <= f + 1 <= v.len(),
-        forall|k: int| 0 <= k < c ==> v[k] <= elem,
-        forall|k: int| f < k < v.len() ==> v[k] > elem,
-    ensures
-        -1 <= p < v.len(),
-        forall|u: int| 0 <= u <= p ==> v[u] <= elem,
-        forall|w: int| p < w < v.len() ==> v[w] > elem,
-    decreases f - c + 1
+spec fn seq_max(a: Seq<i32>) -> i32
+    decreases a.len(),
 {
-    if c > f {
-        return c - 1;
-    }
-    
-    let mid = c + (f - c) / 2;
-    
-    if v[mid as usize] <= elem {
-        binary_search_recursive(v, elem, mid + 1, f)
+    if a.len() == 0 {
+        i32::MIN
+    } else if a.last() > seq_max(a.drop_last()) {
+        a.last()
     } else {
-        binary_search_recursive(v, elem, c, mid - 1)
+        seq_max(a.drop_last())
     }
 }
 
+fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        result.len() == numbers.len(),
+        forall|i: int| 0 <= i < numbers.len() ==> result[i] == seq_max(numbers@.take(i + 1)),
+{
+    let mut result = Vec::new();
+    let mut current_max = i32::MIN;
+    
+    let mut j = 0;
+    while j < numbers.len()
+        invariant
+            result.len() == j,
+            j <= numbers.len(),
+            forall|i: int| 0 <= i < j ==> result[i] == seq_max(numbers@.take(i + 1)),
+    {
+        if j == 0 {
+            current_max = numbers[j];
+        } else {
+            if numbers[j] > current_max {
+                current_max = numbers[j];
+            }
+        }
+        result.push(current_max);
+        
+        assert(current_max == seq_max(numbers@.take(j + 1))) by {
+            if j == 0 {
+                assert(numbers@.take(1) == seq([numbers[0]]));
+                assert(seq_max(seq([numbers[0]])) == numbers[0]);
+            } else {
+                assert(numbers@.take(j + 1) == numbers@.take(j).push(numbers[j]));
+                assert(numbers@.take(j + 1).drop_last() == numbers@.take(j));
+                assert(numbers@.take(j + 1).last() == numbers[j]);
+            }
+        };
+        
+        j += 1;
+    }
+    
+    result
+}
 
 fn main() {}
 }

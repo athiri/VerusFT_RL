@@ -1,49 +1,45 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: Vec<i32>)
-    // pre-conditions-start
-    requires
-        first.len() > 0,
-    // pre-conditions-end
-    // post-conditions-start
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn is_sorted(a: &Vec<i32>) -> (result: bool)
     ensures
-        replaced_list@ == first@.subrange(0, first.len() - 1).add(second@),
-    // post-conditions-end
+        result == (forall|i: int| 0 <= i < a.len() - 1 ==> #[trigger] a[i] <= a[i + 1]),
+// </vc-spec>
+// <vc-code>
 {
-    let mut result = Vec::new();
+    /* code modified by LLM (iteration 3): added trigger annotation to quantifier in invariant */
+    if a.len() <= 1 {
+        return true;
+    }
     
-    // Add all elements from first except the last one
-    let mut i = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for first loop */
-    while i < first.len() - 1
+    let mut i: usize = 0;
+    while i < a.len() - 1
         invariant
-            i <= first.len() - 1,
-            result@ == first@.subrange(0, i as int),
-        decreases first.len() - 1 - i
+            i <= a.len() - 1,
+            forall|j: int| 0 <= j < i ==> #[trigger] a[j] <= a[j + 1],
+        decreases a.len() - 1 - i
     {
-        result.push(first[i]);
+        if a[i] > a[i + 1] {
+            return false;
+        }
         i += 1;
     }
     
-    // Add all elements from second
-    let mut j = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for second loop */
-    while j < second.len()
-        invariant
-            j <= second.len(),
-            result@ == first@.subrange(0, first.len() - 1).add(second@.subrange(0, j as int)),
-        decreases second.len() - j
-    {
-        result.push(second[j]);
-        j += 1;
+    proof {
+        assert(forall|j: int| 0 <= j < a.len() - 1 ==> #[trigger] a[j] <= a[j + 1]);
     }
     
-    result
+    true
 }
+// </vc-code>
 
-} // verus!
-
-
+}
 fn main() {}

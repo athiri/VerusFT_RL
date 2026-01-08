@@ -1,43 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(a1: int, a2: int, a3: int) -> bool {
-    1 <= a1 <= 100 && 1 <= a2 <= 100 && 1 <= a3 <= 100
-}
 
-spec fn max_of_three(a1: int, a2: int, a3: int) -> int {
-    if a1 >= a2 && a1 >= a3 { a1 } else if a2 >= a3 { a2 } else { a3 }
-}
-
-spec fn min_of_three(a1: int, a2: int, a3: int) -> int {
-    if a1 <= a2 && a1 <= a3 { a1 } else if a2 <= a3 { a2 } else { a3 }
-}
-
-spec fn minimum_cost(a1: int, a2: int, a3: int) -> int {
-    max_of_three(a1, a2, a3) - min_of_three(a1, a2, a3)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a1: i8, a2: i8, a3: i8) -> (result: i8)
-    requires 
-        valid_input(a1 as int, a2 as int, a3 as int)
-    ensures 
-        result as int >= 0,
-        result as int == minimum_cost(a1 as int, a2 as int, a3 as int)
-// </vc-spec>
-// <vc-code>
+fn split_array(list: &Vec<i32>, l: usize) -> (new_list: (Vec<i32>, Vec<i32>))
+    requires
+        list@.len() > 0,
+        0 < l < list@.len(),
+    ensures
+        new_list.0@ == list@.subrange(0, l as int),
+        new_list.1@ == list@.subrange(l as int, list.len() as int),
 {
-    assume(false);
-    unreached()
+    let mut first_part: Vec<i32> = Vec::new();
+    let mut second_part: Vec<i32> = Vec::new();
+    
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i < l
+        invariant
+            0 <= i <= l,
+            l < list.len(),
+            first_part@ == list@.subrange(0, i as int),
+        decreases l - i,
+    {
+        first_part.push(list[i]);
+        i += 1;
+    }
+    
+    let mut j = l;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while j < list.len()
+        invariant
+            l <= j <= list.len(),
+            first_part@ == list@.subrange(0, l as int),
+            second_part@ == list@.subrange(l as int, j as int),
+        decreases list.len() - j,
+    {
+        second_part.push(list[j]);
+        j += 1;
+    }
+    
+    (first_part, second_part)
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

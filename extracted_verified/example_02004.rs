@@ -1,42 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn char_to_pos_spec(c: Seq<char>) -> int {
-    if c.len() == 1 && c[0] == 'v' { 0 }
-    else if c.len() == 1 && c[0] == '>' { 1 }
-    else if c.len() == 1 && c[0] == '^' { 2 }
-    else if c.len() == 1 && c[0] == '<' { 3 }
-    else { 0 }
-}
-
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() > 0
-}
-
-spec fn valid_output(result: Seq<char>) -> bool {
-    result == seq!['c', 'w'] || result == seq!['c', 'c', 'w'] || result == seq!['u', 'n', 'd', 'e', 'f', 'i', 'n', 'e', 'd']
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: &str) -> (result: String)
-    requires valid_input(input@)
-    ensures valid_output(result@)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    "undefined".to_string()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn element_wise_divide(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] / arr2[i]) <= i32::MAX),
+    ensures
+        result@.len() == arr1@.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            arr1.len() == arr2.len(),
+            result@.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
+            forall|j: int| 0 <= j < arr2.len() ==> arr2[j] != 0,
+            forall|j: int| (0 <= j < arr1.len()) ==> (i32::MIN <= arr1[j] / arr2[j] <= i32::MAX),
+    {
+        let quotient = arr1[i] / arr2[i];
+        result.push(quotient);
+        i += 1;
+    }
+    
+    result
+}
+
+} // verus!

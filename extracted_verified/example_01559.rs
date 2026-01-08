@@ -1,34 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-spec fn normalize_index(i: int, shift: int, n: int) -> int {
-    let src_idx = i - shift;
-    let mod_result = src_idx % n;
-    if mod_result < 0 { mod_result + n } else { mod_result }
-}
-
-fn roll<T>(a: Vec<T>, shift: i32) -> (result: Vec<T>)
-    ensures
-        result.len() == a.len(),
-        a.len() == 0 ==> result@ == a@,
-        a.len() > 0 ==> forall|i: int| 0 <= i < a.len() ==> #[trigger] result[i] == a[normalize_index(i, shift as int, a.len() as int)]
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+verus! {
+
+fn product(a: &Vec<u32>, b: &Vec<u32>) -> (c: Vec<u32>)
+    requires
+        a.len() <= 100 && a.len() == b.len(),
+        forall|i: int| (0 <= i && i < a.len()) ==> (a[i] * b[i] < 1000),
+    ensures
+        c@.len() == a@.len(),
+        forall|i: int| (0 <= i && i < a.len()) ==> c[i] == #[trigger] a[i] * #[trigger] b[i],
+{
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < a.len()
+        invariant
+            idx <= a.len(),
+            result.len() == idx,
+            forall|i: int| (0 <= i && i < idx) ==> result[i] == a[i] * b[i],
+    {
+        let product_val = a[idx] * b[idx];
+        result.push(product_val);
+        idx += 1;
+    }
+    
+    result
+}
+
+} // verus!

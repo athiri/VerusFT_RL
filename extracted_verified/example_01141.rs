@@ -1,27 +1,12 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn hermfromroots(roots: Vec<f32>) -> (coef: Vec<f32>)
-    ensures
-        coef@.len() == roots@.len() + 1,
-        roots@.len() > 0 ==> coef@[roots@.len() as int] != 0.0f32
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn triple(x: i64) -> (r: i64)
+        requires -1000000 <= x <= 1000000, // prevent overflow
+        ensures r == 3 * x
+    {
+        3 * x
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

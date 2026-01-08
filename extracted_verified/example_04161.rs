@@ -1,37 +1,23 @@
 use vstd::prelude::*;
+fn main() {}
 
-fn main() {
-    // Main function - can remain empty for this example
-}
-
-verus! {
-
-fn find_first_occurrence(arr: &Vec<i32>, target: i32) -> (index: Option<usize>)
-    requires
-        forall|i: int, j: int| 0 <= i < j < arr.len() ==> arr[i] <= arr[j],
-    ensures
-        if let Some(idx) = index {
-            idx < arr.len() && 
-            arr[idx as int] == target &&
-            forall|k: int| 0 <= k < idx ==> arr[k] != target
-        } else {
-            forall|k: int| 0 <= k < arr.len() ==> arr[k] != target
-        },
+verus!{
+pub fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
+requires 
+    old(y).len() == 0,
+ensures 
+    y@ == x@.filter(|k:u64| k%3 == 0),
 {
-    let mut index = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-    while index < arr.len()
+    let mut i = 0;
+    while i < x.len()
         invariant
-            forall|k: int| 0 <= k < index ==> arr[k] != target,
-            index <= arr.len(),
-        decreases arr.len() - index
+            0 <= i <= x.len(),
+            y@ == x@.subrange(0, i as int).filter(|k:u64| k%3 == 0),
     {
-        if arr[index] == target {
-            return Some(index);
+        if x[i] % 3 == 0 {
+            y.push(x[i]);
         }
-        index += 1;
+        i += 1;
     }
-    None
 }
-
-} // verus!
+}

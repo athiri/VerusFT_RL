@@ -1,62 +1,62 @@
-// <vc-preamble>
+use vstd::math::*;
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn str2int(s: Seq<char>) -> nat
-  decreases s.len()
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-  if s.len() == 0 { 0nat } else { 2nat * str2int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat }) }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
+    }
 }
 
-spec fn exp_int(x: nat, y: nat) -> nat
-  decreases y
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-  if y == 0 { 1nat } else { x * exp_int(x, (y - 1) as nat) }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-spec fn valid_bit_string(s: Seq<char>) -> bool
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
 {
-  forall|i: int| 0 <= i < s.len() ==> s[i] == '0' || s[i] == '1'
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    let mut i = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+        decreases arr.len() - i,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    max_val + min_val
 }
 
-fn mod_exp_pow2(sx: Seq<char>, sy: Seq<char>, n: nat, sz: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(sx) && valid_bit_string(sy) && valid_bit_string(sz),
-    str2int(sy) == exp_int(2nat, n) || str2int(sy) == 0,
-    sy.len() == n + 1,
-    str2int(sz) > 1
-  ensures 
-    valid_bit_string(res),
-    str2int(res) == exp_int(str2int(sx), str2int(sy)) % str2int(sz)
-  decreases n
-{
-  assume(false);
-  unreached()
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mod_exp(sx: Vec<char>, sy: Vec<char>, sz: Vec<char>) -> (res: Vec<char>)
-  requires 
-    valid_bit_string(sx@) && valid_bit_string(sy@) && valid_bit_string(sz@),
-    sy.len() > 0 && str2int(sz@) > 1
-  ensures 
-    valid_bit_string(res@),
-    str2int(res@) == exp_int(str2int(sx@), str2int(sy@)) % str2int(sz@)
-  decreases sy.len()
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

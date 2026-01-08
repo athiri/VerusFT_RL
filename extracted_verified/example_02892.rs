@@ -1,50 +1,34 @@
+use vstd::math::abs;
 use vstd::prelude::*;
 
 verus! {
-
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+fn has_close_elements(numbers: &[i64], threshold: i64) -> (result: bool)
     // post-conditions-start
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        result == exists|i: int, j: int|
+            0 <= i < j < numbers@.len() && abs(numbers[i] - numbers[j]) < threshold,
     // post-conditions-end
 {
-    for i in 0..arr.len()
+    let len = numbers.len();
+    
+    for i in 0..len
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            forall|ii: int, jj: int| 0 <= ii < i && ii < jj < len ==> abs(numbers[ii] - numbers[jj]) >= threshold,
     {
-        if arr[i] == key {
-            return true;
+        for j in (i + 1)..len
+            invariant
+                forall|ii: int, jj: int| 0 <= ii < i && ii < jj < len ==> abs(numbers[ii] - numbers[jj]) >= threshold,
+                forall|jj: int| (i + 1) <= jj < j ==> abs(numbers[i as int] - numbers[jj]) >= threshold,
+        {
+            /* code modified by LLM (iteration 1): use i64 arithmetic instead of int for executable code */
+            if (numbers[i] - numbers[j]).abs() < threshold {
+                return true;
+            }
         }
     }
+    
     false
 }
 
-fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
-    // post-conditions-start
-    ensures
-        forall|i: int|
-            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
-                #[trigger] shared[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
-    // post-conditions-end
-{
-    let mut result: Vec<i32> = Vec::new();
-    
-    for i in 0..list1.len()
-        invariant
-            forall|k: int| 0 <= k < result.len() ==> (list1@.contains(result[k]) && list2@.contains(result[k])),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-    {
-        let elem = list1[i];
-        if contains(list2, elem) && !contains(&result, elem) {
-            result.push(elem);
-        }
-    }
-    
-    result
 }
-
-} // verus!
-
 fn main() {}

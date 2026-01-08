@@ -1,26 +1,42 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (ret:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '(' => (x + 1, b),
+                    ')' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
+}
+// pure-end
+
+spec fn spec_bracketing(brackets: Seq<char>) -> (ret:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
+    // pre-conditions-start
+    requires
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        ret <==> spec_bracketing(brackets@),
+    // post-conditions-end
 {
-    let mut idx = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while idx < arr.len()
-        invariant
-            forall|i: int| 0 <= i < idx ==> ((i % 2) == (arr[i] % 2)),
-        decreases arr.len() - idx,
-    {
-        if (idx % 2) != (arr[idx] % 2) {
-            return false;
-        }
-        idx += 1;
-    }
-    true
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 } // verus!
+fn main() {}

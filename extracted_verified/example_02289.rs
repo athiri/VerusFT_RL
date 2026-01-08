@@ -1,44 +1,33 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_three_integers(input: Seq<char>, a: int, b: int, c: int) -> bool {
-    true /* Simplified for compilation */
+spec fn is_divisible(n: int, divisor: int) -> bool {
+    (n % divisor) == 0
 }
 
-spec fn is_valid_integer(s: Seq<char>) -> bool {
-    s.len() > 0
-}
-
-spec fn split_by_spaces_func(s: Seq<char>) -> Seq<Seq<char>> {
-    Seq::empty()
-}
-
-spec fn parse_int_func(s: Seq<char>) -> int {
-    0
-}
-
-spec fn parse_unsigned_int(s: Seq<char>) -> int {
-    0
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Seq<char>) -> (result: Seq<char>)
-    requires input.len() > 0
-// </vc-spec>
-// <vc-code>
+fn prime_num(n: u64) -> (result: bool)
+    requires
+        n >= 2,
+    ensures
+        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
 {
-    assume(false);
-    unreached()
+    let mut i: u64 = 2;
+    while i < n
+        invariant
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        decreases n - i
+    {
+        if n % i == 0 {
+            return false;
+        }
+        i = i + 1;
+    }
+    true
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

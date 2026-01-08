@@ -1,25 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    spec fn Average(a: int, b: int) -> int {
+        (a + b) / 2
+    }
 
-// <vc-helpers>
-// </vc-helpers>
+    proof fn Triple(x: int) -> (r: int)
+        ensures r == 3 * x
+    {
+        let r = Average(2 * x, 4 * x);
+        assert((2 * x + 4 * x) / 2 == 6 * x / 2);
+        assert(6 * x / 2 == 3 * x);
+        r
+    }
 
-// <vc-spec>
-fn numpy_append(arr: Vec<f32>, values: Vec<f32>) -> (result: Vec<f32>)
-    ensures
-        result.len() == arr.len() + values.len(),
-        forall|i: int| 0 <= i < arr.len() ==> result[i] == arr[i],
-        forall|j: int| 0 <= j < values.len() ==> result[arr.len() + j] == values[j],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn Triple1(x: i32) -> (r: i32)
+        requires -715827882 <= x <= 715827882  // Prevent overflow
+        ensures r == 3 * x
+    {
+        3 * x
+    }
+
+    proof fn DoubleQuadruple(x: int) -> (res: (int, int))
+        ensures res.0 == 2 * x && res.1 == 4 * x
+    {
+        let a = 2 * x;
+        let b = 2 * a;
+        (a, b)
+    }
+
+    fn F() -> (r: i32)
+        ensures r == 29
+    {
+        29
+    }
+
+    fn M() -> (r: i32)
+        ensures r == 29
+    {
+        29
+    }
+
+    fn Caller() {
+    }
+
+    fn MyMethod(x: i32) -> (y: i32)
+        requires 10 <= x <= 1000  // Prevent overflow and ensure postcondition
+        ensures 25 <= y
+    {
+        x + 15
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

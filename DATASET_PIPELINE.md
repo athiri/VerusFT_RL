@@ -28,9 +28,10 @@ python3 fetch_sources.py
 - 47.0% pass rate from 14,199 extracted files
 
 **Extraction pipeline:**
-1. 14,199 files extracted from 10 source repositories
-2. 7,029 files pass verification (49.5%)
-3. 6,675 files are minimal (≤100 LOC) - **included in dataset**
+1. Files extracted from source repositories
+2. Stub files filtered out (`assume(false)`, `unreached()`) - not suitable for SFT
+3. Files pass Verus verification with ≥1 verified proof
+4. Minimal files (≤100 LOC) included in dataset
 
 ### Source Repositories
 
@@ -80,9 +81,9 @@ grep -L -E "assume\(false\)|unreached\(\)" minimized_examples/*.rs > clean_files
 
 | File | Purpose |
 |------|---------|
-| `fetch_sources.py` | Download and verify Verus files from source repos |
+| `fetch_sources.py` | Download Verus files from source repos (filters out stubs) |
 | `verification.py` | Core Verus verification logic |
-| `analysis.py` | Semantic analysis + stub detection |
+| `analysis.py` | Semantic analysis + stub detection (shared logic) |
 | `verus_metrics.py` | Dataset metrics and quality reporting |
 | `run_minimizer.py` | Run creduce minimization |
 
@@ -120,6 +121,8 @@ Per `PROJECT_PROPOSAL.md`:
 Files containing these patterns are **stubs** (not suitable for SFT):
 - `assume(false)`
 - `unreached()`
+
+**Note:** Stub detection is applied during extraction in `fetch_sources.py` to ensure only legitimate implementations are included in the dataset.
 
 ---
 

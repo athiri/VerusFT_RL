@@ -2,19 +2,49 @@ use vstd::prelude::*;
 
 verus! {
 
-fn abs(x: i32) -> (result: i32)
-    requires
-        x != i32::MIN,
-    ensures
-        result >= 0,
-        result == x || result == -x,
+// Precondition: array must have size > 0
+spec fn array_sum_precond(a: &Vec<i32>) -> bool {
+    a.len() > 0
+}
+
+// Helper function to compute sum up to index n (matches Lean's sumTo)
+spec fn sum_to(a: &Vec<i32>, n: nat) -> int
+    decreases n
 {
-    if x >= 0 {
-        x
+    if n == 0 {
+        0int
     } else {
-        -x
+        sum_to(a, (n - 1) as nat) + a[(n - 1) as int] as int  
     }
 }
 
-fn main() {}
+// Postcondition specification (matches Lean's arraySum_postcond)
+spec fn array_sum_postcond(a: &Vec<i32>, result: i32) -> bool {
+    &&& result as int - sum_to(a, a.len() as nat) == 0
+    &&& result as int >= sum_to(a, a.len() as nat)  
 }
+
+// Main function (direct translation of Lean's arraySum)
+#[verifier::exec_allows_no_decreases_clause]  
+fn array_sum(a: &Vec<i32>) -> (result: i32)
+    requires array_sum_precond(a)
+    ensures array_sum_postcond(a, result)
+{
+    let mut sum: i32 = 0;
+    let mut i: usize = 0;
+    
+    while i < a.len()
+        invariant 
+            i <= a.len(),
+            sum as int == sum_to(a, i as nat)
+    {
+        sum = sum + a[i];
+        i = i + 1;
+    }
+    
+    sum
+}
+
+}
+
+fn main() {}

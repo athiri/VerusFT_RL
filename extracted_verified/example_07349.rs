@@ -2,46 +2,56 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
+// Precondition predicate
+spec fn longest_common_prefix_precond(str1: Seq<char>, str2: Seq<char>) -> bool {
+    true
 }
 
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool) 
-    ensures 
-        result == in_array(a@, x),
-{
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a@[j] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
-    }
-    false
+// Postcondition predicate
+spec fn longest_common_prefix_postcond(
+    str1: Seq<char>, 
+    str2: Seq<char>, 
+    result: Seq<char>
+) -> bool {
+    &&& result.len() <= str1.len()
+    &&& result == str1.subrange(0, result.len() as int)
+    &&& result.len() <= str2.len()
+    &&& result == str2.subrange(0, result.len() as int)
+    &&& (result.len() == str1.len() || result.len() == str2.len() || 
+         (result.len() < str1.len() && result.len() < str2.len() && 
+          str1[result.len() as int] != str2[result.len() as int]))
 }
 
-#[verifier::loop_isolation(false)]
-fn remove_elements(a: &Vec<i32>, b: &Vec<i32>) -> (c: Vec<i32>)
-    ensures
-        forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
-        forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
+fn longest_common_prefix(str1: &Vec<char>, str2: &Vec<char>) -> (result: Vec<char>)
+    requires longest_common_prefix_precond(str1@, str2@)
+    ensures longest_common_prefix_postcond(str1@, str2@, result@)
 {
-    let mut c = Vec::new();
+    let mut result = Vec::new();
+    let mut i = 0;
     
-    for i in 0..a.len()
-        invariant
-            forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
-            forall|x: int, y: int| 0 <= x < y < c.len() ==> c[x] != c[y],
+    /* code modified by LLM (iteration 1): fixed decreases clause to use proper int arithmetic */
+    while i < str1.len() && i < str2.len() && str1[i] == str2[i]
+        invariant 
+            0 <= i <= str1.len(),
+            0 <= i <= str2.len(),
+            result@ == str1@.subrange(0, i as int),
+            result@ == str2@.subrange(0, i as int),
+            forall |j: int| 0 <= j < i ==> str1@[j] == str2@[j]
+        decreases (str1@.len() as int).min(str2@.len() as int) - (i as int)
     {
-        let element = a[i];
-        if !in_array_exec(b, element) && !in_array_exec(&c, element) {
-            c.push(element);
-        }
+        result.push(str1[i]);
+        i += 1;
     }
     
-    c
+    result
+}
+
+proof fn longest_common_prefix_spec_satisfied(str1: Seq<char>, str2: Seq<char>)
+    requires longest_common_prefix_precond(str1, str2)
+{
+    // Proof body omitted (corresponds to "sorry" in Lean)
+}
+
 }
 
 fn main() {}
-}

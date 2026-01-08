@@ -1,33 +1,27 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn online_max(a: &Vec<i32>, x: usize) -> (result: (i32, usize))
-    requires
-        a.len() > 0,
-        x < a.len(),
-    ensures
-        ({
-            let (m, p) = result;
-            x <= p && p < a.len()
-            && (forall|i: int| 0 <= i < x ==> a[i] <= m)
-            && (exists|i: int| 0 <= i < x && a[i] == m)
-            && ((p < a.len() - 1) ==> (exists|i: int| x <= i <= p && a[i] > m))
-            && ((forall|i: int| x <= i < a.len() ==> a[i] <= m) ==> p == a.len() - 1)
-        })
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+	ensures
+		forall |k:int| 0 <= k < N ==> a[k] <= N,
+{
+    /* code modified by LLM (iteration 2): Added decreases clause to prove loop termination */
+    let mut i: usize = 0;
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            a.len() == N,
+            forall |k:int| 0 <= k < i ==> a[k] <= N,
+        decreases a.len() - i
+    {
+        if a[i] > N {
+            a.set(i, N);
+        }
+        i = i + 1;
+    }
+}
+}

@@ -1,44 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
+
 verus! {
-spec fn valid_input(diameters: Seq<int>) -> bool {
-    diameters.len() > 0 && forall|i: int| 0 <= i < diameters.len() ==> diameters[i] > 0
+
+// ASCII --> space=32, comma=44 , dot=46 , colon=58
+spec fn is_space_comma_dot_spec(c: u8) -> bool {
+    (c == 32) || (c == 44) || (c == 46)
 }
 
-spec fn num_distinct(s: Seq<int>) -> int
-    decreases s.len()
+fn replace_with_colon(str1: &[u8]) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|k: int|
+            0 <= k < result.len() ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+    return Vec::new();  // TODO: Remove this line and implement the function body
+            } else {
+                str1[k]
+            }),
 {
-    if s.len() == 0 {
-        0
-    } else if s.subrange(1, s.len() as int).contains(s[0]) {
-        num_distinct(s.subrange(1, s.len() as int))
-    } else {
-        1 + num_distinct(s.subrange(1, s.len() as int))
+    let mut result: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            result@.len() == index,
+            forall|k: int|
+                0 <= k < index ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+                    58  //ASCII -> colon=58
+
+                } else {
+                    str1[k]
+                }),
+    {
+        if ((str1[index] == 32) || (str1[index] == 44) || (str1[index] == 46)) {
+            result.push(58);  //ASCII -> colon=58
+        } else {
+            result.push(str1[index]);
+        }
+        index += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(diameters: Vec<i8>) -> (result: i8)
-    requires 
-        valid_input(diameters@.map(|i, x| x as int)),
-    ensures 
-        result as int == num_distinct(diameters@.map(|i, x| x as int)),
-        result as int >= 1,
-        result as int <= diameters@.len(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    result
 }
 
-fn main() {}
+} // verus!

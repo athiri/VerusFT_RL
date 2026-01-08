@@ -1,46 +1,47 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn chord_intersects(chord1: &Vec<usize>, chord2: &Vec<usize>) -> bool {
-    let a1 = if chord1[0] < chord1[1] { chord1[0] } else { chord1[1] };
-    let b1 = if chord1[0] > chord1[1] { chord1[0] } else { chord1[1] };
-    let a2 = if chord2[0] < chord2[1] { chord2[0] } else { chord2[1] };
-    let b2 = if chord2[0] > chord2[1] { chord2[0] } else { chord2[1] };
-    (a1 < a2 && a2 < b1 && b1 < b2) || (a2 < a1 && a1 < b2 && b2 < b1)
+spec fn in_array(a: Seq<i32>, x: i32) -> bool {
+    exists|i: int| 0 <= i < a.len() && a[i] == x
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn has_chord_intersection(n: usize, chords: &Vec<Vec<usize>>) -> (result: bool)
-    requires
-        n >= 2,
-        chords.len() == n,
-        forall|i: int| 0 <= i < chords.len() ==> (
-            chords[i].len() == 2 &&
-            chords[i][0] >= 1 && chords[i][0] <= 2 * n &&
-            chords[i][1] >= 1 && chords[i][1] <= 2 * n
-        ),
-
-        forall|i: int, j: int, k: int, l: int| 
-            0 <= i < chords.len() && 0 <= j < chords.len() && 
-            0 <= k < 2 && 0 <= l < 2 && 
-            (i != j || k != l) ==> chords[i][k] != chords[j][l],
+fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
     ensures
-        result == exists|i: int, j: int| 
-            0 <= i < chords.len() && 0 <= j < chords.len() && i != j &&
-            #[trigger] chord_intersects(&chords[i], &chords[j]),
-// </vc-spec>
-// <vc-code>
+        result == in_array(a@, x),
 {
-    assume(false);
-    unreached()
+    for i in 0..a.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> a[j] != x,
+    {
+        if a[i] == x {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
+#[verifier::loop_isolation(false)]
+fn remove_elements(a: &Vec<i32>, b: &Vec<i32>) -> (c: Vec<i32>)
+    ensures
+        forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+        forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
+{
+    let mut c = Vec::new();
+    
+    for i in 0..a.len()
+        invariant
+            forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+            forall|idx1: int, idx2: int| 0 <= idx1 < idx2 < c.len() ==> c[idx1] != c[idx2],
+    {
+        let elem = a[i];
+        if !in_array_exec(b, elem) && !in_array_exec(&c, elem) {
+            c.push(elem);
+        }
+    }
+    
+    c
 }
+
 fn main() {}
+}

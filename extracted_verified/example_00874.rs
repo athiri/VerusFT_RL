@@ -1,36 +1,52 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-spec fn get_size(i: int, j: int) -> int {
-    j - i + 1
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn longest_zero(a: &[i32]) -> (result: (usize, usize))
-    requires 
-        1 <= a.len()
-    ensures 
-        result.0 <= a.len(),
-        result.1 < a.len(),
-        result.1 + result.0 <= a.len(),
-        forall |i: int| result.1 <= i < (result.1 + result.0) ==> a[i as int] == 0,
-        forall |i: int, j: int| {
-            0 <= i < j < a.len() && get_size(i, j) > (result.0 as int)
-            ==> exists |k: int| i <= k <= j && a[k] != 0
+    spec fn even(n: int) -> bool 
+        recommends n >= 0
+        decreases n
+    {
+        if n == 0 { 
+            true 
+        } else if n > 0 { 
+            !even(n - 1) 
+        } else {
+            arbitrary()
         }
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
+    }
 
+    fn is_even(n: u32) -> (r: bool)
+        requires n >= 0,
+        ensures r <==> even(n as int)
+    {
+        proof {
+            lemma_even_equivalent_mod2(n as int);
+        }
+        n % 2 == 0
+    }
+
+    proof fn lemma_even_equivalent_mod2(n: int)
+        requires n >= 0
+        ensures even(n) <==> (n % 2 == 0)
+        decreases n
+    {
+        if n == 0 {
+            // Base case: even(0) = true and 0 % 2 == 0
+        } else if n == 1 {
+            // Base case: even(1) = !even(0) = false and 1 % 2 == 1
+        } else {
+            // Inductive case: even(n) = !even(n-1)
+            lemma_even_equivalent_mod2(n - 1);
+            assert(even(n - 1) <==> ((n - 1) % 2 == 0));
+            assert(even(n) == !even(n - 1));
+            
+            // Mathematical fact about modulo
+            if (n - 1) % 2 == 0 {
+                assert(n % 2 == 1);
+            } else {
+                assert(n % 2 == 0);
+            }
+        }
+    }
 }
+
 fn main() {}

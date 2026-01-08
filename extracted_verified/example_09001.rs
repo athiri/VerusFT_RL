@@ -1,76 +1,56 @@
+use core::hint::spin_loop;
+use core::mem::ManuallyDrop;
+use core::ops::Deref;
 use vstd::prelude::*;
+
+// Assumptions about external functions
 
 verus! {
 
-// Precondition for maxSubarraySum
-spec fn max_subarray_sum_precond(xs: Seq<i32>) -> bool {
-    true
+/// This is a workaround to add an uninterpreted specification of Deref trait, as Deref is included in Verus but does not have spec functions.
+/// It may change if Verus adds native support for spec functions in the Deref trait.
+pub trait DerefSpec: Deref {
+    spec fn deref_spec(&self) -> &<Self as Deref>::Target;
+
+    proof fn deref_spec_eq(&self)
+        ensures
+            forall|output|
+                call_ensures(Self::deref, (self,), output) ==> self.deref_spec() == output,
+    ;
 }
 
-// Helper function to compute sum of a subarray slice
-spec fn subarray_sum(xs: Seq<i32>, start: int, end: int) -> int
-    recommends 0 <= start <= end <= xs.len()
-    decreases end - start
-{
-    if start >= end {
-        0
-    } else {
-        xs[start] as int + subarray_sum(xs, start + 1, end)
-    }
+impl<T: Deref> DerefSpec for T {
+    uninterp spec fn deref_spec(&self) -> &<Self as Deref>::Target;
+
+    axiom fn deref_spec_eq(&self);
 }
 
-// Check if a sum exists as a subarray sum  
-spec fn is_subarray_sum(xs: Seq<i32>, target: int) -> bool {
-    exists|start: int, end: int| 
-        0 <= start <= end <= xs.len() && end > start &&
-        subarray_sum(xs, start, end) == target
+// Special Cases
+pub broadcast axiom fn ref_deref_spec<T>(r: &T)
+    ensures
+        #[trigger] *(r.deref_spec()) == *r,
+;
+
+pub broadcast axiom fn box_deref_spec<T>(b: Box<T>)
+    ensures
+        #[trigger] *(b.deref_spec()) == *b,
+;
+
+pub broadcast axiom fn rc_deref_spec<T>(r: std::rc::Rc<T>)
+    ensures
+        #[trigger] *(r.deref_spec()) == *r,
+;
+
+pub broadcast axiom fn arc_deref_spec<T>(a: std::sync::Arc<T>)
+    ensures
+        #[trigger] *(a.deref_spec()) == *a,
+;
+
+pub broadcast group group_deref_spec {
+    ref_deref_spec,
+    box_deref_spec,
+    rc_deref_spec,
+    arc_deref_spec,
 }
 
-// Check if target is the maximum among all subarray sums
-spec fn is_max_subarray_sum(xs: Seq<i32>, target: int) -> bool {
-    forall|start: int, end: int| 
-        (0 <= start <= end <= xs.len() && end > start) ==>
-        subarray_sum(xs, start, end) <= target
-}
-
-// Postcondition for maxSubarraySum  
-spec fn max_subarray_sum_postcond(xs: Seq<i32>, result: int) -> bool {
-    if xs.len() == 0 {
-        result == 0
-    } else {
-        is_subarray_sum(xs, result) && is_max_subarray_sum(xs, result)
-    }
-}
-
-// Helper function 
-#[verifier::loop_isolation(false)]
-fn helper(lst: &Vec<i32>, cur_max: i32, global_max: i32, index: usize) -> (result: i32)
-    requires 
-        index <= lst.len(),
-        lst.len() <= 100  // Smaller bound for simplicity
-    decreases lst.len() - index
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// Main function implementation
-fn max_subarray_sum(xs: Vec<i32>) -> (result: i32)
-    requires 
-        max_subarray_sum_precond(xs@),
-        xs.len() <= 100
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// The theorem statement (proof omitted like in Lean)  
-proof fn max_subarray_sum_spec_satisfied(xs: Seq<i32>)
-    requires 
-        max_subarray_sum_precond(xs),
-        xs.len() <= 100
-{
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
-fn main() {}
-
-}
+} // verus!

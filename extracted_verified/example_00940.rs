@@ -1,28 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-spec fn sqrt(x: int, r: int) -> bool {
-    r * r <= x && (r + 1) * (r + 1) > x
+    fn append(a: &[int], b: int) -> (c: Vec<int>)
+        requires a.len() < usize::MAX
+        ensures c@ == a@ + seq![b]
+    {
+        let mut result = Vec::new();
+        
+        // Copy all elements from a
+        for i in 0..a.len()
+            invariant result@ == a@.subrange(0, i as int)
+        {
+            result.push(a[i]);
+        }
+        
+        // Add b at the end
+        result.push(b);
+        
+        result
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-#[verifier::exec_allows_no_decreases_clause]
-fn mySqrt(x: int) -> (res: int)
-    requires 0 <= x,
-    ensures sqrt(x, res),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

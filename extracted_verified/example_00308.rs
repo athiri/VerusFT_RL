@@ -1,45 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn count_digits(n: nat) -> nat
-    decreases n
-{
-    if n == 0 { 1 } else if n < 10 { 1 } else { 1 + count_digits(n / 10) }
-}
-
-spec fn pow_nat(base: nat, exp: nat) -> nat
-    decreases exp
-{
-    if exp == 0 { 
-        1 
-    } else { 
-        base * pow_nat(base, (exp - 1) as nat) 
-    }
-}
-
-spec fn sum_powers(n: nat, k: nat) -> nat
-    decreases n
-{
-    if n == 0 { 0 } else { pow_nat(n % 10, k) + sum_powers(n / 10, k) }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_armstrong(n: u32) -> (result: bool)
-    ensures 
-        result == (n as nat == sum_powers(n as nat, count_digits(n as nat))),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+	ensures
+		sum[0] <= 2 * N,
+{
+    sum.set(0, 0);
+}
+}

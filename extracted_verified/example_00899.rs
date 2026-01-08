@@ -1,35 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    /* 
+      Dafny Tutorial 2: Sequences and Stacks, Predicates and Assertions
 
-// <vc-helpers>
-// </vc-helpers>
+      In this tutorial we introduce a simple stack model using the functional 
+      style of programming.
+      
+    */
+    type IntStack = Seq<int>;
 
-// <vc-spec>
-fn torneo(valores: &Vec<int>, i: usize, j: usize, k: usize) -> (res: (usize, usize))
-    requires 
-        valores.len() >= 20 && valores.len() < 50,
-        i < valores.len() && j < valores.len() && k < valores.len(),
-        i != j && j != k && k != i,
-    ensures 
-        exists|p: usize, q: usize, r: usize| 
-            (p == i || p == j || p == k) &&
-            (q == i || q == j || q == k) &&  
-            (r == i || r == j || r == k) &&
-            p != q && q != r && p != r &&
-            valores[p as int] >= valores[q as int] && 
-            valores[q as int] >= valores[r as int] &&
-            res.0 == p && 
-            res.1 == q,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    spec fn is_empty(s: IntStack) -> bool {
+        s.len() == 0
+    }
+
+    spec fn push(s: IntStack, x: int) -> IntStack {
+        s.push(x)
+    }
+
+    spec fn pop(s: IntStack) -> IntStack {
+        if s.len() > 0 {
+            s.subrange(0, s.len() - 1)
+        } else {
+            arbitrary()
+        }
+    }
+
+    proof fn test_stack() -> (r: IntStack) {
+        let s: IntStack = seq![20, 30, 15, 40, 60, 100, 80];
+
+        assert(pop(push(s, 100)) == s);
+
+        assert(forall|e: int| 0 <= e < s.len() ==> s[e] > 5);
+
+        s
+    }
+
+    fn main() {
+        proof {
+            let _ = test_stack();
+        }
+    }
 }
-// </vc-code>
-
-}
-fn main() {}

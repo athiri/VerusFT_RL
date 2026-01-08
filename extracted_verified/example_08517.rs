@@ -1,30 +1,70 @@
+/// Given a positive integer n, return a tuple that has the number of even and odd
+/// integer palindromes that fall within the range(1, n), inclusive.
+///
+/// Example 1:
+///
+///     Input: 3
+///     Output: (1, 2)
+///     Explanation:
+///     Integer palindrome are 1, 2, 3. one of them is even, and two of them are odd.
+///
+/// Example 2:
+///
+///     Input: 12
+///     Output: (4, 6)
+///     Explanation:
+///     Integer palindrome are 1, 2, 3, 4, 5, 6, 7, 8, 9, 11. four of them are even, and 6 of them are odd.
+///
+/// Note:
+///     1. 1 <= n <= 10^3
+///     2. returned tuple has the number of even and odd integer palindromes respectively.
+
 use vstd::prelude::*;
-
-verus! {
-
-// Helper function to compute the sum over a range with a condition  
-spec fn conditional_sum(arr1: Seq<int>, arr2: Seq<int>, n: int, start: int, end: int) -> int
-    decreases end - start
-{
-    if start >= end {
-        0
-    } else if 0 <= start < arr1.len() && 0 <= n - start < arr2.len() {
-        arr1[start] * arr2[n - start] + conditional_sum(arr1, arr2, n, start + 1, end)
-    } else {
-        conditional_sum(arr1, arr2, n, start + 1, end)
-    }
-}
-
-// Helper function to express the convolution sum mathematically
-spec fn convolution_sum(arr1: Seq<int>, arr2: Seq<int>, n: int) -> int {
-    conditional_sum(arr1, arr2, n, 0, arr1.len() as int)
-}
-
-// SPEC
-spec fn convolve(arr1: Seq<int>, arr2: Seq<int>) -> Seq<int> {
-    Seq::new((arr1.len() + arr2.len() - 1) as nat, |n: int| convolution_sum(arr1, arr2, n))
-}
-
-}
-
 fn main() {}
+
+verus!{
+
+fn even_count_palindrome(n: u32) -> (even_count: u32) {
+    let mut even_count = 0;
+    let mut i = 1;
+
+    while i <= n {
+        if is_palindrome(i) {
+            if i % 2 == 0 {
+                even_count += 1;
+            }
+        }
+        i += 1;
+    }
+
+    even_count
+}
+
+fn odd_count_palindrome(n: u32) -> (odd_count: u32) {
+    let mut odd_count = 0;
+    let mut i = 1;
+
+    while i <= n {
+        if is_palindrome(i) {
+            if i % 2 != 0 {
+                odd_count += 1;
+            }
+        }
+        i += 1;
+    }
+
+    odd_count
+}
+
+fn is_palindrome(mut num: u32) -> (result: bool) {
+    let original = num;
+    let mut reversed = 0;
+
+    while num > 0 {
+        reversed = reversed * 10 + num % 10;
+        num /= 10;
+    }
+
+    original == reversed
+}
+}

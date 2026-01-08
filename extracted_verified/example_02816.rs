@@ -2,36 +2,34 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn array_product(a: Vec<i32>, b: Vec<i32>) -> (result: Vec<i64>) by (nonlinear_arith)
-    // pre-conditions-start
-    requires
-        a.len() == b.len(),
-    // pre-conditions-end
+fn is_palindrome(text: &str) -> (result: bool)
     // post-conditions-start
     ensures
-        result.len() == a.len(),
-        forall|i: int| #![auto] 0 <= i && i < a.len() ==> result[i] == (a[i] as i64) * (b[i] as i64),
+        result == forall|i: int|
+            0 <= i < text@.len() ==> #[trigger] text@[i] == text@[text@.len() - 1 - i],
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
+    let len = text.unicode_len();
     
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < a.len()
-        invariant
-            result.len() == i,
-            i <= a.len(),
-            forall|j: int| #![auto] 0 <= j && j < i ==> result[j] == (a[j] as i64) * (b[j] as i64),
-        decreases a.len() - i,
-    {
-        let product = (a[i] as i64) * (b[i] as i64);
-        result.push(product);
-        i += 1;
+    if len == 0 {
+        return true;
     }
     
-    result
+    let mut j = 0;
+    
+    while j < len / 2
+        invariant
+            0 <= j <= len / 2,
+            forall|k: int| 0 <= k < j ==> #[trigger] text@[k] == text@[len - 1 - k],
+    {
+        if text.get_char(j) != text.get_char(len - 1 - j) {
+            return false;
+        }
+        j += 1;
+    }
+    
+    true
 }
 
-fn main() {}
 }
+fn main() {}

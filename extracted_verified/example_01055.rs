@@ -1,30 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    fn max(a: i32, b: i32) -> (c: i32)
+        ensures c >= a && c >= b
+    {
+        if a >= b {
+            a
+        } else {
+            b
+        }
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn hermesub(c1: Vec<i8>, c2: Vec<i8>) -> (result: Vec<i8>)
-    ensures
-        result.len() == if c1.len() >= c2.len() { c1.len() } else { c2.len() },
-        forall|i: int| 0 <= i < result@.len() ==> 
-            #[trigger] result@[i] == 
-            (if i < c1@.len() { c1@[i] } else { 0 }) - 
-            (if i < c2@.len() { c2@[i] } else { 0 })
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn testing() {
+        let x = max(5, 3);
+        let y = max(-2, 10);
+        let z = max(0, 0);
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

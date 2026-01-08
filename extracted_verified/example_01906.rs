@@ -1,42 +1,71 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn digit_sum(n: int) -> int
-  decreases n when n >= 0
+
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-  if n <= 0 { 
-    0 
-  } else { 
-    (n % 10) + digit_sum(n / 10) 
-  }
+    assert forall|k: int| 0 <= k < vec.len() implies #[trigger] vec[k] == vec.push(i)[k] by {
+        assert(vec.push(i)[k] == vec[k]);
+    }
+    assert(vec.push(i).index(l as int) == i);
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-  requires 
-    n >= 1,
-  ensures 
-    n == 1 ==> result == -1,
-    n > 1 && result > 0 ==> (result as int) * (result as int) + digit_sum(result as int) * (result as int) == n as int,
-    n > 1 && result > 0 ==> forall|y: int| y > 0 && y < result as int ==> y * y + digit_sum(y) * y != n as int,
-    n > 1 && result == -1 ==> forall|x: int| x > 0 ==> x * x + digit_sum(x) * x != n as int,
-    result == -1 || result > 0,
-// </vc-spec>
-// <vc-code>
+fn contains(str: &[u8], key: u8) -> (result: bool)
+    ensures
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
 {
-  // impl-start
-  assume(false);
-  unreached()
-  // impl-end
+    let mut j = 0;
+    while j < str.len()
+        invariant
+            forall|i: int| 0 <= i < j ==> str[i] != key,
+    {
+        if str[j] == key {
+            return true;
+        }
+        j += 1;
+    }
+    false
 }
-// </vc-code>
 
-
+fn remove_chars(str1: &[u8], str2: &[u8]) -> (result: Vec<u8>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (str1@.contains(#[trigger] result[i]) && !str2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < str1.len() ==> (str2@.contains(#[trigger] str1[i]) || result@.contains(
+                #[trigger] str1[i],
+            )),
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < str1.len()
+        invariant
+            forall|j: int|
+                0 <= j < result.len() ==> (str1@.contains(#[trigger] result[j]) && !str2@.contains(
+                    #[trigger] result[j],
+                )),
+            forall|j: int|
+                0 <= j < i ==> (str2@.contains(#[trigger] str1[j]) || result@.contains(
+                    #[trigger] str1[j],
+                )),
+    {
+        let ch = str1[i];
+        if !contains(str2, ch) {
+            result.push(ch);
+        }
+        i += 1;
+    }
+    result
 }
 
-fn main() {}
+} // verus!

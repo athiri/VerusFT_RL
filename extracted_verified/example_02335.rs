@@ -1,59 +1,56 @@
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
 
-spec fn modp_rec(n: nat, p: nat) -> (result:nat)
-    decreases n,
-{
-    if n == 0 {
-        1nat % p
-    } else {
-        (modp_rec((n - 1) as nat, p) * 2) % p
-    }
-}
-// pure-end
-
-fn modmul(a: u32, b: u32, p: u32) -> (mul: u32)
-    by (nonlinear_arith)
-    // pre-conditions-start
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
     requires
-        p > 0,
-    // pre-conditions-end
-    // post-conditions-start
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
     ensures
-        mul == ((a as int) * (b as int)) % (p as int),
-    // post-conditions-end
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    // impl-start
-    (((a as u64) * (b as u64)) % (p as u64)) as u32
-    // impl-end
-}
-
-#[verifier::loop_isolation(false)]
-fn modp(n: u32, p: u32) -> (r: u32)
-    by (nonlinear_arith)
-    // pre-conditions-start
-    requires
-        p > 0,
-    // pre-conditions-end
-    // post-conditions-start
-    ensures
-        r == modp_rec(n as nat, p as nat),
-    // post-conditions-end
-{
-    // impl-start
-    let mut r = 1u32 % p;
-    for i in 0..n
-        // invariants-start
+    let mut i = 0;
+    while i < sub.len()
         invariant
-            r == modp_rec(i as nat, p as nat),
-        // invariants-end
+            0 <= i <= sub.len(),
+            idx + i <= main.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx + j] == sub@[j],
+        decreases sub.len() - i
     {
-        r = modmul(r, 2, p);
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
     }
-    r
-    // impl-end
+    true
 }
 
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
+{
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            /* code modified by LLM (iteration 1): Added trigger annotation to fix quantifier trigger inference error */
+            forall|k: int| 0 <= k < idx ==> !(#[trigger] main@.subrange(k, k + sub@.len()) =~= sub@),
+        decreases (main.len() - sub.len() + 1) - idx
+    {
+        if sub_array_at_index(main, sub, idx) {
+            return true;
+        }
+        idx += 1;
+    }
+    false
 }
-fn main() {}
+
+} // verus!

@@ -3,31 +3,11 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
-    requires
-        lists.len() > 0,
+fn arithmetic_weird() -> (result: i32)
     ensures
-        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
-        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
+        result < 10
 {
-    let mut min_length = lists[0].len();
-    let mut i = 1;
-    
-    while i < lists.len()
-        invariant
-            1 <= i <= lists.len(),
-            exists|j: int| #![auto] 0 <= j < i && min_length == lists[j].len(),
-            forall|j: int| #![auto] 0 <= j < i ==> min_length <= lists[j].len(),
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases lists.len() - i
-    {
-        if lists[i].len() < min_length {
-            min_length = lists[i].len();
-        }
-        i += 1;
-    }
-    
-    min_length
+    0
 }
 
 fn main() {}

@@ -1,25 +1,53 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn increment_array(a: &mut Vec<i32>)
-  requires old(a).len() > 0,
-  ensures 
-      a.len() == old(a).len(),
-      forall|i: int| 0 <= i < a.len() ==> a[i] == old(a)[i] + 1,
-// </vc-spec>
-// <vc-code>
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
+fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    // post-conditions-start
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+    // post-conditions-end
+{
+    let mut result = Vec::new();
+    
+    for i in 0..arr1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (arr1@.contains(#[trigger] result[k]) && arr2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k: int, j: int| 0 <= k < j < result.len() ==> result[k] != result[j],
+    {
+        let elem = arr1[i];
+        if contains(arr2, elem) && !contains(&result, elem) {
+            result.push(elem);
+        }
+    }
+    
+    result
 }
+
+} // verus!
+
 fn main() {}

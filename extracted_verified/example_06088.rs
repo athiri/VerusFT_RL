@@ -2,28 +2,27 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::external_body]
-fn min(a: &[i32]) -> (res: i32)
-    requires 
-        a.len() > 0,
-    ensures 
-        exists|i: int| 0 <= i < a.len() && res == a[i] &&
-        forall|j: int| 0 <= j < a.len() ==> res <= a[j],
-{
-    let mut min_val = a[0];
-    for i in 1..a.len() {
-        if a[i] < min_val {
-            min_val = a[i];
-        }
-    }
-    min_val
+spec fn is_alpha_char(c: char) -> bool {
+    ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
 }
 
-fn main() {
-    let arr = [3, 1, 4, 1, 5, 9, 2, 6];
-    let result = min(&arr);
-    /* code modified by LLM (iteration 1): removed println! statement as it's not supported in Verus */
-    // Result is computed but not printed since println! is not supported in Verus
+fn check_alpha_char(c: char) -> (result: bool)
+    ensures result == is_alpha_char(c)
+{
+    return false;  // TODO: Remove this line and implement the function body
 }
+
+fn is_alpha(input: &Vec<&str>) -> (ret: Vec<bool>)
+    ensures 
+        ret.len() == input.len(),
+        forall|i: int| #![auto] 0 <= i < input.len() ==> 
+            ret[i] == (input[i]@.len() > 0 && 
+                       forall|j: int| #![auto] 0 <= j < input[i]@.len() ==> 
+                           is_alpha_char(input[i]@[j])),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+fn main() {}
 
 }

@@ -1,31 +1,32 @@
 use vstd::prelude::*;
 
-fn main() {
-    // Main function can be empty for this verification exercise
-}
-
 verus! {
-
-fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
-    ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
-{
-    let mut index = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while index < arr.len()
-        invariant
-            0 <= index <= arr.len(),
-            forall|i: int| 0 <= i < index ==> ((i % 2) == (arr[i] % 2)),
-        decreases arr.len() - index,
+    spec fn power(n: nat) -> nat
+        decreases n
     {
-        if (index % 2) != (arr[index] % 2) {
-            return false;
-        }
-        index += 1;
+        if n == 0 { 1 } else { 2 * power((n - 1) as nat) }
     }
-    
-    true
+
+    fn compute_power(n: u32) -> (y: u32)
+        requires n <= 30,
+        ensures y == power(n as nat),
+    {
+        /* code modified by LLM (iteration 1): implemented complete function body with loop and invariants */
+        let mut result: u32 = 1;
+        let mut i: u32 = 0;
+        
+        while i < n
+            invariant 
+                i <= n,
+                result == power(i as nat),
+                n <= 30,
+        {
+            result = result * 2;
+            i = i + 1;
+        }
+        
+        result
+    }
 }
 
-} // verus!
+fn main() {}

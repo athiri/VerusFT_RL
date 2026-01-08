@@ -1,61 +1,59 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Helper function to check if a sequence is strictly increasing
-spec fn is_strictly_increasing(l: Seq<i32>) -> bool
-    decreases l.len()
+spec fn valid_input(input: Seq<char>) -> bool {
+    input.len() > 0 &&
+    (exists|i: int| 0 < i < input.len() && input[i] == '\n') &&
+    (forall|i: int| #![trigger input[i]] 0 <= i < input.len() ==> input[i] == '\n' || ('0' <= input[i] <= '9') || ('a' <= input[i] <= 'z')) &&
+    (exists|i: int| 0 < i < input.len() && input[i] == '\n' && (forall|j: int| #![trigger input[j]] 0 <= j < i ==> '0' <= input[j] <= '9'))
+}
+
+spec fn valid_parsed_input(a: int, s: Seq<char>) -> bool {
+    2800 <= a < 5000 &&
+    1 <= s.len() <= 10 &&
+    (forall|j: int| #![trigger s[j]] 0 <= j < s.len() ==> 'a' <= s[j] <= 'z')
+}
+
+spec fn correct_output(a: int, s: Seq<char>, result: Seq<char>) -> bool {
+    (a >= 3200 ==> result == s + seq!['\n']) &&
+    (a < 3200 ==> result == seq!['r', 'e', 'd', '\n'])
+}
+
+spec fn parse_input(input: Seq<char>) -> (int, Seq<char>) {
+    (0, seq!['a'])
+}
+// </vc-preamble>
+
+// <vc-helpers>
+fn mk_newline_vec() -> (out: Vec<char>)
+    ensures
+        out@.len() == 1,
+        out@[0] == '\n',
 {
-    l.len() <= 1 || (l[0] < l[1] && is_strictly_increasing(l.subrange(1, l.len() as int)))
+    let mut out: Vec<char> = Vec::new();
+    out.push('\n');
+    out
 }
+// </vc-helpers>
 
-// Check if a sequence is a subsequence of another
-spec fn is_subsequence_of(subseq: Seq<i32>, nums: Seq<i32>) -> bool {
-    exists|indices: Seq<usize>| {
-        indices.len() == subseq.len() &&
-        (forall|i: int| #![trigger indices[i]]
-            0 <= i < indices.len() ==> indices[i] < nums.len()) &&
-        (forall|i: int| #![trigger indices[i]]
-            0 <= i < indices.len() - 1 ==> indices[i] < indices[i + 1]) &&
-        (forall|i: int| #![trigger subseq[i]]
-            0 <= i < subseq.len() ==> subseq[i] == nums[indices[i] as int])
-    }
-}
-
-// Precondition for lengthOfLIS
-spec fn length_of_lis_precond(nums: Seq<i32>) -> bool {
-    true
-}
-
-// Postcondition for lengthOfLIS  
-spec fn length_of_lis_postcond(nums: Seq<i32>, result: usize) -> bool {
-    // There exists a strictly increasing subsequence of nums with length result
-    exists|subseq: Seq<i32>| {
-        is_subsequence_of(subseq, nums) &&
-        is_strictly_increasing(subseq) &&
-        subseq.len() == result
-    } &&
-    // All strictly increasing subsequences have length <= result
-    forall|subseq: Seq<i32>| #![trigger is_subsequence_of(subseq, nums), is_strictly_increasing(subseq)]
-        is_subsequence_of(subseq, nums) && is_strictly_increasing(subseq) 
-        ==> subseq.len() <= result
-}
-
-// Binary search to find position to insert/replace
-fn binary_search_position(dp: &Vec<i32>, x: i32) -> (pos: usize) 
-    ensures pos <= dp.len()
+// <vc-spec>
+fn solve(input: Vec<char>) -> (result: Vec<char>)
+    requires 
+        valid_input(input@)
+    ensures 
+        result@.len() > 0,
+        result@[result@.len() - 1] == '\n'
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    let out = mk_newline_vec();
+    out
 }
+// </vc-code>
 
-fn length_of_lis(nums: Vec<i32>) -> (result: usize) {
-    return 0;  // TODO: Remove this line and implement the function body
+
 }
-
-proof fn length_of_lis_spec_satisfied(nums: Vec<i32>) {
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
-} // verus!
 
 fn main() {}

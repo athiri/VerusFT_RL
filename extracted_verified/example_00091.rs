@@ -1,33 +1,15 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn valid_input(s: Seq<char>) -> bool {
-    true
-}
-
-spec fn correct_length(s: Seq<char>) -> int {
-    s.len() as int
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn strlen(s: &str) -> (result: usize)
-    requires valid_input(s@)
-    ensures correct_length(s@) == (result as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] == 5 * N,
+{
+    sum.set(0, 5 * N);
+}
+}

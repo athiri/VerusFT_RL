@@ -1,30 +1,35 @@
-// <vc-preamble>
+//This example is from Verus tutorial, Chpt 7.5
 use vstd::prelude::*;
-
-verus! {
-
-#[verifier::external_body]
-spec fn logaddexp_value(x1: f64, x2: f64) -> f64;
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn logaddexp(x1: Vec<f64>, x2: Vec<f64>) -> (result: Vec<f64>)
-    requires x1.len() == x2.len(),
-    ensures 
-        result.len() == x1.len(),
-        forall|i: int| 0 <= i < result.len() ==> {
-            result[i] == logaddexp_value(x1[i], x2[i])
-        }
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+fn binary_search(v: &Vec<u64>, k: u64) -> (r: usize)
+    requires
+        forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
+        exists|i:int| 0 <= i < v.len() && k == v[i],
+    ensures
+        r < v.len(),
+        k == v[r as int],
+{
+    let mut low: usize = 0;
+    let mut high: usize = v.len() - 1;
+    
+    loop
+        invariant
+            low <= high,
+            high < v.len(),
+            exists|i:int| low <= i <= high && k == v[i],
+            forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
+    {
+        let mid = low + (high - low) / 2;
+        
+        if v[mid] == k {
+            return mid;
+        } else if v[mid] < k {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+}
+}

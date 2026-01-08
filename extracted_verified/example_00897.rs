@@ -1,28 +1,42 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    /* 
+      Dafny Tutorial 2: Sequences and Stacks, Predicates and Assertions
 
-// <vc-helpers>
-// </vc-helpers>
+      In this tutorial we introduce a simple stack model using the functional 
+      style of programming.
+      
+    */
+    type IntStack = Seq<int>;
 
-// <vc-spec>
-fn binary_search(a: &[i32], key: i32) -> (n: usize)
-    requires 
-        forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j]
-    ensures 
-        0 <= n <= a.len(),
-        forall|i: int| 0 <= i < n ==> a[i] < key,
-        n == a.len() ==> forall|i: int| 0 <= i < a.len() ==> a[i] < key,
-        forall|i: int| n <= i < a.len() ==> a[i] >= key
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    spec fn is_empty(s: IntStack) -> bool {
+        s.len() == 0
+    }
+
+    spec fn push(s: IntStack, x: int) -> IntStack {
+        s.push(x)
+    }
+
+    spec fn pop(s: IntStack) -> IntStack {
+        if s.len() > 0 {
+            s.subrange(0, s.len() - 1)
+        } else {
+            arbitrary()
+        }
+    }
+
+    proof fn test_stack() -> (r: IntStack) {
+        let s: IntStack = seq![20, 30, 15, 40, 60, 100, 80];
+
+        assert(pop(push(s, 100)) == s);
+
+        assert(forall|e: int| 0 <= e < s.len() ==> s[e] > 5);
+
+        s
+    }
+
+    fn main() {
+    // TODO: Remove this comment and implement the function body
+    }
 }
-// </vc-code>
-
-}
-fn main() {}

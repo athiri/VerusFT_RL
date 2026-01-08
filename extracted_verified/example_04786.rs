@@ -1,34 +1,31 @@
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn max(a: &[i32]) -> (x: usize)
+spec fn is_divisible(n: int, divisor: int) -> bool {
+    (n % divisor) == 0
+}
+
+fn prime_num(n: u64) -> (result: bool)
     requires
-        a.len() > 0,
+        n >= 2,
     ensures
-        0 <= x < a.len(),
-        forall|k: int| 0 <= k < a.len() ==> a[k] <= a[x as int],
+        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
 {
-    let mut max_idx: usize = 0;
-    let mut i: usize = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < a.len()
+    let mut i: u64 = 2;
+    while i < n
         invariant
-            0 <= max_idx < a.len(),
-            1 <= i <= a.len(),
-            forall|k: int| 0 <= k < i ==> a[k] <= a[max_idx as int],
-        decreases a.len() - i,
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
     {
-        if a[i] > a[max_idx] {
-            max_idx = i;
+        if n % i == 0 {
+            return false;
         }
         i = i + 1;
     }
-    
-    max_idx
+    true
 }
 
-fn main() {}
-}
+} // verus!

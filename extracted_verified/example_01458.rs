@@ -1,33 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
+	fn main() {
+	}
 
-// <vc-spec>
-fn numpy_rfftfreq(n: usize, d: i8) -> (result: Vec<i8>)
-    requires 
-        n > 0,
-        d > 0,
-    ensures
-        result.len() == n / 2 + 1,
-        result@[0] == 0,
-        forall|i: int| 0 <= i < result.len() ==> result@[i] == i / ((d as int) * (n as int)),
-        result@[(n / 2) as int] == (n / 2) as int / ((d as int) * (n as int)),
-        forall|i: int, j: int| 0 <= i <= j < result.len() ==> result@[i] <= result@[j],
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+	fn myVecClone(v: &Vec<i32>) -> Vec<i32> {
+		let mut result = Vec::new();
+		let mut i = 0;
+		while i < v.len() {
+			result.push(v[i]);
+			i += 1;
+		}
+		result
+	}
+
+	pub fn generate_all_combinations(n: i32, k: i32) -> Vec<Vec<i32>> 
+	{
+		let mut total_list = Vec::new();
+		let mut current_list = Vec::new();
+		
+		if k > 0 && n > 0 && k <= n {
+			create_all_state(1, n, k, &mut current_list, &mut total_list);
+		}
+		
+		total_list
+	}
+
+	fn create_all_state
+	(
+		increment: i32,
+		total_number: i32,
+		level: i32,
+		current_list: &mut Vec<i32>,
+		total_list: &mut Vec<Vec<i32>>,
+	) 
+	{
+		if level == 0 {
+			let cloned = myVecClone(current_list);
+			total_list.push(cloned);
+			return;
+		}
+		
+		if increment > total_number {
+			return;
+		}
+		
+		let mut i = increment;
+		while i <= total_number - level + 1 {
+			current_list.push(i);
+			create_all_state(i + 1, total_number, level - 1, current_list, total_list);
+			current_list.pop();
+			i += 1;
+		}
+	}
 }
-// </vc-code>
-
-
-}
-fn main() {}

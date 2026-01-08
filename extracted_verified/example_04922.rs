@@ -3,31 +3,27 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn max_dafny_lsp(a: &[i32]) -> (x: usize)
+fn array_product(a: Vec<i32>, b: Vec<i32>) -> (result: Vec<i64>) by (nonlinear_arith)
     requires
-        a.len() > 0,
+        a.len() == b.len(),
     ensures
-        0 <= x < a.len(),
-        forall|k: int| 0 <= k < a.len() ==> a[k] <= a[x as int],
+        result.len() == a.len(),
+        forall|i: int| #![auto] 0 <= i && i < a.len() ==> result[i] == (a[i] as i64) * (b[i] as i64),
 {
-    let mut max_idx = 0;
-    let mut i = 1;
+    let mut result = Vec::new();
+    let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to fix termination verification */
     while i < a.len()
         invariant
-            0 <= max_idx < a.len(),
-            1 <= i <= a.len(),
-            forall|k: int| 0 <= k < i ==> a[k] <= a[max_idx as int],
-        decreases a.len() - i
+            result.len() == i,
+            forall|j: int| #![auto] 0 <= j && j < i ==> result[j] == (a[j] as i64) * (b[j] as i64),
     {
-        if a[i] > a[max_idx] {
-            max_idx = i;
-        }
+        let product = (a[i] as i64) * (b[i] as i64);
+        result.push(product);
         i += 1;
     }
     
-    max_idx
+    result
 }
 
 fn main() {}

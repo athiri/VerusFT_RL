@@ -1,39 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn union1d(ar1: Vec<i8>, ar2: Vec<i8>) -> (result: Vec<i8>)
-    ensures
-        /* Union property: every element from either input array is in result */
-        forall|i: int| 0 <= i < ar1.len() ==> 
-            #[trigger] result@.contains(ar1[i]),
-        forall|i: int| 0 <= i < ar2.len() ==> 
-            #[trigger] result@.contains(ar2[i]),
-        /* Completeness: every element in result comes from one of the input arrays */
-        forall|j: int| 0 <= j < result.len() ==> 
-            ar1@.contains(result[j]) || ar2@.contains(result[j]),
-        /* Sorted property: result is sorted in ascending order */
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> 
-            #[trigger] result[i] <= #[trigger] result[j],
-        /* Uniqueness property: no duplicate elements */
-        forall|i: int, j: int| 0 <= i < result.len() && 0 <= j < result.len() && i != j ==> 
-            #[trigger] result[i] != #[trigger] result[j],
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus! {
+
+fn two_sum(nums: &Vec<u32>, target: u32) -> (r: (usize, usize))
+    requires
+        nums.len() > 1,
+        forall|ii: int, jj: int|
+            ((0 <= ii && ii < nums.len() && ii < jj && jj < nums.len())) ==> nums[ii] + nums[jj]
+                < 256,
+        exists|i: int, j: int| (0 <= i && i < j && j < nums.len()) && nums[i] + nums[j] == target,
+    ensures
+        (0 <= r.0 && r.0 < r.1 && r.1 < nums.len()) && nums[r.0 as int] + nums[r.1 as int]
+            == target,
+        forall|ii: int, jj: int|
+            ((0 <= ii && ii < r.0 && ii < jj && jj < nums.len()) || (ii == r.0 && ii < jj && jj
+                < r.1)) ==> nums[ii] + nums[jj] != target,
+{
+    let mut i = 0;
+    while i < nums.len() - 1
+        invariant
+            0 <= i < nums.len(),
+            forall|ii: int, jj: int|
+                ((0 <= ii && ii < i && ii < jj && jj < nums.len())) ==> nums[ii] + nums[jj] != target,
+    {
+        let mut j = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < nums.len() - 1,
+                i + 1 <= j <= nums.len(),
+                forall|ii: int, jj: int|
+                    ((0 <= ii && ii < i && ii < jj && jj < nums.len())) ==> nums[ii] + nums[jj] != target,
+                forall|jj: int|
+                    ((i + 1 <= jj && jj < j)) ==> nums[i] + nums[jj] != target,
+        {
+            if nums[i] + nums[j] == target {
+                return (i, j);
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    unreachable!()
+}
+
+} // verus!

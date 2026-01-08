@@ -1,25 +1,27 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(sum).len() == 1,
-	ensures
-		forall |k:int| 0 <= k < N ==> a[k] == 0,
+
+verus! {
+
+#[verifier::loop_isolation(false)]
+fn is_non_prime(n: u32) -> (result: bool)
+    requires
+        n >= 2,
+    ensures
+        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    let mut i = 0;
-    while i < N
+    let mut i = 2;
+    while i < n
         invariant
-            0 <= i <= N,
-            a.len() == N,
-            forall |k:int| 0 <= k < i ==> a[k] == 0,
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases N - i,
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> (n as int % k) != 0,
     {
-        a.set(i as usize, 0);
-        i = i + 1;
+        if n % i == 0 {
+            return true;
+        }
+        i += 1;
     }
+    false
 }
+
+fn main() {}
 }

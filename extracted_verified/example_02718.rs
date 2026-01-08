@@ -1,31 +1,45 @@
 use vstd::prelude::*;
 
 verus! {
+spec fn sum(numbers: Seq<u32>) -> (result:int) {
+    numbers.fold_left(0, |acc: int, x| acc + x)
+}
+// pure-end
 
-#[verifier::loop_isolation(false)]
-fn replace(a: &mut Vec<i32>, x: i32, y: i32)
+spec fn product(numbers: Seq<u32>) -> (result:int) {
+    numbers.fold_left(1, |acc: int, x| acc * x)
+}
+// pure-end
+
+proof fn sum_bound(numbers: Seq<u32>)
+    // post-conditions-start
     ensures
-        a.len() == old(a).len(),
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] == x ==> a[k] == y,
-        forall|k: int| 0 <= k < old(a).len() && old(a)[k] != x ==> a[k] == old(a)[k],
+        sum(numbers) <= numbers.len() * u32::MAX,
+    decreases numbers.len(),
+    // post-conditions-end
 {
-    let mut i = 0;
-    while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            a.len() == old(a).len(),
-            forall|k: int| 0 <= k < i && old(a)[k] == x ==> a[k] == y,
-            forall|k: int| 0 <= k < i && old(a)[k] != x ==> a[k] == old(a)[k],
-            forall|k: int| i <= k < a.len() ==> a[k] == old(a)[k],
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases a.len() - i
-    {
-        if a[i] == x {
-            a.set(i, y);
-        }
-        i += 1;
+    // impl-start
+    if numbers.len() == 0 {
+    } else {
+        sum_bound(numbers.drop_last());
     }
+    // impl-end
+}
+// pure-end
+
+fn sum_product(numbers: Vec<u32>) -> (result: (u64, Option<u32>))
+    // pre-conditions-start
+    requires
+        numbers.len() < u32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        result.0 == sum(numbers@),
+        result.1 matches Some(v) ==> v == product(numbers@),
+    // post-conditions-end
+{
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
 }
+fn main() {}

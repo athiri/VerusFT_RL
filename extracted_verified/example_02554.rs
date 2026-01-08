@@ -1,22 +1,36 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn binary_search(arr: &[i32], target: i32) -> (result: Option<usize>)
+    requires
+        forall|i: int, j: int| 0 <= i && i < j && j < arr.len() ==> arr[i] <= arr[j],
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
+        match result {
+            Some(idx) => 0 <= idx < arr.len() && arr[idx as int] == target,
+            None => forall|i: int| 0 <= i < arr.len() ==> arr[i] != target,
+        },
 {
-    for i in 0..arr.len()
+    let mut low = 0;
+    let mut high = arr.len();
+    while low < high
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != k,
+            low <= high && high <= arr.len(),
+            forall|i: int| 0 <= i && i < low ==> arr[i] < target,
+            forall|i: int| high <= i && i < arr.len() ==> arr[i] > target,
     {
-        if arr[i] == k {
-            return true;
+        let mid = low + (high - low) / 2;
+        if arr[mid] == target {
+            return Some(mid);
+        } else if arr[mid] < target {
+            low = mid + 1;
+        } else {
+            high = mid;
         }
     }
-    return false;
+    None
 }
 
-} // verus!
+fn main() {}
+}

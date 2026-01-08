@@ -1,35 +1,28 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(train_fare: int, bus_fare: int) -> bool {
-    1 <= train_fare <= 100 && 1 <= bus_fare <= 100 && bus_fare % 2 == 0
-}
-
-spec fn total_cost(train_fare: int, bus_fare: int) -> int
-    recommends valid_input(train_fare, bus_fare)
+fn find_negative_numbers(arr: &Vec<i32>) -> (negative_list: Vec<i32>)
+    ensures
+        negative_list@ == arr@.filter(|x: i32| x < 0),
 {
-    train_fare + bus_fare / 2
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(train_fare: i8, bus_fare: i8) -> (result: i8)
-    requires valid_input(train_fare as int, bus_fare as int)
-    ensures result as int == total_cost(train_fare as int, bus_fare as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            i <= arr.len(),
+            result@ == arr@.subrange(0, i as int).filter(|x: i32| x < 0),
+    {
+        if arr[i] < 0 {
+            result.push(arr[i]);
+        }
+        i += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

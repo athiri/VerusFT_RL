@@ -1,19 +1,15 @@
 use vstd::prelude::*;
-
+fn main() {}
 verus! {
-    fn append(a: &[int], b: int) -> (c: Vec<int>)
-        requires a.len() < usize::MAX
-        ensures c@ == a@ + seq![b]
-    {
-        let mut c = Vec::new();
-        for i in 0..a.len()
-            invariant c@ == a@.subrange(0, i as int)
-        {
-            c.push(a[i]);
-        }
-        c.push(b);
-        c
-    }
+
+pub fn myfun1(x: &Vec<i32>) -> (max_index: usize)
+    requires
+        x.len() >= 1,
+    ensures
+        forall|k: int| 0 <= k < x.len() ==> x[max_index as int] >= x[k],
+        max_index < x.len(),
+{
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
+} // verus!

@@ -1,34 +1,54 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn two_sum(nums: &Vec<i32>, target: i32) -> (ret: (usize, usize))
     requires
-        seq.len() > 0,
+        nums.len() >= 2,
+        exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
     ensures
-        result == (forall|i: int, j: int|
-            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
-                == #[trigger] seq[j].len())),
+        /* code modified by LLM (iteration 2): fixed ensures clauses to use named return value */
+        0 <= ret.0 < nums.len(),
+        0 <= ret.1 < nums.len(),
+        ret.0 != ret.1,
+        nums[ret.0 as int] + nums[ret.1 as int] == target
 {
-    let first_len = seq[0].len();
-    
-    for k in 1..seq.len()
+    let mut i = 0;
+
+    while i < nums.len()
         invariant
-            /* code modified by LLM (iteration 1): strengthened invariant to cover full range needed for postcondition */
-            forall|i: int| (0 <= i < k) ==> seq[i].len() == first_len,
+            0 <= i <= nums.len(),
+            forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+            exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
+        /* code modified by LLM (iteration 3): added decreases clause for outer loop */
+        decreases nums.len() - i
     {
-        if seq[k].len() != first_len {
-            /* code modified by LLM (iteration 1): added assertion to help prove postcondition on early return */
-            assert(seq[k as int].len() != seq[0].len());
-            return false;
+        let mut j = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < j <= nums.len(),
+                forall|u: int, v: int| 0 <= u < v < nums.len() && u < i ==> nums[u] + nums[v] != target,
+                exists|u: int, v: int| i <= u < v < nums.len() && nums[u] + nums[v] == target,
+                forall|u: int| i < u < j ==> nums[i as int] + nums[u] != target,
+            /* code modified by LLM (iteration 3): added decreases clause for inner loop */
+            decreases nums.len() - j
+        {
+            if nums[i] + nums[j] == target {
+                return (i, j);
+            }
+            j = j + 1;
         }
+        i = i + 1;
     }
-    
-    /* code modified by LLM (iteration 1): added assertion to help prove postcondition when returning true */
-    assert(forall|i: int| (0 <= i < seq.len()) ==> seq[i].len() == first_len);
-    true
+    /* code modified by LLM (iteration 2): replaced unreachable code with proof of contradiction */
+    proof {
+        // At this point i == nums.len(), but we know from the precondition that
+        // there exists a valid pair, which contradicts our loop invariant
+        assert(false);
+    }
+    (0, 0) // This line will never be reached due to the proof above
 }
 
-} // verus!
+fn main() {}
+}

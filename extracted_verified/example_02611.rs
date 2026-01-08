@@ -1,36 +1,40 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
-spec fn is_even(n: u32) -> bool {
-    (n % 2) == 0
-}
-
-//IMPL is_product_even
-fn is_product_even(arr: &Vec<u32>) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn barrier(arr: &[i32], p: usize) -> (result: bool)
+    requires
+        arr.len() > 0,
+        0 <= p < arr.len(),
     ensures
-        result <==> (exists|k: int| 0 <= k < arr.len() && is_even(#[trigger] arr[k])),
+        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
 {
-    let mut i = 0;
-    while i < arr.len()
+    let mut k: usize = 0;
+    while k <= p
         invariant
-            0 <= i <= arr.len(),
-            forall|k: int| 0 <= k < i ==> !is_even(#[trigger] arr[k]),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases arr.len() - i,
+            0 <= k <= p + 1,
+            forall|k2: int, l: int| 0 <= k2 < k && p < l < arr.len() ==> arr[k2] < arr[l],
+        /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
+        decreases p + 1 - k
     {
-        /* code modified by LLM (iteration 1): replaced spec function call with executable even check */
-        if arr[i] % 2 == 0 {
-            /* code modified by LLM (iteration 1): added assertion to connect executable check with spec function */
-            assert(is_even(arr[i as int]));
-            return true;
+        let mut l: usize = p + 1;
+        while l < arr.len()
+            invariant
+                p + 1 <= l <= arr.len(),
+                forall|l2: int| p < l2 < l ==> arr[k as int] < arr[l2],
+                forall|k2: int, l2: int| 0 <= k2 < k && p < l2 < arr.len() ==> arr[k2] < arr[l2],
+            decreases arr.len() - l
+        {
+            if arr[k] >= arr[l] {
+                return false;
+            }
+            l += 1;
         }
-        /* code modified by LLM (iteration 1): added assertion to maintain loop invariant */
-        assert(!is_even(arr[i as int]));
-        i += 1;
+        k += 1;
     }
-    false
+    true
 }
 
-} // verus!
+fn main() {}
+}

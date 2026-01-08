@@ -1,28 +1,25 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn bitwise_and(a: Vec<u8>, b: Vec<u8>) -> (result: Vec<u8>)
-    requires a.len() == b.len(),
-    ensures 
+fn reverse(a: &[i32]) -> (result: Vec<i32>)
+    ensures
         result.len() == a.len(),
-        forall|i: int| 0 <= i < result.len() ==> result[i] == (a[i] & b[i])
-// </vc-spec>
-// <vc-code>
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == a[a.len() - 1 - j]
+    {
+        result.push(a[a.len() - 1 - i]);
+        i += 1;
+    }
+    result
 }
-// </vc-code>
 
-
-}
 fn main() {}
+}

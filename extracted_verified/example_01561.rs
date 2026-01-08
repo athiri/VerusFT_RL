@@ -1,25 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn ufunc_call(op: spec_fn(f32, f32) -> f32, a: &Vec<f32>, b: &Vec<f32>) -> (result: Vec<f32>)
-    requires a@.len() == b@.len(),
-    ensures 
-        result@.len() == a@.len(),
-        forall|i: int| 0 <= i < result@.len() ==> result@[i] == op(a@[i], b@[i])
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus! {
+
+pub fn linear_search(a: &Vec<i32>, e: i32) -> (n: usize)
+    requires
+        exists|i: int| (0 <= i < a.len() as int) && a[i] == e,
+    ensures
+        0 <= n < a.len(),
+        a[n as int] == e,
+        forall|k: int| (0 <= k < n as int) ==> a[k] != e,
+{
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            0 <= i <= a.len(),
+            forall|k: int| (0 <= k < i as int) ==> a[k] != e,
+            exists|j: int| (0 <= j < a.len() as int) && a[j] == e,
+    {
+        if a[i] == e {
+            return i;
+        }
+        i += 1;
+    }
+    unreachable!()
+}
+
+} // verus!

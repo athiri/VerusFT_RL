@@ -1,34 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-
-spec fn R(n: nat) -> nat
-    decreases n
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] == 3 * N,
+	// post-conditions-end
 {
-    if n == 0 { 
-        0nat 
-    } else if R((n-1) as nat) > n { 
-        (R((n-1) as nat) - n) as nat
-    } else { 
-        (R((n-1) as nat) + n) as nat
-    }
+    sum[0] = (3 * N) as i32;
 }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn calcR(n: u64) -> (r: u64)
-    ensures r == R(n as nat)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
 }
-// </vc-code>
 
-}
 fn main() {}

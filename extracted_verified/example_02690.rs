@@ -1,45 +1,85 @@
-#![crate_name="barrier"]
-
 use vstd::prelude::*;
 
 verus! {
+spec fn spec_prime_helper(num: int, limit: int) -> (ret:bool) {
+    forall|j: int| 2 <= j < limit ==> (#[trigger] (num % j)) != 0
+}
+// pure-end
 
-#[verifier::loop_isolation(false)]
-fn barrier(arr: &[i32], p: usize) -> (result: bool)
+spec fn spec_prime(num: int) -> (ret:bool) {
+    spec_prime_helper(num, num)
+}
+// pure-end
+
+fn is_prime(num: u32) -> (result: bool)
+    // pre-conditions-start
+    requires
+        num >= 2,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
+        result <==> spec_prime(num as int),
+    // post-conditions-end
 {
-    if p >= arr.len() {
-        return true;
-    }
-    
-    let mut i = 0;
-    while i <= p
+    let mut i = 2;
+    while i * i <= num
         invariant
-            0 <= i <= p + 1,
-            forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases p + 1 - i
+            2 <= i <= num + 1,
+            forall|j: int| 2 <= j < i ==> (#[trigger] ((num as int) % j)) != 0,
     {
-        let mut j = p + 1;
-        while j < arr.len()
-            invariant
-                p + 1 <= j <= arr.len(),
-                forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
-                /* code modified by LLM (iteration 1): fixed type mismatch by casting i to int */
-                forall|l: int| p < l < j ==> arr[i as int] < arr[l],
-            decreases arr.len() - j
-        {
-            if arr[i] >= arr[j] {
-                return false;
-            }
-            j += 1;
+        if num % i == 0 {
+            return false;
         }
-        i += 1;
+        i = i + 1;
     }
-    
     true
 }
 
-fn main() {}
+fn largest_prime_factor(n: u32) -> (largest: u32)
+    // pre-conditions-start
+    requires
+        n >= 2,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        1 <= largest <= n,
+        spec_prime(largest as int),
+    // post-conditions-end
+{
+    let mut num = n;
+    let mut largest_factor = 2;
+    let mut i = 2;
+    
+    while i * i <= num
+        invariant
+            2 <= i,
+            2 <= num <= n,
+            2 <= largest_factor <= n,
+            spec_prime(largest_factor as int),
+            (n as int) % (num as int) == 0,
+    {
+        while num % i == 0
+            invariant
+                2 <= i,
+                2 <= num <= n,
+                2 <= largest_factor <= n,
+                spec_prime(largest_factor as int),
+                (n as int) % (num as int) == 0,
+        {
+            if is_prime(i) {
+                largest_factor = i;
+            }
+            num = num / i;
+        }
+        i = i + 1;
+    }
+    
+    if num > 1 {
+        largest_factor = num;
+    }
+    
+    largest_factor
 }
+
+}
+fn main() {}

@@ -1,59 +1,114 @@
+use vstd::arithmetic::div_mod::{
+    lemma_fundamental_div_mod, lemma_fundamental_div_mod_converse_div,
+};
 use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
+spec fn mul(a: nat, b: nat) -> (result:nat) {
+    /* code modified by LLM (iteration 1): replaced builtin::mul with standard multiplication */
+    a * b
 }
+// pure-end
 
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
+spec fn divides(factor: nat, candidate: nat) -> (result:bool) {
+    exists|k: nat| mul(factor, k) == candidate
+}
+// pure-end
+
+proof fn lemma_mod_zero(a: nat, b: nat)
+    // pre-conditions-start
+    requires
+        a > 0 && b > 0,
+        a % b == 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == in_array(a@, x),
+        divides(b, a),
+    // post-conditions-end
 {
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a[j] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
+    // impl-start
+    lemma_fundamental_div_mod(a as int, b as int);
+    assert(mul(b, (a / b)) == a);
+    // impl-end
+}
+// pure-end
+
+proof fn lemma_mod_zero_reversed(a: nat, b: nat)
+    // pre-conditions-start
+    requires
+        a > 0 && b > 0,
+        divides(b, a),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        a % b == 0,
+    // post-conditions-end
+{
+    // impl-start
+    let k_wit = choose|k: nat| mul(b, k) == a;
+    assert(k_wit == a / b) by {
+        lemma_fundamental_div_mod_converse_div(a as int, b as int, k_wit as int, 0 as int);
     }
-    false
+    lemma_fundamental_div_mod(a as int, b as int);
+    // impl-end
 }
+// pure-end
 
-#[verifier::loop_isolation(false)]
-fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
+proof fn lemma_one_divides_all()
+    // post-conditions-start
     ensures
-        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+        forall|v: nat| divides(1 as nat, v),
+    // post-conditions-end
 {
-    let mut result = Vec::new();
-    
-    for i in 0..a.len()
+    // impl-start
+    assert forall|v: nat| divides(1 as nat, v) by {
+        assert(mul(1 as nat, v) == v);
+    }
+    // impl-end
+}
+// pure-end
+
+fn largest_divisor(n: u32) -> (ret: u32)
+    // pre-conditions-start
+    requires
+        n > 1,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        divides(ret as nat, n as nat),
+        ret < n,
+        forall|k: u32| (0 < k < n && divides(k as nat, n as nat)) ==> ret >= k,
+    // post-conditions-end
+{
+    let mut i = n - 1;
+    while i > 0
         invariant
-            forall|k: int| 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] != result[l],
+            0 < i < n,
+            forall|k: u32| (i < k < n) ==> !divides(k as nat, n as nat),
     {
-        let mut found = false;
-        for j in 0..result.len()
-            invariant
-                forall|k: int| 0 <= k < result.len() ==> in_array(a@, result[k]),
-                forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] != result[l],
-                found <==> (exists|k: int| 0 <= k < j && result[k] == a[i as int]),
-        {
-            if result[j] == a[i] {
-                found = true;
-                break;
+        if n % i == 0 {
+            proof {
+                lemma_mod_zero(n as nat, i as nat);
             }
+            assert(divides(i as nat, n as nat));
+            assert(forall|k: u32| (0 < k < n && divides(k as nat, n as nat)) ==> i >= k) by {
+                assert(forall|k: u32| (i < k < n) ==> !divides(k as nat, n as nat));
+            };
+            return i;
         }
-        
-        if !found {
-            result.push(a[i]);
-        }
+        i -= 1;
     }
     
-    result
+    proof {
+        lemma_one_divides_all();
+        assert(divides(1 as nat, n as nat));
+        assert(forall|k: u32| (0 < k < n && divides(k as nat, n as nat)) ==> 1 >= k) by {
+            assert(forall|k: u32| (1 < k < n) ==> !divides(k as nat, n as nat));
+        };
+    }
+    1
 }
 
-fn main() {}
 }
+fn main() {}

@@ -1,37 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-
-spec fn pow_spec(base: int, exp: nat) -> int
-    decreases exp
-{
-    if exp == 0 {
-        1
-    } else {
-        base * pow_spec(base, (exp - 1) as nat)
+    spec fn sorted_between(a: Seq<u32>, from: int, to: int) -> bool {
+        forall |i: int, j:int|  from <= i < j < to ==> a[i] <= a[j]
+    }
+ 
+ 
+    spec fn is_reorder_of<T>(r: Seq<int>, p: Seq<T>, s: Seq<T>) -> bool {
+    &&& r.len() == s.len()
+    &&& forall|i: int| 0 <= i < r.len() ==> 0 <= #[trigger] r[i] < r.len()
+    &&& forall|i: int, j: int| 0 <= i < j < r.len() ==> r[i] != r[j]
+    &&& p =~= r.map_values(|i: int| s[i])
+    }
+ 
+    fn test1(nums: &mut Vec<u32>)
+        ensures
+            sorted_between(nums@, 0, nums@.len() as int),
+            exists|r: Seq<int>| is_reorder_of(r, nums@, old(nums)@),
+    {
+    // TODO: Remove this comment and implement the function body
     }
 }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn polyvander2d(x: Vec<f64>, y: Vec<f64>, x_deg: u8, y_deg: u8) -> (result: Vec<Vec<f64>>)
-    requires 
-        x.len() == y.len(),
-        x.len() > 0,
-    ensures
-        result.len() == x.len(),
-        forall|k: int| 0 <= k < result.len() ==> #[trigger] result[k].len() == (x_deg as int + 1) * (y_deg as int + 1),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
-fn main() {}

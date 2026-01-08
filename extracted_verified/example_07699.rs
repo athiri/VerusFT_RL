@@ -1,55 +1,29 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition: array size must be greater than 0
-spec fn is_greater_precond(n: int, a: Seq<int>) -> bool {
-    a.len() > 0
-}
-
-// Main function: check if n is greater than all elements in array
-// This implements the logic of Array.all (fun x => n > x)
-fn is_greater(n: i32, a: &Vec<i32>) -> (result: bool)
-    requires a.len() > 0
-    ensures result <==> (forall|i: int| 0 <= i < a.len() ==> n > a[i])
+// <vc-helpers>
+fn ln2_const() -> (result: f64)
+    ensures
+        result == 0.693147180559945309417232121458176568
 {
-    let mut i = 0;
-    while i < a.len()
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        invariant 
-            0 <= i <= a.len(),
-            forall|j: int| 0 <= j < i ==> n > a[j]
-        decreases a.len() - i
-    {
-        if n <= a[i] {
-            return false;
-        }
-        i += 1;
-    }
-    true
+    0.693147180559945309417232121458176568
 }
+// </vc-helpers>
 
-// Postcondition specification - matches the Lean postcondition exactly
-spec fn is_greater_postcond(n: int, a: Seq<int>, result: bool) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> n > a[i]) <==> result
-}
-
-// Specification version that matches the implementation
-spec fn spec_is_greater(n: int, a: Seq<int>) -> bool
-    recommends a.len() > 0
+// <vc-spec>
+fn npy_loge2() -> (result: f64)
+    ensures
+        result == 0.693147180559945309417232121458176568
+// </vc-spec>
+// <vc-code>
 {
-    forall|i: int| 0 <= i < a.len() ==> n > a[i]
+    0.693147180559945309417232121458176568
 }
+// </vc-code>
 
-// Proof that the function satisfies its specification
-proof fn is_greater_spec_satisfied(n: int, a: Seq<int>)
-    requires is_greater_precond(n, a)
-    ensures is_greater_postcond(n, a, spec_is_greater(n, a))
-{
-    // The postcondition is exactly what spec_is_greater returns,
-    // so this is trivially true by the definition of <==>
-}
 
 }
-
 fn main() {}

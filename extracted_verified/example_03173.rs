@@ -1,39 +1,73 @@
 use vstd::prelude::*;
 
 verus! {
-    spec fn is_even_spec(x: int) -> bool {
-        x % 2 == 0
-    }
 
-    fn find_even_numbers(arr: &[i32]) -> (even_numbers: Vec<i32>)
-        requires arr.len() <= usize::MAX,
-        ensures
-            // All numbers in the output are even
-            forall|k: int| 0 <= k < even_numbers@.len() ==> is_even_spec(even_numbers@[k] as int),
-            // All numbers in the output come from the input array
-            forall|k: int| 0 <= k < even_numbers@.len() ==> arr@.contains(even_numbers@[k]),
-            // The output contains only even numbers from the input
-            forall|x: i32| even_numbers@.contains(x) ==> (arr@.contains(x) && is_even_spec(x as int))
-    {
-        let mut result = Vec::new();
-        
-        for i in 0..arr.len()
-            invariant
-                // All numbers in result so far are even
-                forall|k: int| 0 <= k < result@.len() ==> is_even_spec(result@[k] as int),
-                // All numbers in result come from the first i elements of arr
-                /* code modified by LLM (iteration 1): added trigger annotations for quantifiers */
-                forall|k: int| 0 <= k < result@.len() ==> exists|j: int| 0 <= j < i && arr@[j] == #[trigger] result@[k],
-                // Result contains only even numbers from the first i elements
-                forall|x: i32| result@.contains(x) ==> (exists|j: int| 0 <= j < i && arr@[j] == x) && is_even_spec(x as int)
-        {
-            if arr[i] % 2 == 0 {
-                result.push(arr[i]);
-            }
-        }
-        
-        result
+spec fn is_upper_case(c: char) -> (result:bool) {
+    c >= 'A' && c <= 'Z'
+}
+// pure-end
+
+spec fn shift32_spec(c: char) -> (result:char) {
+    ((c as u8) + 32) as char
+}
+// pure-end
+
+spec fn is_lower_case(c: char) -> (result:bool) {
+    c >= 'a' && c <= 'z'
+}
+// pure-end
+
+spec fn shift_minus_32_spec(c: char) -> (result:char) {
+    ((c as u8) - 32) as char
+}
+// pure-end
+
+spec fn to_toggle_case_spec(s: char) -> (result:char) {
+    if is_lower_case(s) {
+        shift_minus_32_spec(s)
+    } else if is_upper_case(s) {
+        shift32_spec(s)
+    } else {
+        s
     }
 }
+// pure-end
+
+fn to_toggle_case(str1: &Vec<char>) -> (toggle_case: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == toggle_case@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+    // post-conditions-end
+{
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while idx < str1.len()
+        invariant
+            idx <= str1.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == to_toggle_case_spec(str1[i]),
+        decreases str1.len() - idx
+    {
+        let c = str1[idx];
+        let toggled = if c >= 'a' && c <= 'z' {
+            ((c as u8) - 32) as char
+        } else if c >= 'A' && c <= 'Z' {
+            ((c as u8) + 32) as char
+        } else {
+            c
+        };
+        
+        result.push(toggled);
+        idx += 1;
+    }
+    
+    result
+}
+
+} // verus!
 
 fn main() {}

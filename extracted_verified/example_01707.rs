@@ -1,66 +1,49 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {
+}
 
 verus! {
-spec fn valid_lucky_number(n: Seq<char>) -> bool {
-    n.len() > 0 && forall|i: int| 0 <= i < n.len() ==> n[i] == '4' || n[i] == '7'
-}
 
-spec fn convert_to_binary(n: Seq<char>) -> Seq<char>
-    recommends forall|i: int| 0 <= i < n.len() ==> n[i] == '4' || n[i] == '7'
-    decreases n.len()
+fn reverse_to_k(list: &Vec<i32>, n: usize) -> (reversed_list: Vec<i32>)
+    requires
+        list@.len() > 0,
+        0 < n < list@.len(),
+    ensures
+        reversed_list@ == list@.subrange(0, n as int).reverse().add(
+            list@.subrange(n as int, list.len() as int),
+        ),
 {
-    if n.len() == 0 {
-        Seq::empty()
-    } else if n[0] == '4' {
-        seq!['0'].add(convert_to_binary(n.subrange(1, n.len() as int)))
-    } else {
-        seq!['1'].add(convert_to_binary(n.subrange(1, n.len() as int)))
+    let mut result = Vec::new();
+    
+    // Add the first n elements in reverse order
+    let mut i = n;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i > 0
+        invariant
+            result@.len() == n - i,
+            forall|j: int| 0 <= j < result@.len() ==> result@[j] == list@[n as int - 1 - j],
+        decreases i
+    {
+        i = i - 1;
+        result.push(list[i]);
     }
-}
-
-spec fn pow2(n: nat) -> nat
-    decreases n
-{
-    if n == 0 { 1 } else { 2 * pow2((n - 1) as nat) }
-}
-
-spec fn binary_to_int(s: Seq<char>) -> int
-    recommends forall|i: int| 0 <= i < s.len() ==> s[i] == '0' || s[i] == '1'
-    decreases s.len()
-{
-    if s.len() == 0 {
-        0
-    } else if s[0] == '1' {
-        pow2((s.len() - 1) as nat) + binary_to_int(s.subrange(1, s.len() as int))
-    } else {
-        binary_to_int(s.subrange(1, s.len() as int))
+    
+    // Add the remaining elements from index n onwards
+    let mut j = n;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while j < list.len()
+        invariant
+            n <= j <= list.len(),
+            result@.len() == n + (j - n),
+            forall|k: int| 0 <= k < n ==> result@[k] == list@[n as int - 1 - k],
+            forall|k: int| n <= k < result@.len() ==> result@[k] == list@[n as int + (k as int - n as int)],
+        decreases list.len() - j
+    {
+        result.push(list[j]);
+        j = j + 1;
     }
+    
+    result
 }
 
-spec fn valid_result(n: Seq<char>, result: int) -> bool
-    recommends valid_lucky_number(n)
-{
-    result > 0 && result == 2 * (pow2((n.len() - 1) as nat) - 1) + binary_to_int(convert_to_binary(n)) + 1
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: Vec<char>) -> (result: i8)
-    requires valid_lucky_number(n@)
-    ensures valid_result(n@, result as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

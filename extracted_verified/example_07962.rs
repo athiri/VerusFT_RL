@@ -1,56 +1,63 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition for mergeIntervals
-spec fn merge_intervals_precond(intervals: Seq<(int, int)>) -> bool {
-    true
-}
+// <vc-helpers>
 
-// Helper function to insert an interval into a sorted list
-fn insert(x: (int, int), sorted: Vec<(int, int)>) -> (result: Vec<(int, int)>)
+// </vc-helpers>
+
+// <vc-spec>
+fn strange_sort_list_helper(s: Vec<i8>) -> (res: (Vec<i8>, Vec<i8>))
+    ensures 
+        s@.to_multiset() == res.0@.to_multiset(),
+        s@.len() == res.0@.len() && s@.len() == res.1@.len(),
+        forall|i: int| 0 <= i < s@.len() && i % 2 == 0 ==> res.1@[i] == res.0@[i / 2],
+        forall|i: int| 0 <= i < s@.len() && i % 2 == 1 ==> res.1@[i] == res.0@[s@.len() - (i - 1) / 2 - 1]
+// </vc-spec>
+// <vc-code>
 {
-    return Vec::new();  // TODO: Remove this line and implement the function body
+    let res0 = s;
+    let n = res0.len();
+    let mut res1: Vec<i8> = Vec::new();
+    let mut i: usize = 0;
+    while i < n
+        invariant
+            res0@.len() == n as int,
+            0 <= i as int <= n as int,
+            res1@.len() == i as int,
+            forall|j: int| 0 <= j < i as int && j % 2 == 0 ==> res1@[j] == res0@[j / 2],
+            forall|j: int| 0 <= j < i as int && j % 2 == 1 ==> res1@[j] == res0@[n as int - (j - 1) / 2 - 1],
+        decreases n as int - i as int
+    {
+        if i % 2 == 0 {
+            let k = i / 2;
+            assert(k <= i);
+            assert(i < n);
+            assert(k < n);
+            let v = res0[k];
+            res1.push(v);
+        } else {
+            assert(i >= 1);
+            assert(i < n);
+            let q = (i - 1) / 2;
+            assert(q <= i / 2);
+            assert(i / 2 <= i);
+            assert(q < n);
+            assert(q + 1 <= n);
+            let k = n - q - 1;
+            assert(k < n);
+            let v = res0[k];
+            res1.push(v);
+        }
+        i += 1;
+    }
+    (res0, res1)
+}
+// </vc-code>
+
+
 }
 
-// Helper function to sort intervals by start time
-fn sort_intervals(intervals: Vec<(int, int)>) -> (result: Vec<(int, int)>)
-{
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
-
-// Main merge intervals function
-fn merge_intervals(intervals: Vec<(int, int)>) -> (result: Vec<(int, int)>)
-    requires merge_intervals_precond(intervals@)
-{
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
-
-// Helper function to check if all original intervals are covered
-spec fn all_covered(intervals: Seq<(int, int)>, result: Seq<(int, int)>) -> bool {
-    forall|i: int| 
-        #![trigger intervals[i]]
-        0 <= i < intervals.len() ==> 
-        exists|j: int| 
-            #![trigger result[j]]
-            0 <= j < result.len() && 
-            result[j].0 <= intervals[i].0 && intervals[i].1 <= result[j].1
-}
-
-// Helper function to check if no intervals overlap  
-spec fn no_overlap(result: Seq<(int, int)>) -> bool {
-    forall|i: int, j: int| 
-        #![trigger result[i], result[j]]
-        0 <= i < j < result.len() ==> result[i].1 < result[j].0
-}
-
-// Postcondition for mergeIntervals
-spec fn merge_intervals_postcond(intervals: Seq<(int, int)>, result: Seq<(int, int)>) -> bool {
-    all_covered(intervals, result) && no_overlap(result)
-}
-
-}
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+fn main() {}

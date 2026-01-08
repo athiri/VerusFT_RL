@@ -1,47 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(n: int, k: int) -> bool {
-    n >= 1 && k >= 1
-}
-
-spec fn sheets_needed(n: int) -> (int, int, int) {
-    (2 * n, 5 * n, 8 * n)
-}
-
-spec fn total_sheets_needed(n: int) -> int {
-    2 * n + 5 * n + 8 * n
-}
-
-spec fn ceil_div(a: int, b: int) -> int
-    recommends b > 0
+fn reverse_to_k(list: &Vec<i32>, n: usize) -> (reversed_list: Vec<i32>)
+    requires
+        list@.len() > 0,
+        0 < n < list@.len(),
+    ensures
+        reversed_list@ == list@.subrange(0, n as int).reverse().add(
+            list@.subrange(n as int, list.len() as int),
+        ),
 {
-    (a + b - 1) / b
+    let mut result = Vec::new();
+    
+    // Add the first n elements in reverse order
+    let mut i = n;
+    while i > 0
+        invariant
+            result@.len() == n - i,
+            forall|j: int| 0 <= j < result@.len() ==> result@[j] == list@[n as int - 1 - j],
+    {
+        i = i - 1;
+        result.push(list[i]);
+    }
+    
+    // Add the remaining elements from index n onwards
+    let mut j = n;
+    while j < list.len()
+        invariant
+            n <= j <= list.len(),
+            result@.len() == n + (j - n),
+            forall|k: int| 0 <= k < n ==> result@[k] == list@[n as int - 1 - k],
+            forall|k: int| n <= k < result@.len() ==> result@[k] == list@[n as int + (k as int - n as int)],
+    {
+        result.push(list[j]);
+        j = j + 1;
+    }
+    
+    result
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8) -> (result: i8)
-    requires 
-        valid_input(n as int, k as int)
-    ensures 
-        result as int == ceil_div(2 * (n as int), k as int) + ceil_div(5 * (n as int), k as int) + ceil_div(8 * (n as int), k as int),
-        result >= 0,
-        result as int >= (total_sheets_needed(n as int) + (k as int) - 1) / (k as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

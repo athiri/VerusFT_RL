@@ -1,27 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn lagroots(c: Vec<i8>) -> (roots: Vec<i8>)
-    requires
-        c.len() >= 2,
-        c@[c.len() - 1 as int] != 0,
-    ensures
-        c.len() == 2 ==> roots.len() == 1,
-        c.len() == 2 ==> roots@[0] as int == 1 + c@[0] as int / c@[1] as int,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus! {
+
+fn binary_search(v: &Vec<u64>, k: u64) -> (r: usize)
+    requires
+        forall|i: int, j: int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
+        exists|i: int| 0 <= i < v.len() && k == v[i],
+    ensures
+        r < v.len(),
+        k == v[r as int],
+{
+    let mut left: usize = 0;
+    let mut right: usize = v.len();
+    
+    while left < right
+        invariant
+            left <= right <= v.len(),
+            exists|i: int| left <= i < right && k == v[i],
+            forall|i: int, j: int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
+    {
+        let mid = left + (right - left) / 2;
+        
+        if v[mid] == k {
+            return mid;
+        } else if v[mid] < k {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    
+    // This should never be reached due to the precondition that k exists
+    unreachable!()
+}
+
+} // verus!

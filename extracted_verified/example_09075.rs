@@ -1,61 +1,167 @@
-use vstd::prelude::*;
+// Copyright 2018-2024 VMware, Inc., Microsoft Inc., Carnegie Mellon University, ETH Zurich, University of Washington
+// SPDX-License-Identifier: BSD-2-Clause
 
-verus! {
+#![allow(unused_imports)]
+use builtin::*;
 
-// Helper function to check if a sequence is strictly increasing
-spec fn is_strictly_increasing(l: Seq<i32>) -> bool
-    decreases l.len()
-{
-    l.len() <= 1 || (l[0] < l[1] && is_strictly_increasing(l.subrange(1, l.len() as int)))
-}
+use builtin_macros::*;
+use state_machines_macros::state_machine;
+use crate::spec::MapSpec_t::*;
 
-// Check if a sequence is a subsequence of another
-spec fn is_subsequence_of(subseq: Seq<i32>, nums: Seq<i32>) -> bool {
-    exists|indices: Seq<usize>| {
-        indices.len() == subseq.len() &&
-        (forall|i: int| #![trigger indices[i]]
-            0 <= i < indices.len() ==> indices[i] < nums.len()) &&
-        (forall|i: int| #![trigger indices[i]]
-            0 <= i < indices.len() - 1 ==> indices[i] < indices[i + 1]) &&
-        (forall|i: int| #![trigger subseq[i]]
-            0 <= i < subseq.len() ==> subseq[i] == nums[indices[i] as int])
+verus!{
+    
+    // SystemModel<ProgramModel> is a state machine defining the bottom layer
+    // interaction  of player 2's program model and the disk model
+    // has the same set of label as the top layer spec CrashTolerantAsyncMap
+
+    // program model can take 
+    
+    state_machine!{ SystemModel<ProgramModel> {
+
+        // ProgramModel: a player 2 state machine that interacts with application request and IO controller
+        type ProgramModel: APPIODriver; 
+        type DiskModel = AsyncDisk;
+
+        fields{
+            p: ProgramModel,
+            d: DiskModel,
+        }
+
+        pub enum Label
+        {
+            // restriction on the application visible labels
+            // player 2 can perform any arbitrary label translation
+
+            OperateOp{ base_op: ProgramModel::Label },
+            CrashOp,
+
+            // maybe we don't want exactly the same label 
+            SyncOp, // should this be present here?
+            ReqSyncOp{ request_info },
+            ReplySyncOp{ reply_info },
+            // -----------------------------------------
+
+            Noop,
+        }
+
+        transition!{
+            // captures program model req, execute, reply
+            // captures program internal and disk internal ops
+            operate(label: Label, new_p: ProgramModel::State, new_d: DiskModel) {
+                require let Label::OperateOp{ base_op } = label;
+                // may want to restrict disk label to not be a sync?
+                require ProgramModel::State::next(pre.p, new_p, base_op.program_label);
+                require DiskModel::State::next(pre.d, new_d, base_op.disk_label);
+                update p = new_p;
+                update d = new_d;
+            }
+        }
+
+        transition!{
+            crash(label: Label, new_p: ProgramModel::State, new_d: DiskModel) {
+                require let Label::CrashOp = label;
+                require ProgramModel::State::next(pre.p, new_p, ProgramModel::Label::Crash);
+                require DiskModel::State::next(pre.d, new_d, DiskModel::Label::Crash);
+                update p = new_p;
+                update d = new_d;
+            }
+        }
+
+        transition!{
+            // models a super block write landing
+            sync(label: Label, new_d: DiskModel) {
+                require let Label::SyncOp = label;
+                require DiskModel::State::next(pre.d, new_d, DiskModel::Label::Sync{...}); // ? 
+                update d = new_d;
+            }
+        }
+
+        transition!{
+            req_sync(label: Label, new_p: ProgramModel::State, new_d: DiskModel) {
+                require let Label::ReqSyncOp{ sync_req_id } = label;
+                require ProgramModel::State::next(pre.p, new_p, ProgramModel::Label::ReqSync{...});
+                require DiskModel::State::next(pre.d, new_d, DiskModel::Label::DiskIO{...});
+                update p = new_p;
+                update d = new_d;
+            }
+        }
+
+        transition!{
+            reply_sync(label: Label, new_p: ProgramModel::State, new_d: DiskModel) {
+                require let Label::ReplySyncOp{ sync_req_id } = label;
+                require ProgramModel::State::next(pre.p, new_p, ProgramModel::Label::ReplySync{...});
+                require DiskModel::State::next(pre.d, new_d, DiskModel::Label::DiskIO{...});
+                update p = new_p;
+                update d = new_d;
+            }
+        }
+
+        transition!{
+            disk_internal(label: Label, new_d: DiskModel) {
+                require let Label::Noop = label;
+                require DiskModel::State::next(pre.d, new_d, DiskModel::Label::Internal{});
+                update d = new_d;
+            }
+        }
+
+    
+    }}
+
+    // responsibility of player 2 to implement
+    trait Obligation {
+
+        type ProgramModel: APPIODriver; 
+
+        /*
+            Model Refinement Trait: requires a demonstration that the system model state machine
+            can refine to the AsyncMap.State state machine
+        */
+
+        spec fn i(s: SystemModel<ProgramModel>) -> AsyncMap::State
+
+        spec fn i_lbl(lbl: SystemModel::Label) -> AsyncMap::Label
+            requires lbl is XXX
+        {
+            match lbl {
+                ...
+            }
+        }
+
+        // freedom for p2
+        spec fn i_p2_lbl(lbl: SystemModel::Label) -> (result: AsyncMap::Label)
+            requires lbl !is XXX
+            ensures result !is XXX
+        ;
+
+        spec fn inv(s: SystemModel<ProgramModel>) -> bool
+
+        proof fn init_refines(s: SystemModel<ProgramModel>)
+            requires init(s)
+            ensures inv(s)
+
+        proof fn inv_next(s: SystemModel<ProgramModel>, s2:  SystemModel<ProgramModel>)
+            requires inv(s), next(s, s2)
+            ensures inv(s2) 
+
+        
+        proof fn next_refines(s: SystemModel<ProgramModel>, s2:  SystemModel<ProgramModel>)
+            requires inv(s), next(s, s2), inv(s2)
+            ensures AsyncMap.next(s.i(), s2.i())
+
+        
+        // implementation entry point
+        // TODO: we don't have a good way to use the rust build system to prevent 
+        // unwanted calls to std lib or other system calls         
+        fn entry_point(a: APPIOPerm, Transition<ProgramModel>);
+
+        // application & io correspondence captured within APPIOPerm object
+        // io linearization rules
+
+        // TODO: either a trait or a struct that encapsulate IO permissions
+        // IOPerm_t struct that can be included by player 2 to perform IO
+        // how to enforce application correspondance 
+        
     }
+
+   
 }
-
-// Precondition for lengthOfLIS
-spec fn length_of_lis_precond(nums: Seq<i32>) -> bool {
-    true
-}
-
-// Postcondition for lengthOfLIS  
-spec fn length_of_lis_postcond(nums: Seq<i32>, result: usize) -> bool {
-    // There exists a strictly increasing subsequence of nums with length result
-    exists|subseq: Seq<i32>| {
-        is_subsequence_of(subseq, nums) &&
-        is_strictly_increasing(subseq) &&
-        subseq.len() == result
-    } &&
-    // All strictly increasing subsequences have length <= result
-    forall|subseq: Seq<i32>| #![trigger is_subsequence_of(subseq, nums), is_strictly_increasing(subseq)]
-        is_subsequence_of(subseq, nums) && is_strictly_increasing(subseq) 
-        ==> subseq.len() <= result
-}
-
-// Binary search to find position to insert/replace
-fn binary_search_position(dp: &Vec<i32>, x: i32) -> (pos: usize) 
-    ensures pos <= dp.len()
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-fn length_of_lis(nums: Vec<i32>) -> (result: usize) {
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-proof fn length_of_lis_spec_satisfied(nums: Vec<i32>) {
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
-} // verus!
-
-fn main() {}

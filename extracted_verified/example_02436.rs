@@ -1,41 +1,60 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		sum[0] <= 2 * N,
+
+verus! {
+
+spec fn seq_max(a: Seq<i32>) -> i32
+    decreases a.len(),
 {
-    let mut total: i32 = 0;
-    let mut i: usize = 0;
+    if a.len() == 0 {
+        i32::MIN
+    } else if a.last() > seq_max(a.drop_last()) {
+        a.last()
+    } else {
+        seq_max(a.drop_last())
+    }
+}
+
+fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        result.len() == numbers.len(),
+        forall|i: int| 0 <= i < numbers.len() ==> result[i] == seq_max(numbers@.take(i + 1)),
+{
+    let mut result = Vec::new();
+    let mut current_max = i32::MIN;
     
-    /* code modified by LLM (iteration 2): added bounds checking and proper invariants for array access */
-    while i < N as usize
+    for i in 0..numbers.len()
         invariant
-            i <= N as usize,
-            total <= 2 * (i as i32),
-            a.len() == N,
-            b.len() == N,
-            sum.len() == 1,
-            N > 0,
-            N < 1000,
-        decreases N as usize - i
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == seq_max(numbers@.take(j + 1)),
+            /* code modified by LLM (iteration 1): cast i to int for type compatibility */
+            i > 0 ==> current_max == seq_max(numbers@.take(i as int)),
     {
-        /* code modified by LLM (iteration 2): added bounds check before array access */
-        if i < a.len() && i < b.len() {
-            let val_a = if a[i] > 1 { 1 } else if a[i] < 0 { 0 } else { a[i] };
-            let val_b = if b[i] > 1 { 1 } else if b[i] < 0 { 0 } else { b[i] };
-            total = total + val_a + val_b;
+        if i == 0 {
+            /* code modified by LLM (iteration 1): cast i to int for indexing */
+            current_max = numbers[i as int];
+        } else {
+            /* code modified by LLM (iteration 1): cast i to int for indexing */
+            if numbers[i as int] > current_max {
+                current_max = numbers[i as int];
+            }
         }
-        i = i + 1;
+        
+        proof {
+            /* code modified by LLM (iteration 1): cast i to int for sequence operations */
+            assert(numbers@.take(i as int + 1) == numbers@.take(i as int).push(numbers[i as int]));
+            assert(seq_max(numbers@.take(i as int + 1)) == 
+                if numbers[i as int] > seq_max(numbers@.take(i as int)) {
+                    numbers[i as int]
+                } else {
+                    seq_max(numbers@.take(i as int))
+                });
+        }
+        
+        result.push(current_max);
     }
     
-    sum.set(0, total);
+    result
 }
+
+fn main() {}
 }

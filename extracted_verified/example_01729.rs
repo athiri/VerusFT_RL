@@ -1,45 +1,42 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-spec fn is_fibonacci(num: int) -> bool {
-    num == 1 || num == 2 || exists|k: nat| is_fib_seq(k) == num
-}
-
-spec fn is_fib_seq(n: nat) -> int
-    decreases n
+fn replace_chars(str1: &[u8], old_char: u8, new_char: u8) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if str1[i] == old_char {
+    return Vec::new();  // TODO: Remove this line and implement the function body
+            } else {
+                str1[i]
+            }),
 {
-    if n == 0 {
-        1
-    } else if n == 1 {
-        1
-    } else {
-        is_fib_seq((n - 1) as nat) + is_fib_seq((n - 2) as nat)
+    let mut result_str = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1@.len(),
+            result_str@.len() == index,
+            forall|k: int|
+                0 <= k < index ==> result_str[k] == (if str1[k] == old_char {
+                    new_char
+                } else {
+                    str1[k]
+                }),
+    {
+        if str1[index] == old_char {
+            result_str.push(new_char);
+        } else {
+            result_str.push(str1[index]);
+        }
+        index += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: Vec<char>)
-    requires n >= 1 && n <= 100
-    ensures 
-        result.len() == n as nat
-        && (forall|i: int| 0 <= i < result.len() ==> result[i] == 'O' || result[i] == 'o')
-        && (forall|i: int| 1 <= i <= n ==> (is_fibonacci(i) <==> result[i-1] == 'O'))
-        && (forall|i: int| 1 <= i <= n ==> (!is_fibonacci(i) <==> result[i-1] == 'o'))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    Vec::new()
-}
-// </vc-code>
-
-
+    result_str
 }
 
-fn main() {}
+} // verus!

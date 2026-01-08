@@ -1,41 +1,20 @@
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn barrier(arr: &[i32], p: usize) -> (result: bool)
+fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
     requires
-        arr.len() > 0,
-        0 <= p < arr.len(),
+        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
+        0 <= (s1@.len() * 3) <= i32::MAX,
     ensures
-        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
+        res@.len() == s1@.len() * 3,
+        forall|i: int|
+            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
+                == s3[i]),
 {
-    let mut i = 0;
-    while i <= p
-        invariant
-            0 <= i <= p + 1,
-            forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
-        /* code modified by LLM (iteration 1): added decreases clause for outer loop */
-        decreases p + 1 - i
-    {
-        let mut j = p + 1;
-        while j < arr.len()
-            invariant
-                p + 1 <= j <= arr.len(),
-                forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k] < arr[l],
-                forall|l: int| p < l < j ==> arr[i as int] < arr[l],
-            /* code modified by LLM (iteration 1): added decreases clause for inner loop */
-            decreases arr.len() - j
-        {
-            if arr[i] >= arr[j] {
-                return false;
-            }
-            j += 1;
-        }
-        i += 1;
-    }
-    true
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
-}
+} // verus!

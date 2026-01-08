@@ -1,29 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-
-spec fn power(n: nat) -> nat
-    decreases n
+verus!{
+//IMPL myfun
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+    // pre-conditions-start
+    requires
+        N > 0,
+        old(a).len() == N,
+        old(sum).len() == 1,
+        N < 1000,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        sum[0] == 5 * N,
+    // post-conditions-end
 {
-    if n == 0 { 1 } else { 2 * power((n - 1) as nat) }
+    sum.set(0, 5 * N);
 }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn compute_power(n: u32) -> (p: u32)
-    requires n < 32,
-    ensures p == power(n as nat),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
 }
-// </vc-code>
 
-}
 fn main() {}

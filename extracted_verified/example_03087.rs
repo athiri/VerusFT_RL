@@ -1,79 +1,44 @@
 use vstd::prelude::*;
 
 verus! {
-    // Predicate to check if all elements in a sequence are positive (non-negative)
-    spec fn positive(s: Seq<i32>) -> bool {
-        forall|u: int| 0 <= u < s.len() ==> s[u] >= 0
-    }
 
-    // Method to check if all elements in an array are positive
-    fn mpositive(v: &[i32]) -> (b: bool)
-        ensures b == positive(v@)
+fn min_second_value_first(arr: &Vec<Vec<i32>>) -> (first_of_min_second: i32)
+    // pre-conditions-start
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() >= 2,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        exists|i: int|
+            0 <= i < arr.len() && first_of_min_second == #[trigger] arr[i][0] && (forall|j: int|
+                0 <= j < arr.len() ==> (arr[i][1] <= #[trigger] arr[j][1])),
+    // post-conditions-end
+{
+    let mut min_second = arr[0][1];
+    let mut result_first = arr[0][0];
+    let mut min_index = 0;
+    
+    let mut k = 1;
+    while k < arr.len()
+        invariant
+            0 <= k <= arr.len(),
+            0 <= min_index < k,
+            min_second == arr[min_index as int][1],
+            result_first == arr[min_index as int][0],
+            forall|j: int| 0 <= j < k ==> arr[min_index as int][1] <= #[trigger] arr[j][1],
     {
-        for i in 0..v.len()
-            invariant forall|u: int| 0 <= u < i ==> v[u] >= 0
-        {
-            if v[i] < 0 {
-                return false;
-            }
+        if arr[k][1] < min_second {
+            min_second = arr[k][1];
+            result_first = arr[k][0];
+            min_index = k;
         }
-        true
+        k += 1;
     }
-
-    // Alternative implementation using boolean flag  
-    fn mpositive3(v: &[i32]) -> (b: bool)
-        ensures b == positive(v@)
-    {
-        let mut result = true;
-        for i in 0..v.len()
-            invariant result == (forall|u: int| 0 <= u < i ==> v[u] >= 0)
-        {
-            if v[i] < 0 {
-                result = false;
-            }
-        }
-        result
-    }
-
-    // Method mpositive4 (identical to mpositive3)
-    fn mpositive4(v: &[i32]) -> (b: bool)
-        ensures b == positive(v@)
-    {
-        let mut result = true;
-        for i in 0..v.len()
-            invariant result == (forall|u: int| 0 <= u < i ==> v[u] >= 0)
-        {
-            if v[i] < 0 {
-                result = false;
-            }
-        }
-        result
-    }
-
-    // Right-to-left traversal implementation - simplified
-    fn mpositivertl(v: &[i32]) -> (b: bool)
-        ensures b == positive(v@)
-    {
-        let mut i = v.len();
-        /* code modified by LLM (iteration 1): fixed while loop syntax with proper braces and invariant placement */
-        while i > 0
-        invariant 
-            0 <= i <= v.len(),
-            forall|u: int| i <= u < v.len() ==> v[u] >= 0
-        decreases i
-        {
-            i = i - 1;
-            /* code modified by LLM (iteration 1): added assertion to help prove bounds before array access */
-            assert(0 <= i < v.len());
-            if v[i] < 0 {
-                return false;
-            }
-        }
-        /* code modified by LLM (iteration 1): added assertion to help prove postcondition when loop exits */
-        assert(i == 0);
-        assert(forall|u: int| 0 <= u < v.len() ==> v[u] >= 0);
-        true
-    }
+    
+    result_first
 }
+
+} // verus!
 
 fn main() {}

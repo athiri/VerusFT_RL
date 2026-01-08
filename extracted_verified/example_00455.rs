@@ -1,24 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn has_only_one_distinct_element(arr: &Vec<i32>) -> (result: bool)
-
+fn below_threshold(l: &[i32], t: i32) -> (result: bool)
+    // post-conditions-start
     ensures
-        result == (forall|i: int| 1 <= i < arr@.len() ==> arr[0] == #[trigger] arr[i]),
-// </vc-spec>
-// <vc-code>
+        result == forall|i: int| 0 <= i < l.len() ==> l[i] < t,
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..l.len()
+        invariant forall|j: int| 0 <= j < i ==> l[j] < t
+    {
+        if l[i] >= t {
+            return false;
+        }
+    }
+    true
 }
-// </vc-code>
 
 }
 fn main() {}

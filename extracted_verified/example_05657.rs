@@ -1,31 +1,32 @@
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn reverse(v: &mut Vec<u64>)
+verus! {
+
+fn is_palindrome(text: &str) -> (result: bool)
+    // post-conditions-start
     ensures
-        v.len() == old(v).len(),
-        forall|i: int| 0 <= i < old(v).len() ==> v[i] == old(v)[old(v).len() - i - 1],
+        result == forall|i: int|
+            0 <= i < text@.len() ==> #[trigger] text@[i] == text@[text@.len() - 1 - i],
+    // post-conditions-end
 {
-    let len = v.len();
-    let mut i = 0;
+    /* code modified by LLM (iteration 1): replaced text.len() with text@.len() and fixed indexing to use sequence operations */
+    let len = text@.len();
+    let mut i: usize = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
     while i < len / 2
         invariant
-            v.len() == len,
-            len == old(v).len(),
-            forall|j: int| 0 <= j < i ==> v[j] == old(v)[len - j - 1],
-            forall|j: int| len - i <= j < len ==> v[j] == old(v)[len - j - 1],
-            forall|j: int| i <= j < len - i ==> v[j] == old(v)[j],
-        decreases len / 2 - i,
+            0 <= i <= len / 2,
+            forall|j: int| 0 <= j < i ==> text@[j] == text@[len - 1 - j],
     {
-        /* code modified by LLM (iteration 1): store both values in temporaries to avoid borrowing conflicts */
-        let temp = v[i];
-        let temp2 = v[len - i - 1];
-        v.set(i, temp2);
-        v.set(len - i - 1, temp);
+        /* code modified by LLM (iteration 1): use sequence indexing with @ instead of as_bytes() */
+        if text@[i as int] != text@[len - 1 - (i as int)] {
+            return false;
+        }
         i += 1;
     }
+    
+    true
 }
+
 }
+fn main() {}

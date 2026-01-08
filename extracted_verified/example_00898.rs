@@ -1,26 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    /* 
+      Dafny Tutorial 2: Sequences and Stacks, Predicates and Assertions
 
-// <vc-helpers>
-// </vc-helpers>
+      In this tutorial we introduce a simple stack model using the functional 
+      style of programming.
+      
+    */
+    type IntStack = Seq<int>;
 
-// <vc-spec>
-fn mfirstMaximum(v: &Vec<i32>) -> (i: usize)
-    requires v.len() > 0,
-    ensures 
-        0 <= i < v.len() &&
-        (forall|k: int| 0 <= k < v.len() ==> v[i as int] >= v[k]) &&
-        (forall|l: int| 0 <= l < i ==> v[i as int] > v[l]),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    spec fn is_empty(s: IntStack) -> bool {
+        s.len() == 0
+    }
+
+    spec fn push(s: IntStack, x: int) -> IntStack {
+        s.push(x)
+    }
+
+    spec fn pop(s: IntStack) -> IntStack {
+        if s.len() > 0 {
+            s.subrange(0, s.len() - 1)
+        } else {
+            arbitrary()
+        }
+    }
+
+    proof fn test_stack() -> (r: IntStack) {
+        let s: IntStack = seq![20, 30, 15, 40, 60, 100, 80];
+
+        assert(pop(push(s, 100)) == s);
+
+        assert(forall|e: int| 0 <= e < s.len() ==> s[e] > 5);
+
+        s
+    }
+
+    fn main() {
+        proof {
+            let _ = test_stack();
+        }
+    }
 }
-// </vc-code>
-
-}
-fn main() {}

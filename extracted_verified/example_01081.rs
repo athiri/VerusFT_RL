@@ -1,28 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn chebder(c: Vec<i8>, scl: i8) -> (result: Vec<i8>)
-    requires c.len() > 0,
-    ensures
-        result.len() == c.len() - 1,
-        c.len() > 1 ==> result[0] == scl * c[1],
-        c.len() > 2 ==> result[1] == scl * 4 * c[2],
-        forall|j: int| 2 <= j < result.len() ==>
-            result[j as int] == scl * (2 * ((j + 1) as i8)) * c[(j + 1) as int],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn sum(N: u32) -> (s: u32)
+        requires N >= 0,
+        ensures s == N * (N + 1) / 2,
+    {
+        let mut result: u32 = 0;
+        let mut i: u32 = 1;
+        
+        while i <= N
+            invariant 
+                1 <= i <= N + 1,
+                result == (i - 1) * i / 2,
+        {
+            result = result + i;
+            i = i + 1;
+        }
+        
+        result
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

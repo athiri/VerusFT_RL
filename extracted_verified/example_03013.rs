@@ -2,40 +2,57 @@ use vstd::prelude::*;
 
 verus! {
 
-fn square_nums(nums: &Vec<i32>) -> (squared: Vec<i32>)
+spec fn rotation_split(len: usize, n: usize) -> (result: int) {
+    len - (n % len)
+}
+// pure-end
+
+fn rotate_right(list: &Vec<u32>, n: usize) -> (new_list: Vec<u32>)
     // pre-conditions-start
     requires
-        forall|k: int|
-            0 <= k < nums.len() ==> (0 <= #[trigger] nums[k] * #[trigger] nums[k] < i32::MAX),
+        list.len() > 0,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        nums.len() == squared.len(),
-        forall|k: int| 0 <= k < nums.len() ==> (#[trigger] squared[k] == nums[k] * nums[k]),
+        new_list.len() == list.len(),
+        new_list@ == list@.subrange(rotation_split(list.len(), n) as int, list@.len() as int).add(
+            list@.subrange(0, rotation_split(list.len(), n) as int),
+        ),
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
+    let mut new_list = Vec::new();
+    let len = list.len();
+    let split_point = len - (n % len);
     
-    /* code modified by LLM (iteration 2): fixed trigger annotation in loop invariant */
-    while i < nums.len()
+    // Add elements from split_point to end
+    let mut i = split_point;
+    /* code modified by LLM (iteration 1): added decreases clause for termination proof */
+    while i < len
         invariant
-            i <= nums.len(),
-            result.len() == i,
-            forall|k: int| 0 <= k < i ==> (#[trigger] result[k] == nums[k] * nums[k]),
-            forall|k: int| 0 <= k < nums.len() ==> (0 <= #[trigger] nums[k] * #[trigger] nums[k] < i32::MAX)
-        decreases nums.len() - i
+            new_list.len() == i - split_point,
+            new_list@ == list@.subrange(split_point as int, i as int),
+        decreases len - i
     {
-        /* code modified by LLM (iteration 1): added assertion to prove overflow safety */
-        assert(0 <= nums[i as int] * nums[i as int] < i32::MAX);
-        let squared_val = nums[i] * nums[i];
-        result.push(squared_val);
+        new_list.push(list[i]);
         i += 1;
-        /* code modified by LLM (iteration 1): added assertion to maintain loop invariant */
-        assert(forall|k: int| 0 <= k < i ==> result[k] == nums[k] * nums[k]);
     }
     
-    result
+    // Add elements from start to split_point
+    let mut j = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for termination proof */
+    while j < split_point
+        invariant
+            new_list.len() == (len - split_point) + j,
+            new_list@ == list@.subrange(split_point as int, len as int).add(
+                list@.subrange(0, j as int)
+            ),
+        decreases split_point - j
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
 
 } // verus!

@@ -1,60 +1,67 @@
-// <vc-preamble>
+#![verifier::loop_isolation(false)]
+use vstd::math::*;
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn int_to_digits(x: int) -> Seq<int>
-  recommends x >= 0
+
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-  if x == 0 { seq![0] }
-  else { int_to_digits_helper(x) }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
+    }
 }
 
-spec fn int_to_digits_helper(x: int) -> Seq<int>
-  recommends x > 0
-  decreases x
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-  if x < 10 { seq![x] }
-  else { int_to_digits_helper(x / 10).add(seq![x % 10]) }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-spec fn digit_sum(digits: Seq<int>) -> int
-  decreases digits.len()
+fn difference_max_min(arr: &Vec<i32>) -> (diff: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        diff == max_rcur(arr@) - min_rcur(arr@),
 {
-  if digits.len() == 0 { 0 }
-  else { digits[0] + digit_sum(digits.subrange(1, digits.len() as int)) }
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    
+    let mut i = 1;
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < arr.len()
+        invariant
+            1 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+        decreases arr.len() - i,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr.len() as int) == arr@);
+    }
+    
+    max_val - min_val
 }
 
-spec fn valid_input(x: int) -> bool
-{
-  x >= 1
-}
-
-spec fn valid_result(x: int, result: int) -> bool
-  recommends valid_input(x)
-{
-  result > 0 &&
-  result <= x &&
-  (forall|y: int| 1 <= y <= x ==> digit_sum(int_to_digits(y)) <= digit_sum(int_to_digits(result))) &&
-  (forall|y: int| 1 <= y <= x && digit_sum(int_to_digits(y)) == digit_sum(int_to_digits(result)) ==> y <= result)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(x: i8) -> (result: i8)
-  requires valid_input(x as int)
-  ensures valid_result(x as int, result as int)
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

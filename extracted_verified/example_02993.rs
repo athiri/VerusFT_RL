@@ -1,53 +1,131 @@
+use vstd::arithmetic::mul::*;
+use vstd::math::abs;
 use vstd::prelude::*;
 
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+proof fn lemma_cube_increases_helper(i: int)
     // post-conditions-start
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        i >= 0 ==> (i * i * i) <= (i + 1) * (i + 1) * (i + 1),
     // post-conditions-end
 {
-    for i in 0..arr.len()
+    // impl-start
+    broadcast use group_mul_properties;
+
+    if (i > 0) {
+        assert((i + 1) * (i + 1) * (i + 1) == i * i * i + 3 * i * i + 3 * i + 1); // assert-line
+        assert(i * i * i + 3 * i * i + 3 * i + 1 > i * i * i); // assert-line
+    }
+    // impl-end
+}
+// pure-end
+
+proof fn lemma_cube_increases_params(i: int, j: int)
+    // post-conditions-start
+    ensures
+        0 <= i <= j ==> (i * i * i) <= (j * j * j),
+    // post-conditions-end
+    decreases j - i,
+{
+    // impl-start
+    if (i == j) {
+    }
+     else if (i < j) {
+        lemma_cube_increases_params(i, j - 1);
+        lemma_cube_increases_helper(j - 1);
+
+    }
+    // impl-end
+}
+// pure-end
+
+proof fn lemma_cube_increases()
+    // post-conditions-start
+    ensures
+        forall|i: int, j: int| 0 <= i <= j ==> #[trigger] (i * i * i) <= #[trigger] (j * j * j),
+    // post-conditions-end
+{
+    // impl-start
+    /* code modified by LLM (iteration 1): replaced ==> with implies to fix compilation warning */
+    assert forall|i: int, j: int|
+        0 <= i <= j implies #[trigger] (i * i * i) <= #[trigger] (j * j * j) by {
+        lemma_cube_increases_params(i, j);
+    }
+    // impl-end
+}
+// pure-end
+
+fn checked_cube(x: i32) -> (ret: Option<i32>)
+    // pre-conditions-start
+    requires
+        x >= 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret.is_some() ==> ret.unwrap() == x * x * x,
+        ret.is_none() ==> x * x * x > i32::MAX,
+    // post-conditions-end
+{
+    let cube = (x as i64) * (x as i64) * (x as i64);
+    if cube <= i32::MAX as i64 {
+        Some(cube as i32)
+    } else {
+        None
+    }
+}
+
+#[verifier::external_fn_specification]
+pub fn ex_abs(x: i32) -> (ret: i32)
+    requires
+        x != i32::MIN,
+
+    ensures
+        ret == abs(x as int),
+{
+    x.abs()
+}
+
+fn is_cube(x: i32) -> (ret: bool)
+    // pre-conditions-start
+    requires
+        x != i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret <==> exists|i: int| 0 <= i && abs(x as int) == #[trigger] (i * i * i),
+    // post-conditions-end
+{
+    proof {
+        lemma_cube_increases();
+    }
+    
+    /* code modified by LLM (iteration 1): replaced ex_abs call with direct abs call to fix compilation error */
+    let abs_x = if x >= 0 { x } else { -x };
+    let mut i: i32 = 0;
+    
+    while i <= 1290
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            0 <= i <= 1291,
+            abs_x == abs(x as int),
+            forall|j: int| 0 <= j < i ==> j * j * j < abs_x,
+            i > 1290 ==> abs_x > 1290 * 1290 * 1290,
     {
-        if arr[i] == key {
-            return true;
+        let cube_opt = checked_cube(i);
+        if cube_opt.is_some() {
+            let cube = cube_opt.unwrap();
+            if cube == abs_x {
+                return true;
+            } else if cube > abs_x {
+                return false;
+            }
+        } else {
+            return false;
         }
+        i = i + 1;
     }
     false
 }
 
-fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
-    // post-conditions-start
-    ensures
-        forall|i: int|
-            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
-                #[trigger] result[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
-    // post-conditions-end
-{
-    let mut result = Vec::new();
-    
-    for i in 0..arr1.len()
-        invariant
-            forall|k: int|
-                0 <= k < result.len() ==> (arr1@.contains(#[trigger] result[k]) && arr2@.contains(
-                    #[trigger] result[k],
-                )),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-    {
-        let elem = arr1[i];
-        if contains(arr2, elem) && !contains(&result, elem) {
-            result.push(elem);
-        }
-    }
-    
-    result
 }
-
-} // verus!
-
 fn main() {}

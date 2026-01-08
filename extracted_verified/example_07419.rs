@@ -2,87 +2,43 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition for swap function  
-spec fn swap_precond(arr: Seq<i32>, i: i32, j: i32) -> bool {
-    i >= 0 &&
-    j >= 0 &&
-    (i as nat) < arr.len() &&
-    (j as nat) < arr.len()
+// Precondition - always true in this case
+spec fn contains_z_precond(s: &str) -> bool {
+    true
 }
 
-// Postcondition for swap function
-spec fn swap_postcond(arr: Seq<i32>, i: i32, j: i32, result: Seq<i32>) -> bool {
-    result[i as int] == arr[j as int] &&
-    result[j as int] == arr[i as int] &&
-    result.len() == arr.len() &&
-    forall |k: int| 0 <= k < arr.len() && k != i && k != j ==> result[k] == arr[k]
+// Helper specification function to check if a character is z or Z
+spec fn is_z_char(c: char) -> bool {
+    c == 'z' || c == 'Z'
 }
 
-// Swap function implementation
-fn swap(arr: Vec<i32>, i: i32, j: i32) -> (result: Vec<i32>)
-    requires
-        swap_precond(arr@, i, j),
-    ensures
-        swap_postcond(arr@, i, j, result@),
-{
-    let mut result = arr;
-    let temp = result[i as usize];
-    result.set(i as usize, result[j as usize]);
-    result.set(j as usize, temp);
-    result
+// Specification function that checks if sequence contains z or Z
+spec fn seq_contains_z(chars: Seq<char>) -> bool {
+    exists|i: int| 0 <= i < chars.len() && is_z_char(chars[i])
 }
 
-// Pure specification version of swap
-spec fn swap_spec(arr: Seq<i32>, i: i32, j: i32) -> Seq<i32>
-    recommends
-        swap_precond(arr, i, j),
-{
-    arr.update(i as int, arr[j as int])
-       .update(j as int, arr[i as int])
-}
-
-// Theorem proving the specification is satisfied
-proof fn swap_spec_satisfied(arr: Seq<i32>, i: i32, j: i32)
-    requires
-        swap_precond(arr, i, j),
-    ensures
-        swap_postcond(arr, i, j, swap_spec(arr, i, j)),
-{
-    let result = swap_spec(arr, i, j);
-    
-    // Prove each part of the postcondition
-    assert(result[i as int] == arr[j as int]);
-    assert(result[j as int] == arr[i as int]);
-    assert(result.len() == arr.len());
-    
-    // Prove that all other elements remain unchanged
-    assert(forall |k: int| 0 <= k < arr.len() && k != i && k != j ==> result[k] == arr[k]) by {
-        assert forall |k: int| 0 <= k < arr.len() && k != i && k != j implies result[k] == arr[k] by {
-            if k != i && k != j {
-                assert(result[k] == arr.update(i as int, arr[j as int]).update(j as int, arr[i as int])[k]);
-                assert(result[k] == arr[k]);
-            }
+// Main function that checks if string contains 'z' or 'Z'
+fn contains_z(s: &str) -> (result: bool)
+    requires contains_z_precond(s),
+    ensures result <==> seq_contains_z(s@)
+{    
+    /* code modified by LLM (iteration 1): Fixed compilation error by replacing iterator-based loop with index-based loop to avoid using non-existent 'produced()' method */
+    let mut i = 0;
+    while i < s.len()
+        invariant 
+            0 <= i <= s.len(),
+            forall|j: int| 0 <= j < i ==> !is_z_char(s@[j])
+        ensures !seq_contains_z(s@)
+    {
+        let c = s@[i as int];
+        if c == 'z' || c == 'Z' {
+            return true;
         }
+        i += 1;
     }
+    false
 }
 
-// Test function
-fn test_swap() {
-    let mut v = Vec::new();
-    v.push(1);
-    v.push(2);
-    v.push(3);
-    v.push(4);
-    
-    let swapped = swap(v, 0, 3);
-    assert(swapped@[0] == 4);
-    assert(swapped@[3] == 1);
-    assert(swapped@[1] == 2);
-    assert(swapped@[2] == 3);
-}
-
-fn main() {
-    test_swap();
-}
+fn main() {}
 
 } // verus!

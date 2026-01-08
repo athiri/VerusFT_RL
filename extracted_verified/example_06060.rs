@@ -2,59 +2,29 @@ use vstd::prelude::*;
 
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
-    // post-conditions-start
-    ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
-    // post-conditions-end
+// Helper function to compute the sum over a range with a condition  
+spec fn conditional_sum(arr1: Seq<int>, arr2: Seq<int>, n: int, start: int, end: int) -> int
+    decreases end - start
 {
-    let mut i = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for termination proof */
-    while i < arr.len()
-        invariant
-            0 <= i <= arr.len(),
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
-        decreases arr.len() - i
-    {
-        if arr[i] == key {
-            return true;
-        }
-        i += 1;
+    if start >= end {
+        0
+    } else if 0 <= start < arr1.len() && 0 <= n - start < arr2.len() {
+        arr1[start] * arr2[n - start] + conditional_sum(arr1, arr2, n, start + 1, end)
+    } else {
+        conditional_sum(arr1, arr2, n, start + 1, end)
     }
-    false
 }
 
-fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
-    // post-conditions-start
-    ensures
-        forall|i: int|
-            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
-                #[trigger] result[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
-    // post-conditions-end
-{
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause for termination proof */
-    while i < arr1.len()
-        invariant
-            0 <= i <= arr1.len(),
-            forall|k: int| 0 <= k < result.len() ==> (arr1@.contains(result[k]) && arr2@.contains(result[k])),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-        decreases arr1.len() - i
-    {
-        let elem = arr1[i];
-        if contains(arr2, elem) && !contains(&result, elem) {
-            result.push(elem);
-        }
-        i += 1;
-    }
-    
-    result
+// Helper function to express the convolution sum mathematically
+spec fn convolution_sum(arr1: Seq<int>, arr2: Seq<int>, n: int) -> int {
+    conditional_sum(arr1, arr2, n, 0, arr1.len() as int)
 }
 
-} // verus!
+// SPEC
+spec fn convolve(arr1: Seq<int>, arr2: Seq<int>) -> Seq<int> {
+    Seq::new((arr1.len() + arr2.len() - 1) as nat, |n: int| convolution_sum(arr1, arr2, n))
+}
+
+}
 
 fn main() {}

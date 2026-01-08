@@ -1,52 +1,41 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
+verus!{
+// </vc-preamble>
 
-// Precondition: there exists an index i where a[i] equals e
-spec fn linear_search_precond(a: &Vec<i32>, e: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i as int] == e
-}
-
-// Postcondition specification
-spec fn linear_search_postcond(a: &Vec<i32>, e: i32, result: usize) -> bool {
-    result < a.len() && 
-    a[result as int] == e && 
-    forall|k: int| 0 <= k < result ==> a[k] != e
-}
-
-// Auxiliary function for linear search
-fn linear_search_aux(a: &Vec<i32>, e: i32, n: usize) -> (result: usize)
+// <vc-helpers>
+/* helper modified by LLM (iteration 3): use named return value for ensures and safe doubling within bounds */
+fn double_i32(n: i32) -> (res: i32)
     requires
-        n <= a.len(),
-        linear_search_precond(a, e),
-        forall|k: int| 0 <= k < n ==> a[k] != e,
+        0 <= n && n < 1000,
     ensures
-        linear_search_postcond(a, e, result),
-    decreases a.len() - n,
+        res == n + n,
 {
-    if n < a.len() {
-        if a[n] == e {
-            n
-        } else {
-            linear_search_aux(a, e, n + 1)
-        }
-    } else {
-        // This case should never be reached due to precondition
-        // but we need to handle it for completeness
-        0
-    }
+    n + n
 }
+// </vc-helpers>
 
-// Main linear search function
-fn linear_search(a: &Vec<i32>, e: i32) -> (result: usize)
-    requires
-        linear_search_precond(a, e),
-    ensures
-        linear_search_postcond(a, e, result),
+// <vc-spec>
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+
+	ensures
+		sum[0] == 2 * N,
+// </vc-spec>
+// <vc-code>
 {
-    linear_search_aux(a, e, 0)
+    /* code modified by LLM (iteration 3): compute 2*N directly and set sum to contain exactly this value */
+    let val: i32 = N * 2;
+    sum.clear();
+    sum.push(val);
 }
+// </vc-code>
 
-} // verus!
-
+}
 fn main() {}

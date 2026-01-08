@@ -1,31 +1,47 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn is_prime_pred(n: u32) -> bool {
-    forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0
+spec fn in_array(a: Seq<i32>, x: i32) -> bool {
+    exists|i: int| 0 <= i < a.len() && a[i] == x
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-#[verifier::loop_isolation(false)]
-fn largest_prime_factor(n: u32) -> (result: u32)
-    requires
-        2 <= n <= u32::MAX - 1,
-    ensures
-        1 <= result <= n,
-        result == 1 || (result > 1 && is_prime_pred(result))
-// </vc-spec>
-// <vc-code>
+fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool) 
+    ensures 
+        result == in_array(a@, x),
 {
-    assume(false);
-    unreached()
+    for i in 0..a.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> a[j] != x,
+    {
+        if a[i] == x {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
+#[verifier::loop_isolation(false)]
+fn remove_elements(a: &Vec<i32>, b: &Vec<i32>) -> (c: Vec<i32>)
+    ensures
+        forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+        forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
+{
+    let mut c = Vec::new();
+    
+    for i in 0..a.len()
+        invariant
+            forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+            forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
+    {
+        let elem = a[i];
+        if !in_array_exec(b, elem) && !in_array_exec(&c, elem) {
+            c.push(elem);
+        }
+    }
+    
+    c
 }
+
 fn main() {}
+}

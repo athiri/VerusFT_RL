@@ -1,25 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn max_of_list(lst: &Vec<usize>) -> (result: usize)
-    requires lst.len() > 0,
-    ensures
-        exists|i: int| 0 <= i < lst.len() && lst[i] == result,
-        forall|i: int| 0 <= i < lst.len() ==> lst[i] <= result,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus! {
+
+fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
+{
+    for i in 0..arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != k,
+    {
+        if arr[i] == k {
+            return true;
+        }
+    }
+    return false;
+}
+
+} // verus!

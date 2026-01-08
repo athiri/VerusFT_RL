@@ -1,46 +1,66 @@
 use vstd::prelude::*;
 
-fn main() {
-    // Example usage
-    let is_prime_5 = prime_num(5);
-    println!("5 is prime: {}", is_prime_5);
-}
-
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> bool {
-    (n % divisor) == 0
+spec fn seq_max(a: Seq<i32>) -> i32
+    decreases a.len(),
+{
+    if a.len() == 0 {
+        i32::MIN
+    } else if a.last() > seq_max(a.drop_last()) {
+        a.last()
+    } else {
+        seq_max(a.drop_last())
+    }
 }
 
-fn prime_num(n: u64) -> (result: bool)
-    requires
-        n >= 2,
+fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
     ensures
-        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
+        result.len() == numbers.len(),
+        forall|i: int| 0 <= i < numbers.len() ==> result[i] == seq_max(numbers@.take(i + 1)),
 {
-    let mut i: u64 = 2;
+    let mut result = Vec::new();
+    let mut current_max = i32::MIN;
     
-    /* code modified by LLM (iteration 1): added decreases clause and fixed postcondition proof */
-    while i < n
+    for i in 0..numbers.len()
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
-        decreases n - i,
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == seq_max(numbers@.take(j + 1)),
+            i > 0 ==> current_max == seq_max(numbers@.take(i as int)),
     {
-        if n % i == 0 {
-            /* code modified by LLM (iteration 1): added assertion to prove postcondition when returning false */
-            assert(is_divisible(n as int, i as int));
-            assert(2 <= i < n);
-            assert(!(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)));
-            return false;
+        if i == 0 {
+            /* code modified by LLM (iteration 2): use usize for vector indexing */
+            current_max = numbers[i];
+        } else {
+            /* code modified by LLM (iteration 2): use usize for vector indexing */
+            if numbers[i] > current_max {
+                current_max = numbers[i];
+            }
         }
-        i = i + 1;
+        
+        result.push(current_max);
+        
+        proof {
+            assert(numbers@.take(i as int + 1).last() == numbers[i as int]);
+            assert(numbers@.take(i as int + 1).drop_last() =~~= numbers@.take(i as int));
+            
+            if i == 0 {
+                assert(numbers@.take(1).len() == 1);
+                assert(seq_max(numbers@.take(1)) == numbers[0]);
+            } else {
+                let prev_max = seq_max(numbers@.take(i as int));
+                /* code modified by LLM (iteration 2): use int cast only in ghost context */
+                if numbers[i as int] > prev_max {
+                    assert(seq_max(numbers@.take(i as int + 1)) == numbers[i as int]);
+                } else {
+                    assert(seq_max(numbers@.take(i as int + 1)) == prev_max);
+                }
+            }
+        }
     }
     
-    /* code modified by LLM (iteration 1): added assertion to prove postcondition when returning true */
-    assert(i == n);
-    assert(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k));
-    true
+    result
 }
 
-} // verus!
+fn main() {}
+}

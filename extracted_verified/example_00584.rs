@@ -1,30 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn triple(a: &[int]) -> bool {
-    exists|i: int| 0 <= i < a.len() - 2 && #[trigger] a[i] == a[i + 1] && a[i + 1] == a[i + 2]
+spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
+    /* code modified by LLM (iteration 1): changed 32 to ' ' for proper char comparison */
+    if str1[i] == ' ' {
+        ch
+    } else {
+        str1[i]
+    }
 }
-// </vc-preamble>
+// pure-end
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn get_triple(a: &[int]) -> (index: usize)
-ensures 
-    (0 <= index < a.len() - 1) || index == a.len(),
-    index == a.len() <==> !triple(a),
-    (0 <= index < a.len() - 1) <==> triple(a),
-    (0 <= index < a.len() - 1) ==> a[index as int] == a[index as int + 1] && a[index as int + 1] == a[index as int + 2]
-// </vc-spec>
-// <vc-code>
+fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 2): added decreases clause to prove termination */
+    while idx < str1.len()
+        invariant
+            0 <= idx <= str1.len(),
+            result@.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+        decreases str1.len() - idx,
+    {
+        /* code modified by LLM (iteration 1): changed 32 to ' ' for proper char comparison */
+        if str1[idx] == ' ' {
+            result.push(ch);
+        } else {
+            result.push(str1[idx]);
+        }
+        idx += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

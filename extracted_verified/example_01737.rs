@@ -1,48 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // Example usage
+    let c = 52u8; // ASCII for '4'
+    let result = is_digit(c);
+    println!("Is '4' a digit? {}", result);
+}
+
 verus! {
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() == 7 && s[0] == 'A' && forall|i: int| 1 <= i < 7 ==> #[trigger] s[i] >= '0' && #[trigger] s[i] <= '9'
+
+spec fn is_digit_sepc(c: u8) -> bool {
+    c >= 48 && c <= 57
 }
 
-spec fn digit_sum(s: Seq<char>, start: int, end: int) -> int
-    decreases end - start when 0 <= start <= end <= s.len()
+fn is_digit(c: u8) -> (res: bool)
+    ensures
+        res == is_digit_sepc(c),
 {
-    if start >= end {
-        0
-    } else {
-        (s[start] as int - '0' as int) + digit_sum(s, start + 1, end)
+    c >= 48 && c <= 57
+}
+
+fn is_integer(text: &[u8]) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_sepc(text[i]))),
+{
+    let mut i = 0;
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            forall|j: int| 0 <= j < i ==> is_digit_sepc(text[j]),
+    {
+        if !is_digit(text[i]) {
+            return false;
+        }
+        i += 1;
     }
+    true
 }
 
-spec fn zero_count(s: Seq<char>, start: int, end: int) -> int
-    decreases end - start when 0 <= start <= end <= s.len()
-{
-    if start >= end {
-        0
-    } else {
-        (if s[start] == '0' { 1nat } else { 0nat }) as int + zero_count(s, start + 1, end)
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: i8)
-    requires valid_input(s@)
-    ensures result as int == digit_sum(s@, 1, 7) + 9 * zero_count(s@, 1, 7) + 1
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

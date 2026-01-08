@@ -1,30 +1,26 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-spec fn is_odd(x: int) -> bool {
-    x % 2 != 0
+    fn find(a: &[i32], key: i32) -> (index: i32)
+        requires a.len() < 0x8000_0000,
+        ensures
+            -1 <= index < a.len(),
+            index != -1 ==> 0 <= index < a.len() && a[index as int] == key && (forall|i: int| 0 <= i < index ==> a[i] != key),
+            index == -1 ==> (forall|i: int| 0 <= i < a.len() ==> a[i] != key)
+    {
+        let mut i = 0;
+        while i < a.len()
+            invariant
+                0 <= i <= a.len(),
+                forall|j: int| 0 <= j < i ==> a[j] != key,
+        {
+            if a[i] == key {
+                return i as i32;
+            }
+            i += 1;
+        }
+        return -1;
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn find_first_odd(a: &[i32]) -> (result: (bool, usize))
-    ensures 
-        (!result.0 ==> (forall|i: int| 0 <= i < a.len() ==> !is_odd(a[i] as int))) &&
-        (result.0 ==> (0 <= result.1 < a.len() && 
-                      is_odd(a[result.1 as int] as int) && 
-                      (forall|i: int| 0 <= i < result.1 ==> !is_odd(a[i] as int))))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

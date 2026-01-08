@@ -1,26 +1,46 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn square_pyramid_surface_area(base_edge: i32, height: i32) -> (area: i32)
-    requires 
-        base_edge > 0,
-        height > 0,
-    ensures 
-        area == base_edge * base_edge + 2 * base_edge * height,
-// </vc-spec>
-// <vc-code>
+fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
+    // pre-conditions-start
+    requires
+        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
+        0 <= (s1@.len() * 3) <= i32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        res@.len() == s1@.len() * 3,
+        forall|i: int|
+            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
+                == s3[i]),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
-}
-// </vc-code>
+    let mut result = Vec::new();
+    let mut idx = 0;
 
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while idx < s1.len()
+        invariant
+            result@.len() == idx * 3,
+            idx <= s1@.len(),
+            s1@.len() == s2@.len() && s2@.len() == s3@.len(),
+            forall|i: int| 0 <= i < idx ==> (
+                result[3 * i] == s1[i] && 
+                result[3 * i + 1] == s2[i] && 
+                result[3 * i + 2] == s3[i]
+            ),
+        decreases s1@.len() - idx
+    {
+        result.push(s1[idx]);
+        result.push(s2[idx]);
+        result.push(s3[idx]);
+        idx += 1;
+    }
+
+    result
 }
+
+} // verus!
+
 fn main() {}

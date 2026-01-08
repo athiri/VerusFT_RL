@@ -1,49 +1,140 @@
-use vstd::arithmetic::logarithm::log;
-use vstd::arithmetic::power::pow;
 use vstd::prelude::*;
+
 verus! {
-#[verifier::external_fn_specification]
-/* code modified by LLM (iteration 2): added pub visibility to external function specification */
-pub fn ex_ilog(x: u32, base: u32) -> (ret: u32)
-    requires
-        x > 0,
-        base > 1,
-    ensures
-        ret == log(base as int, x as int),
-{
-    x.ilog(base)
+
+// Precondition for the longest good subarray function  
+spec fn longest_good_subarray_precond(nums: Seq<u32>, k: u32) -> bool {
+    true
 }
 
-#[verifier::external_fn_specification]
-/* code modified by LLM (iteration 2): added pub visibility to external function specification */
-pub fn ex_checked_pow(x: u32, exp: u32) -> (ret: Option<u32>)
-    ensures
-        ret.is_some() <==> ret.unwrap() == pow(x as int, exp as nat),
-        ret.is_none() <==> pow(x as int, exp as nat) > u32::MAX,
+// Helper function to count occurrences of an element in a sequence
+spec fn count_occurrences(seq: Seq<u32>, elem: u32) -> nat
+    decreases seq.len()
 {
-    x.checked_pow(exp)
-}
-
-fn is_simple_power(x: u32, n: u32) -> (ret: bool)
-    // pre-conditions-start
-    requires
-        x > 0,
-        n > 1,
-    // pre-conditions-end
-    // post-conditions-start
-    ensures
-        ret <==> x == pow(n as int, log(n as int, x as int) as nat),
-    // post-conditions-end
-{
-    /* code modified by LLM (iteration 2): use actual Rust methods instead of external function specifications */
-    let log_val = x.ilog(n);
-    let power_result = n.checked_pow(log_val);
-    
-    match power_result {
-        Some(val) => val == x,
-        None => false,
+    if seq.len() == 0 {
+        0
+    } else if seq[0] == elem {
+        1 + count_occurrences(seq.subrange(1, seq.len() as int), elem)
+    } else {
+        count_occurrences(seq.subrange(1, seq.len() as int), elem)
     }
 }
 
+// Check if a subarray is valid (all frequencies <= k)
+spec fn is_valid_subarray(subarray: Seq<u32>, k: u32) -> bool {
+    forall|elem: u32| #![auto] count_occurrences(subarray, elem) <= k
 }
-fn main() {}
+
+// Postcondition
+spec fn longest_good_subarray_postcond(nums: Seq<u32>, k: u32, result: u32) -> bool {
+    if nums.len() == 0 {
+        result == 0
+    } else {
+        // There exists a valid subarray of length result
+        (exists|start: int, end: int| #![auto]
+            0 <= start <= end <= nums.len() &&
+            is_valid_subarray(nums.subrange(start, end), k) &&
+            (end - start) == result) &&
+        // All valid subarrays have length <= result  
+        (forall|start: int, end: int| #![auto]
+            0 <= start <= end <= nums.len() &&
+            is_valid_subarray(nums.subrange(start, end), k) ==>
+            (end - start) <= result)
+    }
+}
+
+fn longest_good_subarray(nums: Vec<u32>, k: u32) -> (result: u32)
+    requires longest_good_subarray_precond(nums@, k)
+    ensures longest_good_subarray_postcond(nums@, k, result)
+{
+    if nums.len() == 0 {
+        return 0;
+    }
+    
+    if k == 0 {
+        return 0;
+    }
+
+    let mut max_len: u32 = 0;
+    let n = nums.len();
+    
+    // Try all possible subarrays
+    let mut start = 0;
+    while start < n
+        invariant 
+            0 <= start <= n,
+            // max_len is achievable
+            exists|s: int, e: int| #![auto]
+                0 <= s <= e <= nums.len() &&
+                is_valid_subarray(nums@.subrange(s, e), k) &&
+                (e - s) == max_len,
+            // max_len is optimal among checked subarrays
+            forall|s: int, e: int| #![auto]
+                0 <= s < start && s <= e <= nums.len() &&
+                is_valid_subarray(nums@.subrange(s, e), k) ==>
+                (e - s) <= max_len
+    {
+        /* code modified by LLM (iteration 1): changed Map::tracked_empty() to Map::empty() for executable code */
+        let mut freq_map: Map<u32, u32> = Map::empty();
+        let mut end = start;
+        
+        while end < n
+            invariant
+                start <= end <= n,
+                0 <= start <= n,
+                // max_len properties preserved
+                exists|s: int, e: int| #![auto]
+                    0 <= s <= e <= nums.len() &&
+                    is_valid_subarray(nums@.subrange(s, e), k) &&
+                    (e - s) == max_len,
+                forall|s: int, e: int| #![auto]
+                    0 <= s < start && s <= e <= nums.len() &&
+                    is_valid_subarray(nums@.subrange(s, e), k) ==>
+                    (e - s) <= max_len,
+                // Current subarray [start, end) satisfies frequency constraint
+                forall|elem: u32| #![auto]
+                    freq_map.contains_key(elem) ==> 
+                    freq_map.index(elem) <= k
+        {
+            let current_elem = nums[end];
+            let current_count = if freq_map.contains_key(current_elem) {
+                freq_map.index(current_elem)
+            } else {
+                0
+            };
+            
+            if current_count >= k {
+                break;
+            }
+            
+            freq_map = freq_map.insert(current_elem, current_count + 1);
+            end += 1;
+            
+            let current_len = (end - start) as u32;
+            if current_len > max_len {
+                max_len = current_len;
+            }
+        }
+        
+        start += 1;
+    }
+    
+    max_len
+}
+
+// Theorem matching the original Lean structure
+proof fn longest_good_subarray_spec_satisfied(nums: Vec<u32>, k: u32) 
+    requires longest_good_subarray_precond(nums@, k)
+{
+    let result = longest_good_subarray(nums, k);
+    assert(longest_good_subarray_postcond(nums@, k, result));
+}
+
+} // verus!
+
+fn main() {
+    let nums = vec![1, 2, 1, 2, 3];
+    let k = 2;
+    let result = longest_good_subarray(nums, k);
+    println!("Longest good subarray length: {}", result);
+}

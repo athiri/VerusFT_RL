@@ -1,47 +1,70 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-
-/* Represents the trim mode for trim_zeros function */
-#[derive(Eq, PartialEq)]
-pub enum TrimMode {
-    /* Trim zeros from the front of the array only (corresponds to 'f') */
-    Front,
-    /* Trim zeros from the back of the array only (corresponds to 'b') */
-    Back,
-    /* Trim zeros from both front and back of the array (corresponds to 'fb', default) */
-    Both,
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn trim_zeros(arr: Vec<f32>, mode: TrimMode) -> (result: Vec<f32>)
-    ensures
-        result@.len() <= arr@.len(),
-        /* Result contains only elements from the original array */
-        forall|i: int| 0 <= i < result@.len() ==> 
-            exists|j: int| 0 <= j < arr@.len() && #[trigger] result@[i] == arr@[j],
-        /* Basic trimming properties based on mode */
-        (mode == TrimMode::Front ==> 
-            (result@.len() == 0 || result@[0] != 0.0f32)),
-        (mode == TrimMode::Back ==> 
-            (result@.len() == 0 || result@[result@.len() - 1] != 0.0f32)),
-        (mode == TrimMode::Both ==> 
-            (result@.len() == 0 || (result@[0] != 0.0f32 && result@[result@.len() - 1] != 0.0f32)))
-// </vc-spec>
-// <vc-code>
+spec fn fibo(n: int) -> nat
+    decreases n
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    if n <= 0 { 0 } else if n == 1 { 1 }
+    else { fibo(n - 2) + fibo(n - 1) }
 }
-// </vc-code>
 
-
+spec fn fibo_fits_i32(n: int) -> bool {
+    fibo(n) < 0x8000_0000
 }
-fn main() {}
+
+proof fn fibo_is_monotonic(i: int, j: int)
+    requires
+        i <= j,
+    ensures
+        fibo(i) <= fibo(j),
+    decreases j - i
+{
+    if i <= 0 {
+    }
+    else if  i < j {
+        fibo_is_monotonic(i, j-1);
+        assert(fibo(j) == fibo(j-1)+fibo(j-2));
+    }
+}
+
+fn fibonacci(n: usize) -> (ret: Vec<i32>)
+requires
+    fibo_fits_i32(n as int),
+    n >= 2,
+ensures
+    forall |i: int| 2 <= i < n ==> #[trigger] ret@[i] ==  fibo(i), 
+    ret@.len() == n,
+{
+    let mut result = Vec::new();
+    result.push(0); // fibo(0) = 0
+    result.push(1); // fibo(1) = 1
+    
+    let mut i = 2;
+    while i < n
+        invariant
+            result@.len() == i,
+            i >= 2,
+            i <= n,
+            forall |j: int| 2 <= j < i ==> result@[j] == fibo(j),
+            result@[0] == 0,
+            result@[1] == 1,
+    {
+        let prev1 = result[i - 1];
+        let prev2 = result[i - 2];
+        let next_fib = prev1 + prev2;
+        
+        proof {
+            assert(result@[i - 1] == fibo((i - 1) as int));
+            assert(result@[i - 2] == fibo((i - 2) as int));
+            assert(fibo(i as int) == fibo((i - 2) as int) + fibo((i - 1) as int));
+        }
+        
+        result.push(next_fib);
+        i += 1;
+    }
+    
+    result
+}
+}

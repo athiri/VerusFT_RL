@@ -1,27 +1,27 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn square(arr: Vec<i8>) -> (result: Vec<i8>)
+#[verifier::loop_isolation(false)]
+fn array_append(a: Vec<i32>, b: i32) -> (result: Vec<i32>)
     ensures
-        result.len() == arr.len(),
-        forall|i: int| 0 <= i < arr.len() ==> result[i] as int == arr[i] as int * arr[i] as int,
-// </vc-spec>
-// <vc-code>
+        result.len() == a.len() + 1,
+        forall|i: int| #![auto] 0 <= i && i < result.len() ==> result[i] == (if i < a.len() { a[i] } else { b }),
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == a[j],
+    {
+        result.push(a[i]);
+        i = i + 1;
+    }
+    result.push(b);
+    result
 }
-// </vc-code>
 
-
-}
 fn main() {}
+}

@@ -3,60 +3,43 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn is_prime(n: u32) -> (result: bool)
+fn pairs_sum_to_zero(nums: &[i32], target: i32) -> (found: bool)
+    // pre-conditions-start
     requires
-        n >= 2,
+        nums.len() >= 2,
+        forall|i: int, j: int|
+            0 <= i < j < nums.len() ==> nums[i] + nums[j] <= i32::MAX && nums[i] + nums[j]
+                >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result ==> (forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0),
-        !result ==> exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
+        found <==> exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
+    // post-conditions-end
 {
-    let mut i = 2;
-    while i < n
+    let mut i: usize = 0;
+    while i < nums.len() - 1
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases n - i
+            0 <= i <= nums.len() - 1,
+            forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
     {
-        if n % i == 0 {
-            return false;
+        let mut j: usize = i + 1;
+        while j < nums.len()
+            invariant
+                0 <= i < nums.len() - 1,
+                i + 1 <= j <= nums.len(),
+                forall|ii: int, jj: int| 0 <= ii < i && ii < jj < nums.len() ==> nums[ii] + nums[jj] != target,
+                /* code modified by LLM (iteration 1): fixed syntax and added proper bounds for invariant */
+                forall|jj: int| (i as int < jj < j as int) ==> (nums[i as int] + nums[jj] != target),
+        {
+            if nums[i] + nums[j] == target {
+                return true;
+            }
+            j += 1;
         }
-        i = i + 1;
+        i += 1;
     }
-    true
+    false
 }
 
-spec fn is_prime_pred(n: u32) -> bool {
-    forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0
 }
-
-#[verifier::loop_isolation(false)]
-fn largest_prime_factor(n: u32) -> (result: u32)
-    requires
-        2 <= n <= u32::MAX - 1,
-    ensures
-        1 <= result <= n,
-        result == 1 || (result > 1 && is_prime_pred(result))
-{
-    let mut largest = 1;
-    let mut i = 2;
-    
-    while i <= n
-        invariant
-            2 <= i <= n + 1,
-            1 <= largest <= n,
-            largest == 1 || (largest > 1 && is_prime_pred(largest)),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases n + 1 - i
-    {
-        if n % i == 0 && is_prime(i) {
-            largest = i;
-        }
-        i = i + 1;
-    }
-    
-    largest
-}
-
 fn main() {}
-}

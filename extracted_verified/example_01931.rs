@@ -1,48 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, k: int, a: Seq<int>) -> bool {
-    k > 0 && a.len() == k && (forall|i: int| 0 <= i < k ==> #[trigger] a[i] > 0) && n >= 0
-}
 
-spec fn hamsters_transported(n: int, capacity: int) -> int {
-    if capacity > 0 {
-        capacity * (n / capacity)
-    } else {
-        0
-    }
-}
-
-spec fn optimal_solution(n: int, a: Seq<int>, box_type: int, num_boxes: int) -> bool {
-    valid_input(n, a.len() as int, a) &&
-    1 <= box_type <= a.len() &&
-    num_boxes == n / a[box_type - 1] &&
-    forall|i: int| 0 <= i < a.len() ==> #[trigger] hamsters_transported(n, a[box_type - 1]) >= #[trigger] hamsters_transported(n, a[i])
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, a: Vec<i8>) -> (result: (i8, i8))
-    requires valid_input(n as int, k as int, a@.map(|i, x: i8| x as int))
-    ensures ({
-        let (box_type, num_boxes) = result;
-        1 <= box_type <= k &&
-        num_boxes >= 0 &&
-        optimal_solution(n as int, a@.map(|i, x: i8| x as int), box_type as int, num_boxes as int)
-    })
-// </vc-spec>
-// <vc-code>
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
+    ensures
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
 {
-    assume(false);
-    (0, 0)
+    let mut new_list = Vec::new();
+    
+    // Copy elements before index k-1 (0-indexed)
+    let mut i = 0;
+    while i < k - 1
+        invariant
+            i <= k - 1,
+            new_list@.len() == i,
+            new_list@ == list@.subrange(0, i as int),
+    {
+        new_list.push(list[i]);
+        i += 1;
+    }
+    
+    // Copy elements from index k onwards (0-indexed), skipping the k-th element (1-indexed)
+    let mut j = k;
+    while j < list.len()
+        invariant
+            k <= j <= list.len(),
+            new_list@.len() == (k - 1) + (j - k),
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, j as int)
+            ),
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,56 +1,32 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(input: Seq<char>) -> bool {
-    true
-}
-
-spec fn valid_test_case(n: int, a: int, b: int, c: int, d: int) -> bool {
-    n >= 1 && n <= 1000 &&
-    a >= 0 && a <= 1000 &&
-    b >= 0 && b < a &&
-    c >= 0 && c <= 1000 &&
-    d >= 0 && d < c
-}
-
-spec fn can_achieve_weight(n: int, a: int, b: int, c: int, d: int) -> bool {
-    let min_weight = (a - b) * n;
-    let max_weight = (a + b) * n;
-    let target_min = c - d;
-    let target_max = c + d;
-    !(min_weight > target_max || max_weight < target_min)
-}
-
-spec fn valid_output(output: Seq<char>) -> bool {
-    true
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Seq<char>) -> (result: Seq<char>)
-    requires
-        valid_input(input),
-    ensures
-        valid_output(result),
-        (input.len() == 0 || (input.len() == 1 && input[0] == '\n')) ==> result.len() == 0,
-        !(input.len() == 0 || (input.len() == 1 && input[0] == '\n')) ==> 
-            (result.len() > 0 ==> 
-                result[result.len() - 1] == '\n' || 
-                (result.len() > 3 && (result.subrange(result.len() - 4, result.len() as int) == seq!['Y', 'e', 's', '\n'] || 
-                                     result.subrange(result.len() - 3, result.len() as int) == seq!['N', 'o', '\n']))),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn max_length_list(seq: &Vec<Vec<i32>>) -> (max_list: &Vec<i32>)
+    requires
+        seq.len() > 0,
+    ensures
+        forall|k: int| 0 <= k < seq.len() ==> max_list.len() >= #[trigger] (seq[k]).len(),
+        exists|k: int| 0 <= k < seq.len() && max_list@ =~= #[trigger] (seq[k]@),
+{
+    let mut max_idx: usize = 0;
+    let mut i: usize = 1;
+    
+    while i < seq.len()
+        invariant
+            0 <= max_idx < seq.len(),
+            1 <= i <= seq.len(),
+            forall|k: int| 0 <= k < i ==> seq[max_idx as int].len() >= seq[k].len(),
+    {
+        if seq[i].len() > seq[max_idx].len() {
+            max_idx = i;
+        }
+        i += 1;
+    }
+    
+    &seq[max_idx]
+}
+
+} // verus!

@@ -1,24 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn count_sum_divisible_by(n: usize, d: usize) -> (result: usize)
-    requires d > 0,
-    ensures 
-        result <= n,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(sum).len() == 1,
+	ensures
+		sum[0] <= 2 * N,
+{
+    sum.set(0, 0);
+}
+}

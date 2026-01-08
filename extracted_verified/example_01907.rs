@@ -1,37 +1,40 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // Example usage of extract_rear_chars
+    let data = vec![
+        vec![b'h', b'e', b'l', b'l', b'o'],
+        vec![b'w', b'o', b'r', b'l', b'd'],
+        vec![b'!']
+    ];
+    let rear_chars = extract_rear_chars(&data);
+    println!("Rear characters: {:?}", rear_chars);
+}
 
 verus! {
 
-spec fn valid_input(a: int, b: int, c: int, d: int) -> bool {
-    1 <= a <= 10000 && 1 <= b <= 10000 && 1 <= c <= 10000 && 1 <= d <= 10000
-}
-
-spec fn max_area(a: int, b: int, c: int, d: int) -> int {
-    if a * b >= c * d { a * b } else { c * d }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: i8, b: i8, c: i8, d: i8) -> (result: i8)
-    requires 
-        valid_input(a as int, b as int, c as int, d as int)
-    ensures 
-        result as int == max_area(a as int, b as int, c as int, d as int),
-        result as int >= (a as int) * (b as int) && result as int >= (c as int) * (d as int),
-        result as int == (a as int) * (b as int) || result as int == (c as int) * (d as int)
-// </vc-spec>
-// <vc-code>
+fn extract_rear_chars(s: &Vec<Vec<u8>>) -> (result: Vec<u8>)
+    requires
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    ensures
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < s.len()
+        invariant
+            0 <= i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+    {
+        let rear_char = s[i][s[i].len() - 1];
+        result.push(rear_char);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

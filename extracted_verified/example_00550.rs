@@ -1,28 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus!{
-// </vc-preamble>
+verus! {
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn myfun(a: &mut Vec<u32>, N: u32) -> (sum: u32)
-
-    requires 
-        old(a).len() == N,
-        N <= 0x7FFF_FFFF,
-
+fn contains_z(text: &Vec<char>) -> (result: bool)
+    // post-conditions-start
     ensures
-        sum <= 2*N,
-// </vc-spec>
-// <vc-code>
+        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 'Z' || text[i] == 'z')),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for i in 0..text.len()
+        invariant
+            !(exists|j: int| 0 <= j < i && (text[j] == 'Z' || text[j] == 'z')),
+    {
+        if text[i] == 'Z' || text[i] == 'z' {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

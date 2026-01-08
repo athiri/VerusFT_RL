@@ -1,46 +1,105 @@
-use vstd::prelude::*;
+use vstd::arithmetic::div_mod::*;
+use vstd::arithmetic::mul::*;
+use vstd::{pervasive::trigger, prelude::*};
 
 verus! {
 
-// Precondition for SetToSeq - trivially true as in the original
-spec fn set_to_seq_precond(s: Seq<int>) -> bool {
-    true
-}
-
-// Main function to remove duplicates while preserving order
-fn set_to_seq(s: Vec<int>) -> (result: Vec<int>)
-    requires set_to_seq_precond(s@)
+pub open spec fn nat_align_down(x: nat, align: nat) -> nat
+    recommends
+        align > 0,
 {
-    return Vec::new();  // TODO: Remove this line and implement the function body
+    (x - x % align) as nat
 }
 
-// Postcondition specification matching the original Lean code
-spec fn set_to_seq_postcond(s: Seq<int>, result: Seq<int>) -> bool {
-    // Contains exactly the elements of the set
-    (forall|a: int| #[trigger] result.contains(a) <==> s.contains(a)) &&
-    // All elements are unique in the result  
-    (forall|i: int, j: int| 0 <= i < result.len() && 0 <= j < result.len() && i != j 
-        ==> #[trigger] result[i] != #[trigger] result[j])
-}
-
-// Spec function version
-spec fn set_to_seq_spec(s: Seq<int>) -> Seq<int>
-    recommends set_to_seq_precond(s)
+pub open spec fn nat_align_up(x: nat, align: nat) -> nat
+    recommends
+        align > 0,
 {
-    // This would ideally be a proper specification, but for now it's abstract
-    arbitrary()
+    if x % align == 0 {
+        x
+    } else {
+        nat_align_down(x, align) + align
+    }
 }
 
-// Theorem stating the function satisfies its specification (proof omitted like in Lean)
-proof fn set_to_seq_spec_satisfied(s: Seq<int>)
-    requires set_to_seq_precond(s),
-    ensures set_to_seq_postcond(s, set_to_seq_spec(s))
+pub broadcast proof fn lemma_nat_align_up_sound(x: nat, align: nat)
+    requires
+        align > 0,
+    ensures
+        #[trigger] nat_align_up(x, align) >= x,
+        nat_align_up(x, align) % align == 0,
+        forall|n: nat| n >= x && #[trigger] (n % align) == 0 ==> n >= nat_align_up(x, align),
+        nat_align_up(x, align) - x < align,
 {
-    assume(false);  // TODO: Remove this line and implement the proof
+    if x % align == 0 {
+    } else {
+        let down = nat_align_down(x, align);
+        lemma_fundamental_div_mod(x as int, align as int);
+        lemma_mul_is_commutative(align as int, x as int / align as int);
+        lemma_mod_multiples_basic(x as int / align as int, align as int);
+        lemma_mod_add_multiples_vanish(down as int, align as int);
+    }
+
+    assert forall|n: nat| n >= x && (#[trigger] (n % align)) == 0 implies n >= nat_align_up(
+        x,
+        align,
+    ) by {
+        if x % align == 0 {
+        } else {
+            lemma_mul_is_commutative(align as int, x as int / align as int);
+
+            lemma_fundamental_div_mod(n as int, align as int);
+            if n < nat_align_up(x, align) {
+                let q_n = n as int / align as int;
+                let q_x = x as int / align as int;
+                lemma_mul_is_distributive_add(align as int, q_x, 1);
+                if q_n >= q_x + 1 {
+                    lemma_mul_inequality(q_x + 1, q_n, align as int);
+                    lemma_mul_is_commutative(align as int, q_n);
+                }
+                lemma_mul_inequality(q_n, q_x, align as int);
+                lemma_mul_is_commutative(align as int, q_n);
+            }
+        }
+    }
 }
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
+pub broadcast proof fn lemma_nat_align_down_sound(x: nat, align: nat)
+    requires
+        align > 0,
+    ensures
+        #[trigger] nat_align_down(x, align) <= x,
+        nat_align_down(x, align) % align == 0,
+        forall|n: nat| n <= x && #[trigger] (n % align) == 0 ==> n <= nat_align_down(x, align),
+        x - nat_align_down(x, align) < align,
+{
+    lemma_fundamental_div_mod(x as int, align as int);
+    let q_x = x as int / align as int;
+    lemma_mod_multiples_basic(q_x, align as int);
+    lemma_mul_is_commutative(align as int, q_x);
+
+    assert forall|n: nat| n <= x && #[trigger] (n % align) == 0 implies n <= nat_align_down(
+        x,
+        align,
+    ) by {
+        if n > nat_align_down(x, align) && n % align == 0 {
+            lemma_fundamental_div_mod(n as int, align as int);
+            let q_n = n as int / align as int;
+            if q_n <= q_x {
+                lemma_mul_inequality(q_n, q_x, align as int);
+                lemma_mul_is_commutative(align as int, q_n);
+            } else {
+                lemma_mul_inequality(q_x + 1, q_n, align as int);
+                lemma_mul_is_commutative(align as int, q_n);
+                lemma_mul_is_distributive_add(align as int, q_x, 1);
+            }
+        }
+    }
 }
 
+broadcast group group_arithmetic_lemmas {
+    lemma_nat_align_up_sound,
+    lemma_nat_align_down_sound,
 }
+
+} // verus!

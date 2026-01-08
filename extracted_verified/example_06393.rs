@@ -1,12 +1,14 @@
 use vstd::prelude::*;
 
+fn main() {}
+
 verus! {
-    fn triple(x: i64) -> (r: i64)
-        requires -1000000 <= x <= 1000000, // prevent overflow
-        ensures r == 3 * x
-    {
-        3 * x
-    }
+
+fn remove_odds(arr: &Vec<u32>) -> (even_list: Vec<u32>)
+    ensures
+        even_list@ == arr@.filter(|x: u32| x % 2 == 0),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
+} // verus!
