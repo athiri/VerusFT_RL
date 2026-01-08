@@ -141,9 +141,12 @@ def has_stub_patterns(content: str) -> bool:
     NOT suitable for SFT training.
     
     Uses regex to handle whitespace variations (e.g., "assume( false )" vs "assume(false)").
+    Strips comments and strings first to avoid false positives from patterns in comments.
     """
+    # Strip comments and strings to avoid false positives
+    clean_content = strip_comments_and_strings(content)
     for pattern in STUB_PATTERNS:
-        if re.search(pattern, content):
+        if re.search(pattern, clean_content):
             return True
     return False
 
