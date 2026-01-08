@@ -58,6 +58,30 @@ DAFNY_PATTERNS = [
     r'\bfunction\s+\w+\s*\([^)]*\)\s*:\s*\w+',  # function name(...): type
     r':=\s*\w+\s*[\+\-]\s*\d+\s*;', # := x + 1;
     r'\ba\s*:\|\s*a\s+in\b',        # a :| a in (Dafny choice)
+    # Dafny cardinality notation with pipes: |s1|, |s1 * s2|
+    r'\bdecreases\s+\|',           # decreases |...| - Dafny cardinality in decreases
+    r'\bensures\s+\|',             # ensures |...| - Dafny cardinality in ensures
+    r'\|\w+\s*\*\s*\w+\|',         # |s1 * s2| - Dafny cardinality of set operation
+    # Dafny empty set literal comparison
+    r'\w+\s*!=\s*\{\s*\}',         # s1 != {} - comparing to empty set literal
+    # Dafny set subset with <= operator
+    r'\bassert\s+\w+\s*\*\s*\w+\s*<=\s*\w+\s*;',  # assert s1 * s2 <= s1;
+    # Standalone spec clauses without fn keyword (Dafny method/lemma style)
+    r'^\s*requires\s+[^(]+$',      # requires clause on its own line (not in fn signature)
+    r'^\s*ensures\s+[^(]+$',       # ensures clause on its own line (not in fn signature)
+]
+
+# Invalid Verus patterns - LLM mistakes where spec clauses are used as function calls
+# In valid Verus, requires/ensures are clauses in function signatures, not function calls
+INVALID_VERUS_PATTERNS = [
+    # requires() / ensures() / decreases() as function calls inside function body
+    # These appear AFTER the opening brace of a function
+    r'\{\s*\n\s+requires\s*\(',      # { \n    requires( - spec call after function start
+    r'\{\s*\n\s+ensures\s*\(',       # { \n    ensures( - spec call after function start  
+    # invariant([...]) with array brackets - invalid syntax
+    r'\binvariant\s*\(\s*\[',        # invariant([ - array-style invariant call
+    # decreases() as a standalone statement (not in function signature or loop header)
+    r';\s*\n\s+decreases\s*\(',      # ; \n    decreases( - decreases after statement
 ]
 
 
@@ -127,6 +151,26 @@ def has_dafny_syntax(content: str) -> bool:
     import re
     for pattern in DAFNY_PATTERNS:
         if re.search(pattern, content):
+            return True
+    return False
+
+
+def has_invalid_verus_syntax(content: str) -> bool:
+    """
+    Check if content contains invalid Verus syntax patterns.
+    
+    Common LLM mistakes:
+    - Using requires(), ensures(), decreases() as function calls inside the function body
+    - Using invariant([...]) with array brackets
+    
+    In valid Verus, these are specification clauses that appear in function signatures
+    or loop headers, not as function calls.
+    
+    NOT suitable for Verus verification.
+    """
+    import re
+    for pattern in INVALID_VERUS_PATTERNS:
+        if re.search(pattern, content, re.MULTILINE):
             return True
     return False
 
@@ -365,6 +409,9 @@ def analyze_file(filepath: Path) -> FileAnalysis:
     # Check for Dafny syntax (wrong language)
     is_dafny = has_dafny_syntax(content)
     
+    # Check for invalid Verus syntax (LLM mistakes)
+    invalid_verus = has_invalid_verus_syntax(content)
+    
     # Check for LLM explanation text
     has_llm_text = has_llm_explanation_text(content)
     
@@ -379,6 +426,10 @@ def analyze_file(filepath: Path) -> FileAnalysis:
         # CRITICAL: Dafny code will not compile as Verus/Rust
         is_candidate = False
         rejection_reason = "dafny_syntax: contains Dafny code instead of Verus/Rust"
+    elif invalid_verus:
+        # CRITICAL: Invalid Verus syntax - spec clauses used as function calls
+        is_candidate = False
+        rejection_reason = "invalid_verus_syntax: spec clauses (requires/ensures/invariant) used as function calls instead of signature clauses"
     elif has_llm_text:
         # CRITICAL: LLM explanations cause syntax errors
         is_candidate = False
