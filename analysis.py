@@ -44,10 +44,11 @@ SPEC_KEYWORDS = {
 }
 
 # Bogus stub patterns - files containing these are NOT suitable for SFT
-STUB_PATTERNS = {
-    "assume(false)",
-    "unreached()",
-}
+# Uses regex to handle whitespace variations (e.g., "assume( false )" vs "assume(false)")
+STUB_PATTERNS = [
+    r'assume\s*\(\s*false\s*\)',   # assume(false), assume( false ), etc.
+    r'unreached\s*\(\s*\)',         # unreached(), unreached( ), etc.
+]
 
 # Dafny syntax patterns - indicates LLM generated wrong language
 DAFNY_PATTERNS = [
@@ -138,8 +139,13 @@ def has_stub_patterns(content: str) -> bool:
     Check if content contains bogus stub patterns.
     Files with these patterns trivially "verify" but have no real implementation.
     NOT suitable for SFT training.
+    
+    Uses regex to handle whitespace variations (e.g., "assume( false )" vs "assume(false)").
     """
-    return any(pattern in content for pattern in STUB_PATTERNS)
+    for pattern in STUB_PATTERNS:
+        if re.search(pattern, content):
+            return True
+    return False
 
 
 def has_dafny_syntax(content: str) -> bool:
