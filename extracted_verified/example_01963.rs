@@ -1,60 +1,75 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr1 = vec![1, 2, 3, 4, 5];
+    let arr2 = vec![2, 4];
+    let result = remove_elements(&arr1, &arr2);
+    println!("Result: {:?}", result);
+}
+
 verus! {
-spec fn max_prefix(s: Seq<int>, i: nat) -> int
-    recommends i < s.len()
-    decreases i
+
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    if i == 0 { s[0] }
-    else if s[i as int] > max_prefix(s, (i-1) as nat) { s[i as int] }
-    else { max_prefix(s, (i-1) as nat) }
+    // The proof is automatic in Verus for these sequence properties
 }
 
-spec fn max_seq(s: Seq<int>) -> int
-    recommends s.len() > 0
-    decreases s.len()
-    when s.len() > 0
+fn contains(str: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
 {
-    if s.len() == 1 { s[0] }
-    else {
-        let sub_seq = s.subrange(0, (s.len()-1) as int);
-        if s[(s.len()-1) as int] > max_seq(sub_seq) { s[(s.len()-1) as int] }
-        else { max_seq(sub_seq) }
+    let mut idx = 0;
+    while idx < str.len()
+        invariant
+            forall|i: int| 0 <= i < idx ==> str[i] != key,
+    {
+        if str[idx] == key {
+            return true;
+        }
+        idx += 1;
     }
+    false
 }
 
-spec fn max_expression(n: int, p: int, q: int, r: int, a: Seq<int>) -> int
-    recommends n > 0 && a.len() == n
+fn remove_elements(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && !arr2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < arr1.len() ==> (arr2@.contains(#[trigger] arr1[i]) || result@.contains(
+                #[trigger] arr1[i],
+            )),
 {
-    let s1 = Seq::new(n as nat, |i: int| a[i] * p);
-    let s2 = Seq::new(n as nat, |i: int| max_prefix(s1, i as nat) + a[i] * q);
-    let s3 = Seq::new(n as nat, |i: int| max_prefix(s2, i as nat) + a[i] * r);
-    max_seq(s3)
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < arr1.len()
+        invariant
+            0 <= idx <= arr1.len(),
+            forall|i: int|
+                0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && !arr2@.contains(
+                    #[trigger] result[i],
+                )),
+            forall|i: int|
+                0 <= i < idx ==> (arr2@.contains(#[trigger] arr1[i]) || result@.contains(
+                    #[trigger] arr1[i],
+                )),
+    {
+        let current_element = arr1[idx];
+        if !contains(arr2, current_element) {
+            result.push(current_element);
+        }
+        idx += 1;
+    }
+    
+    result
 }
 
-spec fn valid_input(n: int, a: Seq<int>) -> bool
-{
-    n > 0 && a.len() == n
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, p: i8, q: i8, r: i8, a: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, a@.map(|i, x| x as int))
-    ensures result as int == max_expression(n as int, p as int, q as int, r as int, a@.map(|i, x| x as int))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

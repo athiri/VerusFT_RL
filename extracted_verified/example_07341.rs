@@ -2,47 +2,32 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
-}
-    
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool) 
-    ensures 
-        result == in_array(a@, x),
-{
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a@[j] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
-    }
-    false
+// Precondition function
+spec fn cube_surface_area_precond(size: nat) -> bool {
+    true
 }
 
-#[verifier::loop_isolation(false)]
-fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        a.len() >= 1,
-    ensures
-        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+// Main function - using nat for simplicity to match Lean
+spec fn cube_surface_area(size: nat) -> nat {
+    6 * size * size
+}
+
+// Postcondition function (equivalent to the Lean postcondition)
+spec fn cube_surface_area_postcond(size: nat, result: nat) -> bool {
+    (result - 6 * size * size == 0) && (6 * size * size - result == 0)
+}
+
+// Proof that the specification is satisfied
+proof fn cube_surface_area_spec_satisfied(size: nat)
+    requires cube_surface_area_precond(size)
+    ensures cube_surface_area_postcond(size, cube_surface_area(size))
 {
-    let mut result = Vec::new();
-    
-    for i in 0..a.len()
-        invariant
-            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-    {
-        if !in_array_exec(&result, a[i]) {
-            result.push(a[i]);
-        }
-    }
-    
-    result
+    // The proof follows from the definition of cube_surface_area
+    // Since cube_surface_area(size) = 6 * size * size,
+    // both result - 6 * size * size = 0 and 6 * size * size - result = 0 hold
+    assert(cube_surface_area(size) == 6 * size * size);
+}
+
 }
 
 fn main() {}
-}

@@ -1,54 +1,105 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn max_height_up_to(heights: Seq<int>, index: int) -> int
-    decreases index + 1
+
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    if heights.len() > 0 && -1 <= index < heights.len() {
-        if index < 0 {
-            0
-        } else if index == 0 {
-            heights[0]
-        } else if heights[index] > max_height_up_to(heights, index - 1) {
-            heights[index]
-        } else {
-            max_height_up_to(heights, index - 1)
+    let pushed = vec.push(i);
+    assert(pushed.len() == vec.len() + 1);
+    assert(pushed.index(l as int) == i);
+    
+    assert forall|k: int| 0 <= k < vec.len() implies vec[k] == pushed[k] by {
+        assert(k < pushed.len() - 1);
+    }
+}
+
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+{
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            !(exists|j: int| 0 <= j < i && arr[j] == key),
+    {
+        if arr[i] == key {
+            assert(exists|j: int| 0 <= j < arr.len() && arr[j] == key) by {
+                assert(0 <= i < arr.len() && arr[i] == key);
+            }
+            return true;
         }
-    } else {
-        0
+        i += 1;
     }
-}
-
-spec fn valid_input(n: int, heights: Seq<int>) -> bool {
-    n >= 1 && heights.len() == n && (forall|i: int| 0 <= i < heights.len() ==> heights[i] >= 1)
-}
-
-spec fn can_make_non_decreasing(heights: Seq<int>) -> bool {
-    if heights.len() > 0 {
-        forall|i: int| 0 <= i < heights.len() ==> heights[i] >= max_height_up_to(heights, i) - 1
-    } else {
-        true
+    
+    assert(!(exists|j: int| 0 <= j < arr.len() && arr[j] == key)) by {
+        assert(forall|j: int| 0 <= j < arr.len() ==> arr[j] != key);
     }
+    false
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, heights: Vec<i8>) -> (result: String)
-    requires valid_input(n as int, heights@.map(|i: int, v: i8| v as int))
-    ensures (result@ == seq!['Y', 'e', 's']) <==> can_make_non_decreasing(heights@.map(|i: int, v: i8| v as int))
-// </vc-spec>
-// <vc-code>
+fn find_dissimilar(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[i]) ==> result@.contains(
+                arr1[i],
+            )),
+        forall|i: int|
+            0 <= i < arr2.len() ==> (!arr1@.contains(#[trigger] arr2[i]) ==> result@.contains(
+                arr2[i],
+            )),
+        forall|i: int, j: int|
+            0 <= i < j < result.len() ==> #[trigger] result[i] != #[trigger] result[j],
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            forall|k: int|
+                0 <= k < i ==> (!arr2@.contains(#[trigger] arr1[k]) ==> result@.contains(arr1[k])),
+            forall|k: int, l: int|
+                0 <= k < l < result.len() ==> #[trigger] result[k] != #[trigger] result[l],
+    {
+        if !contains(arr2, arr1[i]) && !contains(&result, arr1[i]) {
+            result.push(arr1[i]);
+            proof {
+                lemma_vec_push(result@.drop_last(), arr1[i], result.len() - 1);
+            }
+        }
+        i += 1;
+    }
+    
+    let mut j = 0;
+    while j < arr2.len()
+        invariant
+            0 <= j <= arr2.len(),
+            forall|k: int|
+                0 <= k < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[k]) ==> result@.contains(arr1[k])),
+            forall|k: int|
+                0 <= k < j ==> (!arr1@.contains(#[trigger] arr2[k]) ==> result@.contains(arr2[k])),
+            forall|k: int, l: int|
+                0 <= k < l < result.len() ==> #[trigger] result[k] != #[trigger] result[l],
+    {
+        if !contains(arr1, arr2[j]) && !contains(&result, arr2[j]) {
+            result.push(arr2[j]);
+            proof {
+                lemma_vec_push(result@.drop_last(), arr2[j], result.len() - 1);
+            }
+        }
+        j += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

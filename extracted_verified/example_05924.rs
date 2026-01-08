@@ -2,51 +2,70 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition for ToArray function
-spec fn to_array_precond(xs: Seq<int>) -> bool {
-    true
+spec fn is_lower_case(c: char) -> (result: bool) {
+    (c as u32) >= 97 && (c as u32) <= 122
 }
+// pure-end
 
-// Postcondition specification
-spec fn to_array_postcond(xs: Seq<int>, result: Seq<int>) -> bool {
-    result.len() == xs.len() && 
-    (forall|i: int| 0 <= i < xs.len() ==> result[i] == xs[i])
+spec fn is_upper_case(c: char) -> (result: bool) {
+    (c as u32) >= 65 && (c as u32) <= 90
 }
+// pure-end
 
-// The ToArray function
-fn to_array(xs: Vec<int>) -> (result: Vec<int>)
-    requires to_array_precond(xs@),
-    ensures to_array_postcond(xs@, result@),
+/* code modified by LLM (iteration 1): added executable version of is_upper_case for use in function body */
+fn is_upper_case_exec(c: char) -> (result: bool)
+    ensures result == is_upper_case(c)
 {
-    let mut result = Vec::new();
-    let mut i = 0;
+    let code = c as u32;
+    code >= 65 && code <= 90
+}
+
+spec fn count_uppercase_recursively(seq: Seq<char>) -> (result: int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        count_uppercase_recursively(seq.drop_last()) + if is_upper_case(seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
+}
+// pure-end
+
+fn count_uppercase(text: &Vec<char>) -> (count: u64)
+    // post-conditions-start
+    ensures
+        0 <= count <= text.len(),
+        count_uppercase_recursively(text@) == count,
+    // post-conditions-end
+{
+    let mut count = 0u64;
+    let mut i = 0usize;
     
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < xs.len()
-        invariant 
-            0 <= i <= xs.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> result@[j] == xs@[j],
-        decreases xs.len() - i,
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count_uppercase_recursively(text@.take(i as int)) == count,
     {
-        result.push(xs[i]);
+        /* code modified by LLM (iteration 1): replaced spec function call with executable version */
+        if is_upper_case_exec(text[i]) {
+            count += 1;
+        }
         i += 1;
     }
     
-    result
+    /* code modified by LLM (iteration 1): added proof block to establish postcondition */
+    proof {
+        assert(text@.take(text.len() as int) =~= text@);
+    }
+    
+    count
 }
 
-// Lemma that proves the specification is satisfied
-proof fn to_array_spec_satisfied(xs: Seq<int>, result: Seq<int>)
-    requires 
-        to_array_precond(xs),
-        result == xs,
-    ensures to_array_postcond(xs, result),
-{
-    // Since result == xs, we have result.len() == xs.len()
-    // and for all i, result[i] == xs[i] by definition of sequence equality
-}
-
-}
+} // verus!
 
 fn main() {}

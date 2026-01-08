@@ -1,30 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn diagflat(v: Vec<f32>) -> (result: Vec<Vec<f32>>)
-    requires v@.len() > 0,
-    ensures
-        result@.len() == v@.len(),
-        forall|i: int| 0 <= i < result@.len() ==> result@[i].len() == v@.len(),
-        forall|i: int, j: int| 0 <= i < v@.len() && 0 <= j < v@.len() && i == j ==> result@[i][j] == v@[i],
-        forall|i: int, j: int| 0 <= i < v@.len() && 0 <= j < v@.len() && i != j ==> result@[i][j] == 0.0f32,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+verus!{
+pub fn myfun2(x: &mut Vec<i32>) 
+requires 
+    forall |k:int| 0 <= k < old(x).len() ==> old(x)[k] <= 0x7FFF_FFFB,
+ensures 
+    x@.len() == old(x)@.len(),
+    forall |k:int| 0 <= k < x.len() ==> #[trigger] x@[k] == old(x)@[k] + 4,
+{
+    let mut i = 0;
+    while i < x.len()
+        invariant
+            0 <= i <= x.len(),
+            x@.len() == old(x)@.len(),
+            forall |k:int| 0 <= k < i ==> #[trigger] x@[k] == old(x)@[k] + 4,
+            forall |k:int| i <= k < x.len() ==> #[trigger] x@[k] == old(x)@[k],
+            forall |k:int| 0 <= k < x.len() ==> old(x)@[k] <= 0x7FFF_FFFB,
+    {
+        x[i] = x[i] + 4;
+        i = i + 1;
+    }
+}
+}

@@ -1,27 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+spec fn is_even(n: u32) -> (result: bool) {
+    (n % 2) == 0
+}
+// pure-end
 
-// <vc-spec>
-fn copy(arr: &Vec<i8>) -> (result: Vec<i8>)
+fn is_product_even(arr: &Vec<u32>) -> (result: bool)
+    // post-conditions-start
     ensures
-        result.len() == arr.len(),
-        forall|i: int| 0 <= i < arr.len() ==> result[i] as int == arr[i] as int,
-// </vc-spec>
-// <vc-code>
+        result <==> (exists|k: int| 0 <= k < arr.len() && is_even(#[trigger] arr[k])),
+    // post-conditions-end
 {
     // impl-start
-    assume(false);
-    unreached()
+    let mut index = 0;
+    while index < arr.len()
+        // invariants-start
+        invariant
+            0 <= index <= arr.len(),
+            forall|k: int| 0 <= k < index ==> !(is_even(#[trigger] arr[k])),
+        // invariants-end
+    {
+        if (arr[index] % 2 == 0) {
+            return true;
+        }
+        index += 1;
+    }
+    false
     // impl-end
 }
-// </vc-code>
 
+} // verus!
 
-}
 fn main() {}

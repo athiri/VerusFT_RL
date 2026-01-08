@@ -1,29 +1,38 @@
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn is_non_prime(n: u32) -> (result: bool)
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
     requires
-        n >= 2,
+        list.len() > 0,
+        0 < k < list@.len(),
     ensures
-        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
 {
-    let mut i = 2;
-    while i < n
+    let mut new_list = Vec::new();
+    
+    // Add elements from index 0 to k-2 (inclusive)
+    for i in 0..(k - 1)
         invariant
-            2 <= i <= n,
-            /* code modified by LLM (iteration 1): added trigger annotation to fix quantifier trigger inference */
-            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
-        decreases n - i
+            new_list@ == list@.subrange(0, i as int),
     {
-        if n % i == 0 {
-            return true;
-        }
-        i += 1;
+        new_list.push(list[i]);
     }
-    false
+    
+    // Add elements from index k to end
+    for i in k..list.len()
+        invariant
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, i as int)
+            ),
+    {
+        new_list.push(list[i]);
+    }
+    
+    new_list
 }
 
-fn main() {}
-}
+} // verus!

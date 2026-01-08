@@ -1,54 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, a: int, b: int, mobs: Seq<int>) -> bool {
-    n >= 0 && a > 0 && b > 0 && mobs.len() == n &&
-    forall|i: int| 0 <= i < n ==> #[trigger] mobs[i] >= 0
+
+spec fn is_digit(c: u8) -> bool {
+    (c >= 48 && c <= 57)
 }
 
-spec fn valid_output(result: Seq<Vec<char>>, n: int) -> bool {
-    result.len() == n &&
-    forall|i: int| 0 <= i < n ==> 
-        (#[trigger] result[i]@ =~= seq!['V', 'a', 'n', 'y', 'a']) || 
-        (result[i]@ =~= seq!['V', 'o', 'v', 'a']) || 
-        (result[i]@ =~= seq!['B', 'o', 't', 'h'])
-}
-
-spec fn determine_winner(k: int, a: int, b: int) -> int {
-    if k <= a { 0 } else { 1 }
-}
-
-spec fn correct_result(result: Seq<Vec<char>>, n: int, a: int, b: int, mobs: Seq<int>) -> bool
-    recommends a > 0 && b > 0 && mobs.len() == n
+spec fn count_digits_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    valid_output(result, n) &&
-    forall|i: int| 0 <= i < n ==> {
-        let total = a + b;
-        let k = if mobs[i] == 0 { 0 } else { mobs[i] % total };
-        (#[trigger] result[i]@ =~= seq!['V', 'a', 'n', 'y', 'a'] <==> determine_winner(k, a, b) == 0) &&
-        (result[i]@ =~= seq!['V', 'o', 'v', 'a'] <==> determine_winner(k, a, b) == 1) &&
-        (result[i]@ =~= seq!['B', 'o', 't', 'h'] <==> determine_winner(k, a, b) == 2)
+    if seq.len() == 0 {
+        0
+    } else {
+        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: i8, b: i8, mobs: Vec<i8>) -> (result: Vec<Vec<char>>)
-    requires valid_input(n as int, a as int, b as int, mobs@.map_values(|x: i8| x as int))
-    ensures correct_result(result@, n as int, a as int, b as int, mobs@.map_values(|x: i8| x as int))
-// </vc-spec>
-// <vc-code>
+fn count_digits(text: &[u8]) -> (count: usize)
+    ensures
+        0 <= count <= text.len(),
+        count_digits_recursively(text@) == count,
 {
-    assume(false);
-    Vec::new()
+    let mut count = 0;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count_digits_recursively(text@.subrange(0, i as int)) == count,
+    {
+        if is_digit(text[i]) {
+            count = count + 1;
+        }
+        i = i + 1;
+        
+        proof {
+            assert(text@.subrange(0, i as int) == text@.subrange(0, (i - 1) as int).push(text@[i as int - 1]));
+        }
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    count
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

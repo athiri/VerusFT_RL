@@ -1,34 +1,55 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		forall |k:int| 0 <= k < N ==> b[k] == N + 2,
+
+verus! {
+
+#[verifier::external_body]
+fn add_one(n: i32) -> (result: i32)
+    ensures
+        result == n + 1,
 {
-    let mut i = 0;
-    while i < N
-        invariant
-            0 <= i <= N,
-            b.len() == N,
-            /* code modified by LLM (iteration 3): fixed invariant to use correct indexing syntax */
-            forall |k:int| 0 <= k < i ==> b[k] == N + 2,
-            /* code modified by LLM (iteration 3): added overflow prevention invariant */
-            N < 1000,
-        decreases N - i
-    {
-        /* code modified by LLM (iteration 3): added proper bounds and overflow checks */
-        assert(i < N);
-        assert(0 <= i < b.len());
-        assert(N < 1000); // ensures N + 2 < 1002, preventing overflow
-        b[i as usize] = N + 2;
-        i += 1;
-    }
+    n + 1
 }
+
+#[verifier::external_body]
+fn square(n: i32) -> (result: i32)
+    ensures
+        n * n == result,
+{
+    n * n
+}
+
+fn integer_square_root(n: i32) -> (result: i32)
+    requires
+        n >= 1,
+    ensures
+        0 <= result * result,
+        result * result <= n,
+        n < (result + 1) * (result + 1)
+{
+    let mut low = 0i32;
+    let mut high = n;
+    
+    while low <= high
+        invariant
+            0 <= low <= high + 1,
+            high <= n,
+            low * low <= n,
+            n < (high + 1) * (high + 1)
+    {
+        let mid = low + (high - low) / 2;
+        let mid_squared = mid * mid;
+        
+        if mid_squared == n {
+            return mid;
+        } else if mid_squared < n {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    
+    high
+}
+
+fn main() {}
 }

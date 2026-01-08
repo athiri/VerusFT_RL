@@ -1,44 +1,14 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-/* Complex number type for FFT operations */
-pub struct Complex {
-    /* Real part */
-    pub re: f32,
-    /* Imaginary part */
-    pub im: f32,
-}
-
-impl Complex {
-    pub closed spec fn new(re: f32, im: f32) -> Complex {
-        Complex { re, im }
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn irfftn(a: Vec<Complex>, n: u8) -> (result: Vec<f32>)
-    requires 
-        a.len() > 0,
-        n > 0,
-        a[0].im == 0.0f32,
+fn cal_div() -> (r: (u32, u32))
     ensures
-        result.len() == n as nat,
-// </vc-spec>
-// <vc-code>
+        r.0 == 27,
+        r.1 == 2,
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    return 0;  // TODO: Remove this line and implement the function body
 }
-// </vc-code>
 
-
-}
+} // verus!
 fn main() {}

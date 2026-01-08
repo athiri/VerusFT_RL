@@ -1,59 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr = vec![1, 2, 3, 4, 5];
+    let result = is_greater(&arr, 10);
+    println!("Is 10 greater than all elements? {}", result);
+}
+
 verus! {
-spec fn extract_first_line(input: Seq<char>) -> Seq<char>
-    decreases input.len()
+
+fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
 {
-    if input.len() == 0 {
-        Seq::empty()
-    } else if input[0] == '\n' {
-        Seq::empty()
-    } else {
-        seq![input[0]] + extract_first_line(input.subrange(1, input.len() as int))
+    let mut idx = 0;
+    
+    while idx < arr.len()
+        invariant
+            0 <= idx <= arr.len(),
+            forall|i: int| 0 <= i < idx ==> number > arr[i],
+    {
+        if number <= arr[idx] {
+            return false;
+        }
+        idx += 1;
     }
+    
+    true
 }
 
-spec fn process_string(input: Seq<char>, stack: Seq<char>) -> Seq<char>
-    decreases input.len()
-{
-    if input.len() == 0 {
-        stack
-    } else {
-        let c = input[0];
-        let new_stack = if stack.len() > 0 && stack[stack.len() - 1] == c {
-            stack.subrange(0, stack.len() - 1)
-        } else {
-            stack.push(c)
-        };
-        process_string(input.subrange(1, input.len() as int), new_stack)
-    }
-}
-
-spec fn stack_algorithm_results_in_empty_stack(input: Seq<char>) -> bool
-{
-    let stack = process_string(input, Seq::empty());
-    stack.len() == 0
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<char>)
-    ensures result@.len() > 0
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

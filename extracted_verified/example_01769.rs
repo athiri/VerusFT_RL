@@ -1,34 +1,65 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() > 0
+
+spec fn is_lower_case(c: u8) -> bool {
+    c >= 97 && c <= 122
 }
 
-spec fn valid_output(result: Seq<int>, input: Seq<char>) -> bool {
-    result.len() >= 0 &&
-    (forall|i: int| 0 <= i < result.len() ==> result[i] >= 1) &&
-    (forall|i: int| 0 <= i < result.len() ==> result[i] <= result.len())
+spec fn is_upper_case(c: u8) -> bool {
+    c >= 65 && c <= 90
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<i8>)
-    requires valid_input(input@)
-    ensures valid_output(result@.map(|i: int, x: i8| x as int), input@)
-// </vc-spec>
-// <vc-code>
+spec fn count_uppercase_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    assume(false);
-    unreached()
+    if seq.len() == 0 {
+        0
+    } else {
+        count_uppercase_recursively(seq.drop_last()) + if is_upper_case(seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
-// </vc-code>
 
-
+fn count_uppercase(text: &[u8]) -> (count: u64)
+    ensures
+        0 <= count <= text.len(),
+        count_uppercase_recursively(text@) == count,
+{
+    let mut count = 0u64;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count_uppercase_recursively(text@.subrange(0, i as int)) == count,
+    {
+        if is_upper_case(text[i]) {
+            count = count + 1;
+        }
+        
+        proof {
+            assert(text@.subrange(0, i as int + 1) == text@.subrange(0, i as int).push(text@[i as int]));
+            assert(count_uppercase_recursively(text@.subrange(0, i as int + 1)) == 
+                   count_uppercase_recursively(text@.subrange(0, i as int)) + 
+                   if is_upper_case(text@[i as int]) { 1 as int } else { 0 as int });
+        }
+        
+        i = i + 1;
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    count
 }
 
-fn main() {}
+} // verus!

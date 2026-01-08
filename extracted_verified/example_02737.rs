@@ -2,51 +2,79 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn last_position(a: &[i32], elem: i32) -> (result: usize)
-    requires
-        0 < a.len() < 100_000,
-        exists|i: int| 0 <= i < a.len() && a[i] == elem,
-    ensures
-        0 <= result < a.len(),
-        forall|i: int| result < i < a.len() ==> a[i] != elem,
-        a[result as int] == elem,
+spec fn count_frequency_spec(seq: Seq<i64>, key: i64) -> (result:int)
+    decreases seq.len(),
 {
-    /* code modified by LLM (iteration 2): initialize last_idx by finding first occurrence */
-    let mut last_idx = 0;
-    let mut i = 0;
-    
-    // Find the first occurrence to properly initialize last_idx
-    while i < a.len() && a[i] != elem
-        invariant
-            0 <= i <= a.len(),
-            forall|j: int| 0 <= j < i ==> a[j] != elem,
-        decreases a.len() - i
-    {
-        i += 1;
-    }
-    
-    /* code modified by LLM (iteration 2): set last_idx to first found occurrence */
-    last_idx = i;
-    i += 1;
-    
-    /* code modified by LLM (iteration 2): updated loop invariant to reflect proper initialization */
-    while i < a.len()
-        invariant
-            0 <= last_idx < a.len(),
-            last_idx < i <= a.len(),
-            a[last_idx as int] == elem,
-            forall|j: int| last_idx < j < i ==> a[j] != elem,
-        decreases a.len() - i
-    {
-        if a[i] == elem {
-            last_idx = i;
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_spec(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
         }
-        i += 1;
+    }
+}
+// pure-end
+
+fn count_frequency(elements: &Vec<i64>, key: i64) -> (frequency: usize)
+    // post-conditions-start
+    ensures
+        count_frequency_spec(elements@, key) == frequency,
+    // post-conditions-end
+{
+    let mut count = 0usize;
+    let mut i = 0usize;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < elements.len()
+        invariant
+            i <= elements.len(),
+            count_frequency_spec(elements@.subrange(0, i as int), key) == count,
+        decreases elements.len() - i,
+    {
+        if elements[i] == key {
+            count = count + 1;
+        }
+        i = i + 1;
     }
     
-    last_idx
+    proof {
+        assert(elements@.subrange(0, elements.len() as int) =~= elements@);
+    }
+    
+    count
 }
 
-fn main() {}
+fn remove_duplicates(numbers: &Vec<i64>) -> (unique_numbers: Vec<i64>)
+    // post-conditions-start
+    ensures
+        unique_numbers@ == numbers@.filter(|x: i64| count_frequency_spec(numbers@, x) == 1),
+    // post-conditions-end
+{
+    let mut result = Vec::new();
+    let mut i = 0usize;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < numbers.len()
+        invariant
+            i <= numbers.len(),
+            result@ == numbers@.subrange(0, i as int).filter(|x: i64| count_frequency_spec(numbers@, x) == 1),
+        decreases numbers.len() - i,
+    {
+        let freq = count_frequency(numbers, numbers[i]);
+        if freq == 1 {
+            result.push(numbers[i]);
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(numbers@.subrange(0, numbers.len() as int) =~= numbers@);
+    }
+    
+    result
 }
+
+} // verus!
+fn main() {}

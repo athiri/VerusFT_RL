@@ -1,92 +1,105 @@
+/*
+### ID
+HumanEval/134
+*/
+/*
+### VERUS BEGIN
+*/
 use vstd::prelude::*;
 
 verus! {
 
-spec fn count_identical(s1: Seq<i32>, s2: Seq<i32>, s3: Seq<i32>) -> (result: int)
-    decreases s1.len(), s2.len(), s3.len(),
+pub uninterp spec fn is_alphabetic(c: char) -> (result: bool);
+
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_alphabetic)]
+pub fn ex_is_alphabetic(c: char) -> (result: bool)
+    ensures
+        result <==> (c.is_alphabetic()),
 {
-    if s1.len() == 0 || s2.len() == 0 || s3.len() == 0 {
-        0
-    } else {
-        count_identical(s1.drop_last(), s2.drop_last(), s3.drop_last()) + if (s1.last() == s2.last()
-            && s2.last() == s3.last()) {
-            1 as int
-        } else {
-            0 as int
-        }
-    }
+    c.is_alphabetic()
 }
 
-/* code modified by LLM (iteration 1): Added helper lemma to prove equivalence between recursive spec and iterative implementation */
-proof fn lemma_count_identical_prefix(s1: Seq<i32>, s2: Seq<i32>, s3: Seq<i32>, i: int)
-    requires
-        s1.len() == s2.len() && s2.len() == s3.len(),
-        0 <= i < s1.len(),
+pub uninterp spec fn is_whitespace(c: char) -> (result: bool);
+
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_whitespace)]
+pub fn ex_is_whitespace(c: char) -> (result: bool)
     ensures
-        count_identical(s1.subrange(0, i + 1), s2.subrange(0, i + 1), s3.subrange(0, i + 1)) ==
-        count_identical(s1.subrange(0, i), s2.subrange(0, i), s3.subrange(0, i)) +
-        /* code modified by LLM (iteration 1): Fixed integer literal type annotation */ 
-        if s1[i] == s2[i] && s2[i] == s3[i] { 1int } else { 0int },
-    decreases s1.len() - i,
+        result <==> (c.is_whitespace()),
 {
-    let prefix_i = s1.subrange(0, i);
-    let prefix_i1 = s1.subrange(0, i + 1);
-    
-    assert(prefix_i1.len() == i + 1);
-    assert(prefix_i1.last() == s1[i]);
-    assert(prefix_i1.drop_last() =~= prefix_i);
-    
-    let s2_prefix_i = s2.subrange(0, i);
-    let s2_prefix_i1 = s2.subrange(0, i + 1);
-    assert(s2_prefix_i1.last() == s2[i]);
-    assert(s2_prefix_i1.drop_last() =~= s2_prefix_i);
-    
-    let s3_prefix_i = s3.subrange(0, i);
-    let s3_prefix_i1 = s3.subrange(0, i + 1);
-    assert(s3_prefix_i1.last() == s3[i]);
-    assert(s3_prefix_i1.drop_last() =~= s3_prefix_i);
+    c.is_whitespace()
 }
 
-fn count_identical_position(arr1: &Vec<i32>, arr2: &Vec<i32>, arr3: &Vec<i32>) -> (count: usize)
-    requires
-        arr1.len() == arr2.len() && arr2.len() == arr3.len(),
+fn check_if_last_char_is_a_letter(txt: &str) -> (result: bool)
     ensures
-        0 <= count <= arr1.len(),
-        count_identical(arr1@, arr2@, arr3@) == count,
+        result <==> (txt@.len() > 0 && txt@.last().is_alphabetic() && (txt@.len() == 1
+            || txt@.index(txt@.len() - 2).is_whitespace())),
 {
-    let mut count = 0;
-    let mut i = 0;
-    
-    while i < arr1.len()
-        invariant
-            arr1.len() == arr2.len() && arr2.len() == arr3.len(),
-            0 <= i <= arr1.len(),
-            0 <= count <= i,
-            count == count_identical(arr1@.subrange(0, i as int), arr2@.subrange(0, i as int), arr3@.subrange(0, i as int)),
-        /* code modified by LLM (iteration 2): Added decreases clause to prove loop termination */
-        decreases arr1.len() - i
-    {
-        /* code modified by LLM (iteration 1): Added proof block to establish loop invariant maintenance */
-        proof {
-            lemma_count_identical_prefix(arr1@, arr2@, arr3@, i as int);
-        }
-        
-        if arr1[i] == arr2[i] && arr2[i] == arr3[i] {
-            count += 1;
-        }
-        i += 1;
+    let len = txt.unicode_len();
+    if len == 0 {
+        return false;
     }
-    
-    /* code modified by LLM (iteration 1): Fixed nat to int type conversion in subrange calls */
-    proof {
-        assert(arr1@.subrange(0, arr1@.len() as int) =~= arr1@);
-        assert(arr2@.subrange(0, arr2@.len() as int) =~= arr2@);
-        assert(arr3@.subrange(0, arr3@.len() as int) =~= arr3@);
-    }
-    
-    count
+    txt.get_char(len - 1).is_alphabetic() && (len == 1 || txt.get_char(len - 2).is_whitespace())
 }
 
 } // verus!
-
 fn main() {}
+
+/*
+### VERUS END
+*/
+
+/*
+### PROMPT
+
+def check_if_last_char_is_a_letter(txt):
+    '''
+    Create a function that returns True if the last character
+    of a given string is an alphabetical character and is not
+    a part of a word, and False otherwise.
+    Note: "word" is a group of characters separated by space.
+
+    Examples:
+    check_if_last_char_is_a_letter("apple pie") ➞ False
+    check_if_last_char_is_a_letter("apple pi e") ➞ True
+    check_if_last_char_is_a_letter("apple pi e ") ➞ False
+    check_if_last_char_is_a_letter("") ➞ False
+    '''
+
+*/
+
+/*
+### ENTRY POINT
+check_if_last_char_is_a_letter
+*/
+
+/*
+### CANONICAL SOLUTION
+
+    check = txt.split(' ')[-1]
+    return True if len(check) == 1 and (97 <= ord(check.lower()) <= 122) else False
+
+*/
+
+/*
+### TEST
+def check(candidate):
+
+    # Check some simple cases
+    assert candidate("apple") == False
+    assert candidate("apple pi e") == True
+    assert candidate("eeeee") == False
+    assert candidate("A") == True
+    assert candidate("Pumpkin pie ") == False
+    assert candidate("Pumpkin pie 1") == False
+    assert candidate("") == False
+    assert candidate("eeeee e ") == False
+    assert candidate("apple pie") == False
+    assert candidate("apple pi e ") == False
+
+    # Check some edge cases that are easy to work out by hand.
+    assert True
+
+
+*/

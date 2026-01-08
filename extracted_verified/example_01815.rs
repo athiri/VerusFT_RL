@@ -1,43 +1,99 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() == 1 && 'a' <= input[0] && input[0] <= 'z'
-}
 
-spec fn is_vowel(c: char) -> bool {
-    c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
-}
-
-spec fn expected_output(input: Seq<char>) -> Seq<char>
-    recommends valid_input(input)
+pub open spec fn count_frequency_rcr(seq: Seq<u8>, key: u8) -> int
+    decreases seq.len(),
 {
-    if is_vowel(input[0]) { seq!['v', 'o', 'w', 'e', 'l'] } else { seq!['c', 'o', 'n', 's', 'o', 'n', 'a', 'n', 't'] }
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<char>)
-    requires 
-        valid_input(input@),
-    ensures 
-        result@ == expected_output(input@),
-        result@ == seq!['v', 'o', 'w', 'e', 'l'] || result@ == seq!['c', 'o', 'n', 's', 'o', 'n', 'a', 'n', 't'],
-// </vc-spec>
-// <vc-code>
+fn count_frequency(arr: &[u8], key: u8) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
 {
-    /* impl-start */
-    assume(false);
-    unreached()
-    /* impl-end */
+    let mut count = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            count == count_frequency_rcr(arr@.take(i as int), key),
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases arr.len() - i,
+    {
+        if arr[i] == key {
+            count += 1;
+        }
+        
+        proof {
+            assert(arr@.take((i + 1) as int) == arr@.take(i as int).push(arr[i as int]));
+            assert(count_frequency_rcr(arr@.take((i + 1) as int), key) == 
+                   count_frequency_rcr(arr@.take(i as int), key) + 
+                   if arr[i as int] == key { 1int } else { 0int });
+        }
+        
+        i += 1;
+    }
+    
+    proof {
+        assert(arr@.take(i as int) == arr@);
+    }
+    count
 }
-// </vc-code>
 
-
+fn first_repeated_char(str1: &[u8]) -> (repeated_char: Option<(usize, u8)>)
+    ensures
+        if let Some((idx, rp_char)) = repeated_char {
+            idx < str1.len() && str1[idx as int] == rp_char && count_frequency_rcr(str1@, rp_char) > 1 &&
+            forall|k: int| 0 <= k < idx ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+        } else {
+            forall|k: int|
+                0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+        },
+{
+    let input_len = str1.len();
+    proof {
+        assert(str1@.take(0int).filter(|x: u8| count_frequency_rcr(str1@, x) > 1) == Seq::<
+            u8,
+        >::empty());
+    }
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            str1@.take(index as int) =~= str1@.take(index as int).filter(
+                |x: u8| count_frequency_rcr(str1@, x) <= 1,
+            ),
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases str1.len() - index,
+    {
+        if count_frequency(&str1, str1[index]) > 1 {
+            return Some((index, str1[index]));
+        }
+        proof {
+            assert(str1@.take((index + 1) as int).drop_last() == str1@.take(index as int));
+            reveal(Seq::filter);
+        }
+        index += 1;
+    }
+    proof {
+        assert(str1@ =~= str1@.take(input_len as int));
+        assert(forall|k: int|
+            0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1);
+    }
+    None
 }
 
-fn main() {}
+} // verus!

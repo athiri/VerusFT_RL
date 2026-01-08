@@ -1,35 +1,52 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
 
-fn smallest_num(nums: &Vec<i32>) -> (min: i32)
+// Precondition: there exists an index i where a[i] equals e
+spec fn linear_search_precond(a: &Vec<i32>, e: i32) -> bool {
+    exists|i: int| 0 <= i < a.len() && a[i as int] == e
+}
+
+// Postcondition specification
+spec fn linear_search_postcond(a: &Vec<i32>, e: i32, result: usize) -> bool {
+    result < a.len() && 
+    a[result as int] == e && 
+    forall|k: int| 0 <= k < result ==> a[k] != e
+}
+
+// Auxiliary function for linear search
+fn linear_search_aux(a: &Vec<i32>, e: i32, n: usize) -> (result: usize)
     requires
-        nums.len() > 0,
+        n <= a.len(),
+        linear_search_precond(a, e),
+        forall|k: int| 0 <= k < n ==> a[k] != e,
     ensures
-        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
-        exists|i: int| 0 <= i < nums.len() && min == nums[i],
+        linear_search_postcond(a, e, result),
+    decreases a.len() - n,
 {
-    let mut min = nums[0];
-    let mut j = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to satisfy Verus loop termination requirement */
-    while j < nums.len()
-        invariant
-            1 <= j <= nums.len(),
-            forall|i: int| 0 <= i < j ==> min <= nums[i],
-            exists|i: int| 0 <= i < j && min == nums[i],
-        decreases nums.len() - j
-    {
-        if nums[j] < min {
-            min = nums[j];
+    if n < a.len() {
+        if a[n] == e {
+            n
+        } else {
+            linear_search_aux(a, e, n + 1)
         }
-        j += 1;
+    } else {
+        // This case should never be reached due to the precondition
+        // but we need to handle it for completeness
+        0
     }
-    
-    min
+}
+
+// Main linear search function
+fn linear_search(a: &Vec<i32>, e: i32) -> (result: usize)
+    requires
+        linear_search_precond(a, e),
+    ensures
+        linear_search_postcond(a, e, result),
+{
+    linear_search_aux(a, e, 0)
 }
 
 } // verus!
+
+fn main() {}

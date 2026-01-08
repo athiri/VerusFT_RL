@@ -1,26 +1,14 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn reverse(a: &Vec<char>) -> (b: Vec<char>)
-    requires 
-        a.len() > 0,
-    ensures 
-        b.len() == a.len(),
-        forall|i: int| 0 <= i < a.len() ==> b[i] == a[a.len() - i - 1],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    //IMPL triple
+    fn triple(x: i32) -> (r: i32)
+        requires 
+            -715827882 <= x <= 715827882,  // i32::MAX / 3 approximately
+        ensures r == 3 * x
+    {
+        3 * x
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

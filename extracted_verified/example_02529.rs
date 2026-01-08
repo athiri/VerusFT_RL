@@ -1,39 +1,48 @@
 use vstd::prelude::*;
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
-    ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+spec fn in_array(a: Seq<i32>, x: i32) -> bool {
+    exists|i: int| 0 <= i < a.len() && a[i] == x
+}
+    
+fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool) 
+    ensures 
+        result == in_array(a@, x),
 {
-    for i in 0..arr.len()
+    for i in 0..a.len()
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            !exists|j: int| 0 <= j < i && a@[j] == x,
     {
-        if arr[i] == key {
+        if a[i] == x {
             return true;
         }
     }
     false
 }
 
-fn any_value_exists(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
+    requires
+        a.len() >= 1,
     ensures
-        result == exists|k: int| 0 <= k < arr1.len() && arr2@.contains(#[trigger] arr1[k]),
+        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
+        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
 {
-    for i in 0..arr1.len()
+    let mut result = Vec::new();
+    
+    for i in 0..a.len()
         invariant
-            forall|j: int| 0 <= j < i ==> !arr2@.contains(arr1[j]),
+            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
     {
-        if contains(arr2, arr1[i]) {
-            return true;
+        if !in_array_exec(&result, a[i]) {
+            result.push(a[i]);
         }
     }
-    false
+    
+    result
 }
 
-} // verus!
+fn main() {}
+}

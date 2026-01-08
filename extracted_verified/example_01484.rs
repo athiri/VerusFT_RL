@@ -1,34 +1,34 @@
-// <vc-preamble>
+/*
+This example is based on this Rust program
+https://github.com/TheAlgorithms/Rust/blob/master/src/ciphers/another_rot13.rs
+
+It turns out that Verus' support for String is limited.
+And, it was quite challenging to turn the original simple example into a Verus verifiable Rust program.
+
+The original program only has one function. I split the "another_rot13" function into two, init and encrypt.
+*/
+
 use vstd::prelude::*;
+use vstd::string::*;
+ 
+verus!{
 
-verus! {
-// </vc-preamble>
+  fn main() {
+    // TODO: Remove this comment and implement the function body
+  }
 
-// <vc-helpers>
-// </vc-helpers>
+   fn init (in_string: &mut StrSlice, out_string: &mut StrSlice)
+   ensures
+        in_string@.len() == out_string@.len(),
+   {
+    // TODO: Remove this comment and implement the function body
+   }
 
-// <vc-spec>
-fn subtract(x1: Vec<i8>, x2: Vec<i8>) -> (result: Vec<i8>)
-    requires x1.len() == x2.len(),
-    ensures 
-        result.len() == x1.len(),
-        forall|i: int| 0 <= i < result.len() ==> result@[i] == x1@[i] - x2@[i],
-        /* Sanity check: subtracting zero preserves the original value */
-        forall|i: int| 0 <= i < result.len() && x2@[i] == 0 ==> result@[i] == x1@[i],
-        /* Sanity check: subtracting a value from itself yields zero */
-        forall|i: int| 0 <= i < result.len() && x1@[i] == x2@[i] ==> result@[i] == 0,
-        /* Anti-commutativity property */
-        forall|i: int| 0 <= i < result.len() ==> result@[i] == -(x2@[i] - x1@[i])
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
+    pub fn encrypt(text: &mut Vec<char>, in_string: &StrSlice, out_string: &StrSlice)
+    requires
+        in_string@.len() == out_string@.len(),
+    {
+    // TODO: Remove this comment and implement the function body
+    }
 
 }
-fn main() {}

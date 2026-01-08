@@ -2,62 +2,49 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition for double_array_elements
-spec fn double_array_elements_precond(s: Vec<i32>) -> bool {
-    // Need to ensure no overflow when doubling
-    forall|i: int| #![auto] 0 <= i < s.len() ==> s[i] <= i32::MAX / 2 && s[i] >= i32::MIN / 2
-}
-
-// Postcondition for double_array_elements
-spec fn double_array_elements_postcond(s: Vec<i32>, result: Vec<i32>) -> bool {
-    result.len() == s.len() &&
-    forall|i: int| #![auto] 0 <= i < s.len() ==> result[i] == 2 * s[i]
-}
-
-// Auxiliary recursive function with stronger specification
-fn double_array_elements_aux(s_old: Vec<i32>, s: Vec<i32>, i: usize) -> (result: Vec<i32>)
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    // pre-conditions-start
     requires
-        s.len() == s_old.len(),
-        i <= s.len(),
-        double_array_elements_precond(s_old),
-        // Elements up to i have been doubled
-        forall|j: int| #![auto] 0 <= j < i ==> s[j] == 2 * s_old[j],
-        // Elements from i onward are unchanged
-        forall|j: int| #![auto] i <= j < s.len() ==> s[j] == s_old[j],
+        list.len() > 0,
+        0 < k <= list@.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result.len() == s.len(),
-        forall|j: int| #![auto] 0 <= j < s.len() ==> result[j] == 2 * s_old[j],
-    decreases s.len() - i
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
+    // post-conditions-end
 {
-    if i == s.len() {
-        return s;
-    } else {
-        let mut s_next = s;
-        s_next.set(i, 2 * s_old[i]);
-        
-        proof {
-            assert(s_next.len() == s_old.len());
-            assert(forall|j: int| #![auto] 0 <= j < i ==> s_next[j] == 2 * s_old[j]);
-            assert(s_next[i as int] == 2 * s_old[i as int]);
-            assert(forall|j: int| #![auto] 0 <= j < (i + 1) ==> s_next[j] == 2 * s_old[j]);
-            assert(forall|j: int| #![auto] (i + 1) <= j < s_next.len() ==> s_next[j] == s_old[j]);
-        }
-        
-        double_array_elements_aux(s_old, s_next, i + 1)
+    /* code modified by LLM (iteration 1): Fixed compilation errors by removing stray comments and corrected bounds checking */
+    let mut new_list = Vec::new();
+    
+    // Add elements before the k-th element (indices 0 to k-2)
+    let mut i = 0;
+    while i < k - 1
+        invariant
+            0 <= i <= k - 1,
+            new_list@ == list@.subrange(0, i as int),
+    {
+        new_list.push(list[i]);
+        i += 1;
     }
+    
+    // Skip the k-th element (index k-1) and add the rest (indices k to end)
+    let mut j = k;
+    while j < list.len()
+        invariant
+            k <= j <= list.len(),
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, j as int)
+            ),
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
 
-// Main function
-fn double_array_elements(s: Vec<i32>) -> (result: Vec<i32>)
-    requires
-        double_array_elements_precond(s),
-    ensures
-        double_array_elements_postcond(s, result),
-{
-    let s_copy = s.clone();
-    double_array_elements_aux(s, s_copy, 0)
-}
-
-}
+} // verus!
 
 fn main() {}

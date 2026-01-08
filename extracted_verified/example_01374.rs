@@ -1,35 +1,24 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn putmask(a: Vec<f32>, mask: Vec<bool>, values: Vec<f32>) -> (result: Vec<f32>)
-    requires 
-        a.len() == mask.len(),
-        values.len() > 0,
-    ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i < a@.len() ==> (
-            mask@[i] ==> exists|j: int| 0 <= j < values@.len() && result@[i] == values@[j]
-        ),
-        forall|i: int| 0 <= i < a@.len() ==> (
-            mask@[i] ==> result@[i] == values@[(i as int) % (values@.len() as int)]
-        ),
-        forall|i: int| 0 <= i < a@.len() ==> (
-            !mask@[i] ==> result@[i] == a@[i]
-        ),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
+    requires    
+        exists |q:int| 0 <= q < v.len() && v[q] % 2 == 1
+    ensures
+        odd_index < v.len()
+{
+    let mut i = 0;
+    while i < v.len()
+        invariant
+            i <= v.len(),
+            exists |q:int| i <= q < v.len() && v[q] % 2 == 1
+    {
+        if v[i] % 2 == 1 {
+            return i;
+        }
+        i += 1;
+    }
+    unreachable!()
+}
+}

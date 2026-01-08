@@ -1,27 +1,42 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn integer_square_root(n: i32) -> (result: i32)
+fn extract_rear_chars(s: &Vec<Vec<char>>) -> (result: Vec<char>)
+    // pre-conditions-start
     requires
-        n >= 1,
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        0 <= result * result,
-        result * result <= n,
-        n < (result + 1) * (result + 1)
-// </vc-spec>
-// <vc-code>
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 2): fixed invariant to use usize bounds and added precondition assertions */
+    while i < s.len()
+        invariant
+            0 <= i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+            forall|j: int| 0 <= j < s.len() ==> s[j].len() > 0,
+        decreases s.len() - i,
+    {
+        /* code modified by LLM (iteration 2): added assertion to help verification */
+        assert(s[i as int].len() > 0);
+        assert(s[i as int].len() - 1 < s[i as int].len());
+        
+        let last_char = s[i][s[i].len() - 1];
+        result.push(last_char);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

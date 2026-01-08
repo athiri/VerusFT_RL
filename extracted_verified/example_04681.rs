@@ -4,19 +4,18 @@ fn main() {}
 
 verus! {
 
-fn contains_z(text: &[u8]) -> (result: bool)
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
     ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    for i in 0..text.len()
-        invariant
-            !(exists|j: int| 0 <= j < i && (text[j] == 90 || text[j] == 122)),
-    {
-        if text[i] == 90 || text[i] == 122 {
-            return true;
-        }
-    }
-    false
+    return false;  // TODO: Remove this line and implement the function body
+}
+
+fn any_value_exists(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
+    ensures
+        result == exists|k: int| 0 <= k < arr1.len() && arr2@.contains(#[trigger] arr1[k]),
+{
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

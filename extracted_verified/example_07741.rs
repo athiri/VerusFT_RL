@@ -1,65 +1,45 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition function (always true in this case)
-pub open spec fn append_precond(a: Seq<int>, b: int) -> bool {
-    true
-}
+// <vc-helpers>
+spec fn has_divisor_below(n: int, bound: int) -> bool { exists|k: int| 2 <= k < bound && #[trigger] (n % k) == 0 }
 
-// Helper function to copy array elements
-fn copy(a: &Vec<int>, i: usize, acc: &mut Vec<int>)
+spec fn is_composite_int(n: int) -> bool { exists|k: int| 2 <= k < n && #[trigger] (n % k) == 0 }
+// </vc-helpers>
+
+// <vc-spec>
+#[verifier::loop_isolation(false)]
+fn is_non_prime(n: u32) -> (result: bool)
     requires
-        i <= a.len(),
-        old(acc).len() == i,
-        forall|j: int| 0 <= j < i ==> old(acc)[j] == a[j],
+        n >= 2,
     ensures
-        acc.len() == a.len(),
-        forall|j: int| 0 <= j < a.len() ==> acc[j] == a[j],
-    decreases a.len() - i,
+        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
+// </vc-spec>
+// <vc-code>
 {
-    if i < a.len() {
-        acc.push(a[i]);
-        copy(a, i + 1, acc);
+    let mut k: u32 = 2;
+    let mut found: bool = false;
+    while k < n
+        invariant
+            2 <= k as int && k as int <= n as int,
+            found == exists|j: int| 2 <= j < k as int && #[trigger] ((n as int) % j) == 0,
+        decreases (n - k) as int
+    {
+        if n % k == 0 {
+            proof {
+                assert(((n as int) % (k as int)) == 0);
+            }
+            found = true;
+        }
+        k = k + 1;
     }
+    proof { assert(k as int == n as int); }
+    found
 }
+// </vc-code>
 
-// Main append function
-pub fn append(a: &Vec<int>, b: int) -> (result: Vec<int>)
-    requires
-        append_precond(a@, b),
-    ensures
-        append_postcond(a@, b, result@),
-{
-    let mut result = Vec::new();
-    copy(a, 0, &mut result);
-    result.push(b);
-    result
 }
-
-// Postcondition specification
-pub open spec fn append_postcond(a: Seq<int>, b: int, result: Seq<int>) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-    result[a.len() as int] == b &&
-    result.len() == a.len() + 1
-}
-
-// Theorem equivalent (specification-level lemma)
-proof fn append_spec_satisfied(a: Seq<int>, b: int, result: Seq<int>)
-    requires
-        append_precond(a, b),
-        // Assume the result satisfies what append would produce
-        (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-        result[a.len() as int] == b &&
-        result.len() == a.len() + 1,
-    ensures
-        append_postcond(a, b, result),
-{
-    // The postcondition is exactly the same as the assumptions,
-    // so the proof is trivial by the definition of append_postcond
-}
-
-} // verus!
-
-fn main() {
-}
+fn main() {}

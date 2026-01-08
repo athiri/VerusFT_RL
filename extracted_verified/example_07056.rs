@@ -1,38 +1,44 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-spec fn is_digit_spec(c: u8) -> bool {
-    c >= 48 && c <= 57
+// Helper function to check if a number is odd
+spec fn is_odd(n: int) -> bool {
+    n % 2 == 1
 }
 
-fn is_digit(c: u8) -> (res: bool)
-    ensures
-        res == is_digit_spec(c),
-{
-    c >= 48 && c <= 57
+// Precondition - always true in this case  
+spec fn is_odd_at_index_odd_precond(a: Seq<i32>) -> bool {
+    true
 }
 
-fn is_integer(text: &[u8]) -> (result: bool)
-    ensures
-        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_spec(text[i]))),
+// Postcondition specification
+spec fn is_odd_at_index_odd_postcond(a: Seq<i32>, result: bool) -> bool {
+    result == (forall|i: int| #![auto] 0 <= i < a.len() && is_odd(i) ==> is_odd(a[i] as int))
+}
+
+// Main function that checks if all elements at odd indices are odd numbers
+// This translates the Lean function that creates indexed pairs and uses Array.all
+fn is_odd_at_index_odd(a: &Vec<i32>) -> (result: bool)
+    requires is_odd_at_index_odd_precond(a@)
+    ensures is_odd_at_index_odd_postcond(a@, result)
 {
-    let mut i = 0;
-    while i < text.len()
-        invariant
-            0 <= i <= text.len(),
-            forall|j: int| 0 <= j < i ==> is_digit_spec(text[j]),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases text.len() - i
+    let mut i = 1;
+    /* code modified by LLM (iteration 1): Added decreases clause to satisfy verification requirement */
+    while i < a.len()
+        invariant 
+            i % 2 == 1,
+            forall|j: int| #![auto] 0 <= j < i && is_odd(j) ==> is_odd(a@[j] as int)
+        decreases a.len() - i
     {
-        if !is_digit(text[i]) {
+        if a[i] % 2 == 0 {
             return false;
         }
-        i += 1;
+        i += 2;
     }
     true
 }
 
-} // verus!
+fn main() {}
+
+}

@@ -2,46 +2,50 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition for longest increasing subsequence
-spec fn longest_increasing_subsequence_precond(nums: Seq<i32>) -> bool {
-    true
+spec fn sorted(a: &[int]) -> bool {
+    sorted_a(a, a.len() as int)
 }
 
-// Helper function to check if a sequence is strictly increasing
-spec fn is_strictly_increasing(seq: Seq<i32>) -> bool {
-    forall|i: int, j: int| #![auto] 0 <= i < j < seq.len() ==> seq[i] < seq[j]
+spec fn sorted_a(a: &[int], i: int) -> bool {
+    0 <= i <= a.len() && 
+    forall|k: int| #![trigger a[k]] 0 < k < i ==> a[(k-1) as int] <= a[k]
 }
 
-// Helper function to check if a sequence is a subsequence of another
-spec fn is_subsequence(subseq: Seq<i32>, seq: Seq<i32>) -> bool {
-    exists|indices: Seq<int>| #![auto]
-        indices.len() == subseq.len() &&
-        (forall|i: int| #![auto] 0 <= i < indices.len() ==> 
-            0 <= indices[i] < seq.len() &&
-            seq[indices[i]] == subseq[i]) &&
-        (forall|i: int, j: int| #![auto] 0 <= i < j < indices.len() ==> 
-            indices[i] < indices[j])
-}
+// <vc-helpers>
 
-// Postcondition - result should be non-negative and at most the length of input
-spec fn longest_increasing_subsequence_postcond(
-    nums: Seq<i32>, 
-    result: i32
-) -> bool {
-    0 <= result <= nums.len()
-}
+// </vc-helpers>
 
-fn longest_increasing_subsequence(nums: Vec<i32>) -> (result: i32)
+// <vc-spec>
+fn look_for_min(a: &[int], i: usize) -> (m: usize)
     requires 
-        longest_increasing_subsequence_precond(nums@),
-        nums.len() <= i32::MAX
-    ensures longest_increasing_subsequence_postcond(nums@, result)
+        0 <= i < a.len(),
+    ensures
+        i <= m < a.len(),
+        forall|k: int| #![trigger a[k]] i <= k < a.len() ==> a[k] >= a[m as int],
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    let mut min_idx = i;
+    let mut j = i + 1;
+    
+    while j < a.len()
+        invariant
+            i <= min_idx < a.len(),
+            i + 1 <= j <= a.len(),
+            forall|k: int| #![trigger a[k]] i <= k < j ==> a[k] >= a[min_idx as int],
+        decreases a.len() - j,
+    {
+        if a[j] < a[min_idx] {
+            min_idx = j;
+        }
+        j += 1;
+    }
+    
+    min_idx
 }
-
-} // verus!
+// </vc-code>
 
 fn main() {
-    // TODO: Remove this comment and implement the function body
+}
+
 }

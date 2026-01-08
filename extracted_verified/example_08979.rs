@@ -1,75 +1,145 @@
-use vstd::prelude::*;
+// SPDX-License-Identifier: MPL-2.0
+use alloc::collections::VecDeque;
+use core::sync::atomic::{
+    AtomicBool,
+    Ordering::{self, Relaxed},
+};
 
-verus! {
+use crate::{
+    cpu::{AtomicCpuSet, CpuId, CpuSet, PinCurrentCpu},
+    prelude::*,
+    sync::SpinLock,
+    task::atomic_mode::AsAtomicModeGuard,
+};
 
-// Precondition: k must be positive  
-spec fn max_subarray_sum_divisible_by_k_precond(arr: Seq<i32>, k: i32) -> bool {
-    k > 0
+/// A RCU monitor ensures the completion of _grace periods_ by keeping track
+/// of each CPU's passing _quiescent states_.
+pub(super) struct RcuMonitor {
+    is_monitoring: AtomicBool,
+    state: SpinLock<State>,
 }
 
-// Helper function to compute array sum
-spec fn array_sum(arr: Seq<i32>) -> int 
-    decreases arr.len()
-{
-    if arr.len() == 0 {
-        0int
-    } else {
-        arr[0] as int + array_sum(arr.subrange(1, arr.len() as int))
+impl RcuMonitor {
+    /// Creates a new RCU monitor.
+    ///
+    /// This function is used to initialize a singleton instance of `RcuMonitor`.
+    /// The singleton instance is globally accessible via the `RCU_MONITOR`.
+    pub(super) fn new() -> Self {
+        Self {
+            is_monitoring: AtomicBool::new(false),
+            state: SpinLock::new(State::new()),
+        }
+    }
+
+    pub(super) unsafe fn finish_grace_period(&self) {
+        // Fast path
+        if !self.is_monitoring.load(Relaxed) {
+            return;
+        }
+
+        // Check if the current GP is complete after passing the quiescent state
+        // on the current CPU. If GP is complete, take the callbacks of the current
+        // GP.
+        let callbacks = {
+            let mut state = self.state.disable_irq().lock();
+            let cpu = state.as_atomic_mode_guard().current_cpu();
+            if state.current_gp.is_complete() {
+                return;
+            }
+
+            state.current_gp.finish_grace_period(cpu);
+            if !state.current_gp.is_complete() {
+                return;
+            }
+
+            // Now that the current GP is complete, take its callbacks
+            let current_callbacks = state.current_gp.take_callbacks();
+
+            // Check if we need to watch for a next GP
+            if !state.next_callbacks.is_empty() {
+                let callbacks = core::mem::take(&mut state.next_callbacks);
+                state.current_gp.restart(callbacks);
+            } else {
+                self.is_monitoring.store(false, Relaxed);
+            }
+
+            current_callbacks
+        };
+
+        // Invoke the callbacks to notify the completion of GP
+        for f in callbacks {
+            (f)();
+        }
+    }
+
+    pub(super) fn after_grace_period<F>(&self, f: F)
+    where
+        F: FnOnce() + Send + 'static,
+    {
+        let mut state = self.state.disable_irq().lock();
+
+        state.next_callbacks.push_back(Box::new(f));
+
+        if !state.current_gp.is_complete() {
+            return;
+        }
+
+        let callbacks = core::mem::take(&mut state.next_callbacks);
+        state.current_gp.restart(callbacks);
+        self.is_monitoring.store(true, Relaxed);
     }
 }
 
-// Simple spec function to check if a subarray has valid divisible length
-spec fn is_divisible_subarray(arr: Seq<i32>, start: int, len: int, k: i32) -> bool {
-    0 <= start && start + len <= arr.len() && len > 0 && len % (k as int) == 0
+struct State {
+    current_gp: GracePeriod,
+    next_callbacks: Callbacks,
 }
 
-// Get sum of subarray from start with given length
-spec fn get_subarray_sum(arr: Seq<i32>, start: int, len: int) -> int {
-    if 0 <= start && start + len <= arr.len() && len >= 0 {
-        array_sum(arr.subrange(start, start + len))
-    } else {
-        0int
+impl State {
+    fn new() -> Self {
+        Self {
+            current_gp: GracePeriod::new(),
+            next_callbacks: VecDeque::new(),
+        }
     }
 }
 
-// Postcondition specification - simplified version
-spec fn max_subarray_sum_divisible_by_k_postcond(arr: Seq<i32>, k: i32, result: i32) -> bool {
-    let result_int = result as int;
-    
-    // If result is 0, then either no divisible subarrays exist or all have non-positive sums
-    (result == 0 ==> (
-        forall |start: int, len: int| #![auto]
-            is_divisible_subarray(arr, start, len, k) ==> get_subarray_sum(arr, start, len) <= 0
-    )) &&
-    // If result is non-zero, it should be the maximum among all divisible subarray sums
-    (result != 0 ==> (
-        (exists |start: int, len: int| #![auto]
-            is_divisible_subarray(arr, start, len, k) && 
-            get_subarray_sum(arr, start, len) == result_int) &&
-        (forall |start: int, len: int| #![auto]
-            is_divisible_subarray(arr, start, len, k) ==> 
-            get_subarray_sum(arr, start, len) <= result_int)
-    ))
+type Callbacks = VecDeque<Box<dyn FnOnce() + Send + 'static>>;
+
+struct GracePeriod {
+    callbacks: Callbacks,
+    cpu_mask: AtomicCpuSet,
+    is_complete: bool,
 }
 
-#[verifier::external_body]
-fn max_subarray_sum_divisible_by_k(arr: &Vec<i32>, k: i32) -> (result: i32)
-    requires 
-        max_subarray_sum_divisible_by_k_precond(arr@, k),
-    ensures 
-        max_subarray_sum_divisible_by_k_postcond(arr@, k, result),
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
+impl GracePeriod {
+    fn new() -> Self {
+        Self {
+            callbacks: Callbacks::new(),
+            cpu_mask: AtomicCpuSet::new(CpuSet::new_empty()),
+            is_complete: true,
+        }
+    }
 
-proof fn max_subarray_sum_divisible_by_k_spec_satisfied(arr: Seq<i32>, k: i32)
-    requires max_subarray_sum_divisible_by_k_precond(arr, k)
-{
-    assume(false);  // TODO: Remove this line and implement the proof
-}
+    fn is_complete(&self) -> bool {
+        self.is_complete
+    }
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+    fn finish_grace_period(&mut self, this_cpu: CpuId) {
+        self.cpu_mask.add(this_cpu, Ordering::Relaxed);
 
-} // verus!
+        if self.cpu_mask.load(Ordering::Relaxed).is_full() {
+            self.is_complete = true;
+        }
+    }
+
+    fn take_callbacks(&mut self) -> Callbacks {
+        core::mem::take(&mut self.callbacks)
+    }
+
+    fn restart(&mut self, callbacks: Callbacks) {
+        self.is_complete = false;
+        self.cpu_mask.store(&CpuSet::new_empty(), Ordering::Relaxed);
+        self.callbacks = callbacks;
+    }
+}

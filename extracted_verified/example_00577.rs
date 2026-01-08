@@ -1,25 +1,28 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn longest_prefix(a: &[i32], b: &[i32]) -> (i: usize)
-    ensures 
-        i <= a.len() && i <= b.len(),
-        a@.subrange(0, i as int) == b@.subrange(0, i as int),
-        i < a.len() && i < b.len() ==> a[i as int] != b[i as int]
-// </vc-spec>
-// <vc-code>
+fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
+    // pre-conditions-start
+    requires
+        arr.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        is_sorted == (forall|i: int, j: int| 0 <= i < j < arr.len() ==> (arr[i] <= arr[j])),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    for k in 1..arr.len()
+        invariant
+            forall|i: int, j: int| 0 <= i < j < k ==> arr[i] <= arr[j],
+    {
+        if arr[k - 1] > arr[k] {
+            return false;
+        }
+    }
+    true
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

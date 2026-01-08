@@ -1,55 +1,65 @@
 use vstd::prelude::*;
 
+use crate::prelude::*;
+use vstd_extra::prelude::TreePath;
+
 verus! {
 
-// Precondition - trivially true in the original
-spec fn longest_increasing_streak_precond(nums: Seq<i32>) -> bool {
-    true
+pub tracked struct ConcreteCursor {
+    pub tracked tree: PageTableTreeModel,
+    pub tracked locked_subtree: PageTableNodeModel,
+    pub tracked path: PageTableTreePathModel,
 }
 
-// Check if a subsequence at given start position with given length is strictly increasing
-spec fn is_strictly_increasing_streak(nums: Seq<i32>, start: nat, len: nat) -> bool 
-    recommends start + len <= nums.len()
-{
-    start + len <= nums.len() &&
-    (len <= 1 || forall|i: nat| i < len - 1 ==> #[trigger] nums[start + i as int] < nums[start + i as int + 1])
-}
+impl ConcreteCursor {
+    pub open spec fn inv(self) -> bool {
+        &&& self.tree.inv()
+        &&& self.path.inv()
+        //        &&& self.tree.on_tree(self.locked_subtree)
 
-// Simplified postcondition - the result is bounded by the sequence length
-spec fn longest_increasing_streak_postcond(nums: Seq<i32>, result: nat) -> bool {
-    // Result is bounded by sequence length
-    result <= nums.len() &&
-    // Empty list means result = 0
-    (nums.len() == 0 ==> result == 0)
-    // Additional correctness properties would require more complex proof
-}
+    }
 
-fn longest_increasing_streak_aux(
-    nums: &Vec<i32>, 
-    idx: usize,
-    prev: Option<i32>, 
-    curr_len: usize, 
-    max_len: usize
-) -> (result: usize)
-    requires 
-        idx <= nums.len(),
-        curr_len <= nums.len(),
-        max_len <= nums.len()
-    ensures result <= nums.len()
-    decreases nums.len() - idx
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
+    #[verifier::inline]
+    pub open spec fn virt_addr_spec(self) -> usize {
+        self.path.vaddr()
+    }
 
-fn longest_increasing_streak(nums: Vec<i32>) -> (result: usize)
-    requires longest_increasing_streak_precond(nums@)
-    ensures longest_increasing_streak_postcond(nums@, result as nat)
-{
-    return 0;  // TODO: Remove this line and implement the function body
+    pub proof fn lemma_pop_level_spec_preserves_vaddr(self, n: int)
+        requires
+            self.path.inner.len() == n,
+            n > 0,
+            self.path.inner.inv(),
+            self.path.inner.0[n - 1] == 0,
+        ensures
+            self.pop_level_spec().path.vaddr() == self.path.vaddr(),
+    {
+        let ghost orig = self.path.inner;
+        let ghost popped = orig.pop_tail().1;
+        assert(self.pop_level_spec().path.inner == popped);
+        PageTableTreePathModel::rec_vaddr_pop_0(orig, n, 0);
+    }
+
+    pub proof fn lemma_push_level_spec_preserves_vaddr(self, n: int)
+        requires
+            self.path.inner.len() == n,
+            n < NR_LEVELS(),
+            self.path.inner.inv(),
+        ensures
+            self.push_level_spec().path.vaddr() == self.path.vaddr(),
+    {
+        let ghost orig = self.path.inner;
+        let ghost pushed = orig.push_tail(0 as usize);
+        assert(self.push_level_spec().path.inner == pushed);
+        PageTableTreePathModel::rec_vaddr_push_0(orig, n, 0);
+    }
+
+    pub open spec fn get_nodes(self, path: PageTableTreePathModel) -> (res: Seq<PageTableNodeValue>)
+        recommends
+            self.inv(),
+            path.inv(),
+    {
+        self.tree.trace(path@)
+    }
 }
 
 } // verus!
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}

@@ -1,41 +1,28 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn polyval3d(
-    x: Vec<f32>, 
-    y: Vec<f32>, 
-    z: Vec<f32>, 
-    c: Vec<Vec<Vec<f32>>>
-) -> (result: Vec<f32>)
-    requires 
-        x@.len() == y@.len(),
-        y@.len() == z@.len(),
-        c@.len() > 0,
-        forall|i: int| 0 <= i < c@.len() ==> c@[i].len() > 0,
-        forall|i: int, j: int| 0 <= i < c@.len() && 0 <= j < c@[i].len() ==> c@[i][j].len() > 0,
-    ensures 
-        result@.len() == x@.len(),
-        forall|p: int| 0 <= p < result@.len() ==> 
-            #[trigger] result@[p] == result@[p] &&
-            (c@.len() == 1 && c@[0].len() == 1 && c@[0][0].len() == 1 ==> 
-             result@[p] == c@[0][0][0])
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+verus!{
+pub fn simple_nested(a: &mut Vec<i32>, b: &Vec<i32>, N: i32) -> (sum: i32)
+    requires 
+        forall |k:int| k <= #[trigger] b[k] <= k + 1,
+        old(a).len() == N,
+        b.len() == N,
+        N <= 0x3FFF_FFFF,
+    ensures
+        N <= sum <= 2*N
+{  
+    let mut total: i32 = 0;
+    let mut i: usize = 0;
+    
+    while i < b.len()
+        invariant
+            0 <= i <= b.len(),
+            i as int <= total <= 2 * (i as int),
+        decreases b.len() - i
+    {
+        total += b[i];
+        i += 1;
+    }
+    
+    total
+}
+}

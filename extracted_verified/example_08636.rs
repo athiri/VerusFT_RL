@@ -1,13 +1,26 @@
-use vstd::prelude::*;
+#![feature(rustc_private)]
+#[macro_use]
+mod common;
+use common::*;
 
-verus! {
-    fn main_method(x_init: u32, y: u32) -> (z: u32)
-        requires 
-            (x_init as int) * (y as int) <= u32::MAX as int,
-        ensures z == 0
-    {
-    return 0;  // TODO: Remove this line and implement the function body
-    }
+test_verify_one_file! {
+    #[test] unsafe_fns_ok verus_code! {
+        unsafe fn f() {
+        }
+
+        #[verifier::external]
+        unsafe fn g() {
+        }
+
+        #[verifier::external_body]
+        unsafe fn h() {
+        }
+    } => Ok(())
 }
 
-fn main() {}
+test_verify_one_file! {
+    #[test] unsafe_proof_fn_fail verus_code! {
+        unsafe proof fn j() {
+        }
+    } => Err(err) => assert_vir_error_msg(err, "'unsafe' only makes sense on exec-mode functions")
+}

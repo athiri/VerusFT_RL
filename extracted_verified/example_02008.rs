@@ -1,41 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(a: int, b: int, x: int) -> bool {
-    a >= 0 && b >= a && x > 0
-}
+fn main() {}
 
-spec fn count_divisible_in_range(a: int, b: int, x: int) -> int
-    recommends valid_input(a, b, x)
+verus! {
+
+spec fn count_boolean(seq: Seq<bool>) -> int
+    decreases seq.len(),
 {
-    if a == 0 {
-        b / x + 1
+    if seq.len() == 0 {
+        0
     } else {
-        b / x - (a - 1) / x
+        count_boolean(seq.drop_last()) + if (seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn count_divisible(a: i8, b: i8, x: i8) -> (count: i8)
-    requires 
-        valid_input(a as int, b as int, x as int),
-    ensures 
-        count as int == count_divisible_in_range(a as int, b as int, x as int),
-        count >= 0,
-// </vc-spec>
-// <vc-code>
+fn count_true(arr: &Vec<bool>) -> (count: u64)
+    ensures
+        0 <= count <= arr.len(),
+        count_boolean(arr@) == count,
 {
-    assume(false);
-    unreached()
+    let mut count: u64 = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            0 <= count <= i,
+            count_boolean(arr@.take(i as int)) == count,
+    {
+        if arr[i] {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.take(arr.len() as int) == arr@);
+    }
+    
+    count
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

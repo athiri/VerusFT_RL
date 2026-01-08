@@ -1,49 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int) -> bool {
-    1 <= n <= 100
-}
-
-spec fn total_cost(n: int) -> int
-    recommends valid_input(n)
+fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+    requires
+        seq.len() > 0,
+    ensures
+        result == (forall|i: int, j: int|
+            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
+                == #[trigger] seq[j].len())),
 {
-    800 * n
+    let first_len = seq[0].len();
+    
+    for i in 1..seq.len()
+        invariant
+            forall|k: int| (0 <= k < i) ==> seq[k].len() == first_len,
+    {
+        if seq[i].len() != first_len {
+            return false;
+        }
+    }
+    
+    true
 }
 
-spec fn cashback(n: int) -> int
-    recommends valid_input(n)
-{
-    (n / 15) * 200
-}
-
-spec fn net_amount(n: int) -> int
-    recommends valid_input(n)
-{
-    total_cost(n) - cashback(n)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-    requires valid_input(n as int)
-    ensures result as int == net_amount(n as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

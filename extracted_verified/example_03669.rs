@@ -1,37 +1,63 @@
-//This example is from Verus tutorial, Chpt 7.5
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn binary_search(v: &Vec<u64>, k: u64) -> (r: usize)
-    requires
-        forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        exists|i:int| 0 <= i < v.len() && k == v[i],
-    ensures
-        r < v.len(),
-        k == v[r as int],
+verus! {
+
+spec fn modp_rec(n: nat, p: nat) -> (result:nat)
+    decreases n,
 {
-    let mut low: usize = 0;
-    let mut high: usize = v.len() - 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    loop
-        invariant
-            low <= high,
-            high < v.len(),
-            exists|i:int| low <= i <= high && k == v[i],
-            forall|i:int, j:int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        decreases high - low
-    {
-        let mid = low + (high - low) / 2;
-        
-        if v[mid] == k {
-            return mid;
-        } else if v[mid] < k {
-            low = mid + 1;
-        } else {
-            high = mid - 1;
-        }
+    if n == 0 {
+        1nat % p
+    } else {
+        (modp_rec((n - 1) as nat, p) * 2) % p
     }
 }
+// pure-end
+
+fn modmul(a: u32, b: u32, p: u32) -> (mul: u32)
+    by (nonlinear_arith)
+    // pre-conditions-start
+    requires
+        p > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        mul == ((a as int) * (b as int)) % (p as int),
+    // post-conditions-end
+{
+    let product = (a as u64) * (b as u64);
+    let result = (product % (p as u64)) as u32;
+    result
 }
+
+#[verifier::loop_isolation(false)]
+fn modp(n: u32, p: u32) -> (r: u32)
+    by (nonlinear_arith)
+    // pre-conditions-start
+    requires
+        p > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        r == modp_rec(n as nat, p as nat),
+    // post-conditions-end
+{
+    let mut result: u32 = 1;
+    let mut i: u32 = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < n
+        invariant
+            p > 0,
+            i <= n,
+            result == modp_rec(i as nat, p as nat),
+        decreases n - i,
+    {
+        result = modmul(result, 2, p);
+        i = i + 1;
+    }
+    
+    result
+}
+
+}
+fn main() {}

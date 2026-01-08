@@ -1,22 +1,22 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn contains_z(text: &[u8]) -> (result: bool)
+fn triangle_area(a: u64, h: u64) -> (area: u64)
+    // pre-conditions-start
+    requires
+        a > 0,
+        h > 0,
+        a * h / 2 <= u64::MAX
+        ,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
+        area == a * h / 2,
+    // post-conditions-end
 {
-    for i in 0..text.len()
-        invariant
-            !(exists|j: int| 0 <= j < i && (text[j] == 90 || text[j] == 122)),
-    {
-        if text[i] == 90 || text[i] == 122 {
-            return true;
-        }
-    }
-    false
+    a * h / 2
 }
 
-} // verus!
+}
+fn main() {}

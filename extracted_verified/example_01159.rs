@@ -1,31 +1,47 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    spec fn sorted_seg(a: Seq<int>, i: int, j: int) -> bool
+        recommends 0 <= i <= j + 1 <= a.len()
+    {
+        forall|l: int, k: int| i <= l <= k <= j ==> a[l] <= a[k]
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn numpy_greater(x1: &Vec<i8>, x2: &Vec<i8>) -> (result: Vec<bool>)
-    requires x1.len() == x2.len(),
-    ensures 
-        result.len() == x1.len(),
-        forall|i: int| 0 <= i < result.len() ==> 
-            (result[i] == (x1[i] as int > x2[i] as int)) &&
-            (result[i] == true ==> !(x2[i] as int > x1[i] as int)) &&
-            (result[i] == true || result[i] == false)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn insertion_sort(a: &mut Vec<int>)
+        requires old(a).len() > 0,
+        ensures 
+            sorted_seg(a@, 0, a.len() as int - 1),
+            a@.to_multiset() == old(a)@.to_multiset(),
+    {
+        let mut i = 1;
+        while i < a.len()
+            invariant 
+                a.len() > 0,
+                1 <= i <= a.len(),
+                sorted_seg(a@, 0, i as int - 1),
+                a@.to_multiset() == old(a)@.to_multiset(),
+        {
+            let key = a[i];
+            let mut j = i;
+            
+            while j > 0 && a[j - 1] > key
+                invariant 
+                    0 <= j <= i < a.len(),
+                    a@.to_multiset() == old(a)@.to_multiset(),
+                    a[j] == key,
+                    sorted_seg(a@, 0, j as int - 1),
+                    sorted_seg(a@, j as int + 1, i as int),
+                    forall|k: int| 0 <= k < j ==> a[k] <= key,
+                    forall|k: int| j < k <= i ==> a[k] >= key,
+            {
+                a.set(j, a[j - 1]);
+                j -= 1;
+            }
+            
+            a.set(j, key);
+            i += 1;
+        }
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

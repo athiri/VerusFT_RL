@@ -1,52 +1,61 @@
-// <vc-preamble>
+#![verifier::loop_isolation(false)]
+use vstd::math::*;
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn has_children(node: int, parents: Seq<int>, n: int) -> bool
-    recommends 0 <= node < n, n >= 3, parents.len() == n - 1
+
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    exists|i: int| 0 <= i < n - 1 && parents[i] - 1 == node
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
+    }
 }
 
-spec fn count_leaf_children(node: int, parents: Seq<int>, n: int) -> int
-    recommends 0 <= node < n, n >= 3, parents.len() == n - 1
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    (Set::new(|i: int| 0 <= i < n - 1 && parents[i] - 1 == node && !has_children(i + 1, parents, n))).len() as int
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-spec fn valid_input(n: int, parents: Seq<int>) -> bool
+fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        sum == max_rcur(arr@) + min_rcur(arr@),
 {
-    n >= 3 && parents.len() == n - 1 && 
-    (forall|i: int| 0 <= i < n - 1 ==> #[trigger] parents[i] >= 1 && parents[i] <= i + 1)
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    let mut i = 1;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    max_val + min_val
 }
 
-spec fn is_spruce(n: int, parents: Seq<int>) -> bool
-    recommends valid_input(n, parents)
-{
-    forall|node: int| 0 <= node < n && has_children(node, parents, n) ==> 
-        count_leaf_children(node, parents, n) >= 3
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, parents: Vec<i8>) -> (result: String)
-    requires 
-        valid_input(n as int, parents@.map_values(|x: i8| x as int)),
-    ensures 
-        result@ == seq!['Y', 'e', 's'] || result@ == seq!['N', 'o'],
-        result@ == seq!['Y', 'e', 's'] <==> is_spruce(n as int, parents@.map_values(|x: i8| x as int)),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

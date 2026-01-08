@@ -4,34 +4,32 @@ fn main() {}
 
 verus! {
 
-fn replace_blanks_with_chars(str1: &[u8], ch: u8) -> (result: Vec<u8>)
-    ensures
-        str1@.len() == result@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> result[i] == (if str1[i] == 32 {
-                ch
-            } else {
-                str1[i]
-            }),
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
 {
-    let mut out_str: Vec<u8> = Vec::with_capacity(str1.len());
-    let mut index = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while index < str1.len()
-        invariant
-            0 <= index <= str1.len(),
-            out_str.len() == index,
-            forall|i: int| 0 <= i < index ==> out_str[i] == (if str1[i] == 32 { ch } else { str1[i] }),
-        decreases str1.len() - index
-    {
-        if str1[index] == 32 {
-            out_str.push(ch);
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
         } else {
-            out_str.push(str1[index]);
+            0 as int
         }
-        index += 1;
     }
-    out_str
+}
+
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
+{
+    return 0;  // TODO: Remove this line and implement the function body
+}
+
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

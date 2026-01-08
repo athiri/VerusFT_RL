@@ -1,19 +1,20 @@
 use vstd::prelude::*;
 
-fn main() {}
 verus! {
 
-fn append(v: &Vec<u64>, elem: u64) -> (c: Vec<u64>)
-    requires
-        v.len() <= 100,
-    ensures
-        c@.len() == v@.len() + 1,
-        forall|i: int| (0 <= i && i < v.len()) ==> c[i] == v[i],
-        c@.last() == elem,
+// Precondition - always true
+spec fn compute_is_even_precond(x: int) -> bool {
+    true
+}
+
+// The main function that computes if x is even
+fn compute_is_even(x: i32) -> (result: bool)
+    requires compute_is_even_precond(x as int),
+    ensures result == true <==> exists|k: int| #[trigger] (2 * k) == (x as int),
 {
-    let mut result = v.clone();
-    result.push(elem);
-    result
+    x % 2 == 0
 }
 
 } // verus!
+
+fn main() {}

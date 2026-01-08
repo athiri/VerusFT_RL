@@ -1,42 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-
-spec fn sorted(a: &Vec<i32>, from: usize, to: usize) -> bool
-    recommends 
-        from <= to,
-        to <= a.len(),
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] == 5 * N,
+	// post-conditions-end
 {
-    forall|x: usize, y: usize| from <= x < y < to ==> a[x as int] <= a[y as int]
+    sum[0] = 5 * N;
+}
 }
 
-spec fn pivot(a: &Vec<i32>, to: usize, pvt: usize) -> bool
-    recommends
-        pvt < to,
-        to <= a.len(),
-{
-    forall|x: usize, y: usize| 0 <= x < pvt < y < to ==> a[x as int] <= a[y as int]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn BubbleSort(a: &mut Vec<i32>)
-    requires 
-        old(a).len() > 0,
-    ensures 
-        sorted(a, 0, a.len()),
-        a@.to_multiset() == old(a)@.to_multiset(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

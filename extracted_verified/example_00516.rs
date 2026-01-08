@@ -1,31 +1,38 @@
-// <vc-preamble>
-#[allow(unused_imports)]
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn linear_search(nums: Vec<i32>, target: i32) -> (ret: i32)
-
+fn get_first_elements(arr: &Vec<Vec<i32>>) -> (result: Vec<i32>)
+    // pre-conditions-start
     requires
-        nums@.len() < 0x8000_0000,
-
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        ret < nums@.len(),
-        ret >=0 ==> nums@[ret as int] == target,
-        ret >=0 ==> forall |i: int| 0 <= i < ret as int ==> #[trigger]nums@[i]!= target,
-        ret < 0 ==> forall |i: int| 0 <= i < nums@.len() as int ==> #[trigger]nums@[i] != target,
-// </vc-spec>
-// <vc-code>
+        arr.len() == result.len(),
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] result[i] == #[trigger] arr[i][0],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 2): removed ghost type cast and simplified bounds checking */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] arr[j][0],
+        decreases arr.len() - i,
+    {
+        /* code modified by LLM (iteration 2): removed ghost int cast, direct array access with bounds established by loop condition */
+        assert(arr[i as int].len() > 0); // This follows from the precondition
+        result.push(arr[i][0]);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

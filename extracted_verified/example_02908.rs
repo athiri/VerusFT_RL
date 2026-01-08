@@ -2,44 +2,129 @@ use vstd::prelude::*;
 
 verus! {
 
-fn has_common_element(list1: &Vec<i32>, list2: &Vec<i32>) -> (result: bool)
+fn string_eq(s1: &str, s2: &str) -> (result: bool)
     // post-conditions-start
     ensures
-        result == (exists|i: int, j: int|
-            0 <= i < list1.len() && 0 <= j < list2.len() && (list1[i] == list2[j])),
+        result <==> s1@ == s2@,
     // post-conditions-end
 {
-    for i in 0..list1.len()
-        invariant
-            forall|ii: int, j: int|
-                0 <= ii < i && 0 <= j < list2.len() ==> list1[ii] != list2[j],
-    {
-        for j in 0..list2.len()
-            invariant
-                /* code modified by LLM (iteration 2): fixed invariant to ensure i is within bounds when accessing list1 */
-                i < list1.len() && forall|jj: int|
-                    0 <= jj < j ==> list1[i as int] != list2[jj],
-        {
-            /* code modified by LLM (iteration 1): added bounds check to ensure safe array access */
-            if i < list1.len() && j < list2.len() && list1[i] == list2[j] {
-                /* code modified by LLM (iteration 1): added assertion to help prove postcondition */
-                assert(exists|ii: int, jj: int|
-                    0 <= ii < list1.len() && 0 <= jj < list2.len() && (list1[ii] == list2[jj])) by {
-                    assert(0 <= i < list1.len() && 0 <= j < list2.len() && list1[i as int] == list2[j as int]);
-                }
-                return true;
-            }
-        }
+    /* code modified by LLM (iteration 3): use sequence lengths instead of str.len() */
+    if s1@.len() != s2@.len() {
+        return false;
     }
-    /* code modified by LLM (iteration 1): added assertion to prove postcondition when returning false */
-    assert(forall|i: int, j: int|
-        0 <= i < list1.len() && 0 <= j < list2.len() ==> list1[i] != list2[j]) by {
-        assert(forall|ii: int, j: int|
-            0 <= ii < list1.len() && 0 <= j < list2.len() ==> list1[ii] != list2[j]);
+    
+    let mut i = 0;
+    while i < s1@.len()
+        invariant
+            0 <= i <= s1@.len(),
+            s1@.len() == s2@.len(),
+            forall|j: int| 0 <= j < i ==> s1@[j] == s2@[j],
+    {
+        /* code modified by LLM (iteration 3): use ghost blocks for sequence indexing */
+        let ghost s1_char = s1@[i as int];
+        let ghost s2_char = s2@[i as int];
+        if s1_char != s2_char {
+            proof {
+                assert(s1@[i as int] != s2@[i as int]);
+                assert(s1@ != s2@);
+            }
+            return false;
+        }
+        i += 1;
+    }
+    
+    proof {
+        assert(forall|j: int| 0 <= j < s1@.len() ==> s1@[j] == s2@[j]);
+        assert(s1@ == s2@);
+    }
+    true
+}
+
+fn check_substring(s: &str, sub: &str) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> exists|i: int|
+            0 <= i <= s@.len() - sub@.len() && s@.subrange(i, #[trigger] (i + sub@.len())) == sub@,
+    // post-conditions-end
+{
+    /* code modified by LLM (iteration 3): use sequence lengths instead of str.len() */
+    if sub@.len() == 0 {
+        return true;
+    }
+    if sub@.len() > s@.len() {
+        return false;
+    }
+    
+    let mut i = 0;
+    while i <= s@.len() - sub@.len()
+        invariant
+            0 <= i <= s@.len() - sub@.len() + 1,
+            forall|j: int| 0 <= j < i ==> s@.subrange(j, j + sub@.len()) != sub@,
+    {
+        /* code modified by LLM (iteration 3): use ghost variables for sequence comparison */
+        let mut matches = true;
+        let mut j = 0;
+        while j < sub@.len()
+            invariant
+                0 <= j <= sub@.len(),
+                matches <==> (forall|k: int| 0 <= k < j ==> s@[i + k] == sub@[k]),
+                i + sub@.len() <= s@.len(),
+        {
+            let ghost s_char = s@[(i + j) as int];
+            let ghost sub_char = sub@[j as int];
+            if s_char != sub_char {
+                matches = false;
+                break;
+            }
+            j += 1;
+        }
+        
+        if matches {
+            proof {
+                assert(forall|k: int| 0 <= k < sub@.len() ==> s@[i + k] == sub@[k]);
+                assert(s@.subrange(i as int, i as int + sub@.len()) == sub@);
+            }
+            return true;
+        }
+        i += 1;
     }
     false
 }
 
-} // verus!
+fn filter_by_substring<'a>(strings: &Vec<&'a str>, substring: &str) -> (res: Vec<&'a str>)
+    // post-conditions-start
+    ensures
+        forall|i: int|
+            0 <= i < strings@.len() && (exists|j: int|
+                0 <= j <= strings@[i]@.len() - substring@.len() && strings[i]@.subrange(
+                    j,
+                    #[trigger] (j + substring@.len()),
+                ) == substring@) ==> res@.contains(#[trigger] (strings[i])),
+    // post-conditions-end
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 3): use sequence length and ghost indexing */
+    while i < strings@.len()
+        invariant
+            0 <= i <= strings@.len(),
+            forall|k: int|
+                0 <= k < i && (exists|j: int|
+                    0 <= j <= strings@[k]@.len() - substring@.len() && strings[k]@.subrange(
+                        j,
+                        j + substring@.len(),
+                    ) == substring@) ==> result@.contains(strings[k]),
+    {
+        let ghost current_string = strings@[i as int];
+        if check_substring(current_string, substring) {
+            result.push(current_string);
+        }
+        i += 1;
+    }
+    
+    result
+}
 
+}
 fn main() {}

@@ -2,54 +2,41 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition: array must have at least one element
-spec fn min_array_precond(a: &Vec<i32>) -> bool {
-    a.len() > 0
+spec fn is_digit_sepc(c: char) -> (res: bool) {
+    (c as u32) >= 48 && (c as u32) <= 57
+}
+// pure-end
+
+fn is_digit(c: char) -> (res: bool)
+    // post-conditions-start
+    ensures
+        res == is_digit_sepc(c),
+    // post-conditions-end
+{
+    let code = c as u32;
+    code >= 48 && code <= 57
 }
 
-// Helper function for the iterative search
-fn find_min_loop(a: &Vec<i32>, i: usize, current_min: i32) -> (result: i32)
-    requires
-        a.len() > 0,
-        i <= a.len(),
-        exists|j: int| 0 <= j < a.len() && current_min == a[j as int],
-        forall|j: int| 0 <= j < i ==> current_min <= a[j as int],
+fn is_integer(text: &Vec<char>) -> (result: bool)
+    // post-conditions-start
     ensures
-        exists|k: int| 0 <= k < a.len() && result == a[k as int],
-        forall|j: int| 0 <= j < a.len() ==> result <= a[j as int],
-    decreases a.len() - i,
+        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_sepc(text[i]))),
+    // post-conditions-end
 {
-    if i == a.len() {
-        current_min
-    } else {
-        let new_min = if a[i] < current_min {
-            a[i]
-        } else {
-            current_min
-        };
-        find_min_loop(a, i + 1, new_min)
+    let mut i = 0;
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            forall|j: int| 0 <= j < i ==> is_digit_sepc(text[j]),
+    {
+        if !is_digit(text[i]) {
+            return false;
+        }
+        i += 1;
     }
+    true
 }
 
-// Main function to find minimum element in array
-fn min_array(a: &Vec<i32>) -> (result: i32)
-    requires
-        min_array_precond(a),
-    ensures
-        // Result is less than or equal to all elements
-        forall|i: int| 0 <= i < a.len() ==> result <= a[i as int],
-        // Result exists in the array
-        exists|i: int| 0 <= i < a.len() && result == a[i as int],
-{
-    find_min_loop(a, 1, a[0])
-}
-
-// Postcondition specification
-spec fn min_array_postcond(a: &Vec<i32>, result: i32) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> result <= a[i as int]) &&
-    (exists|i: int| 0 <= i < a.len() && result == a[i as int])
-}
-
-}
+} // verus!
 
 fn main() {}

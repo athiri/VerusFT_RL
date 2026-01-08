@@ -1,30 +1,77 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
 
 verus! {
-// </vc-preamble>
+    fn up_while_less(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
+    {
+        let mut i = 0;
+        while i < N
+            invariant 0 <= i <= N,
+        {
+            i = i + 1;
+        }
+        i
+    }
 
-// <vc-helpers>
-// </vc-helpers>
+    fn up_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
+    {
+        let mut i = 0;
+        while i != N
+            invariant 0 <= i <= N,
+        {
+            i = i + 1;
+        }
+        i
+    }
 
-// <vc-spec>
-fn savez_compressed(filename: &str, arrays: &Vec<Vec<i8>>) -> (result: ())
-    requires 
-        filename@.len() > 0,
-        arrays@.len() > 0,
-    ensures
-        /* File creation and data preservation properties are ensured */
-        true
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    // impl-end
+    fn down_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+        let mut i = N;
+        while i != 0
+            invariant 0 <= i <= N,
+        {
+            i = i - 1;
+        }
+        i
+    }
+
+    fn down_while_greater(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+        let mut i = N;
+        while i > 0
+            invariant 0 <= i <= N,
+        {
+            i = i - 1;
+        }
+        i
+    }
+
+    fn quotient()
+    {
+        let x = 10;
+        let y = 3;
+        let q = x / y;
+        let r = x % y;
+        assert(x == q * y + r);
+        assert(0 <= r < y);
+    }
+
+    fn quotient1()
+    {
+        let x = 15;
+        let y = 4;
+        let q = x / y;
+        let r = x % y;
+        assert(x == q * y + r);
+        assert(0 <= r < y);
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

@@ -2,41 +2,55 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition - always true (mimicking the Lean original)
-pub open spec fn reverse_string_precond(s: Seq<char>) -> bool {
-    true
-}
+// <vc-helpers>
+// no helpers needed
+// </vc-helpers>
 
-// Recursive function to reverse a sequence (like the Lean reverseAux)
-pub open spec fn reverse_aux(chars: Seq<char>, acc: Seq<char>) -> Seq<char>
-    decreases chars.len()
+// <vc-spec>
+fn append_array(a: &[i32], b: &[i32]) -> (c: Vec<i32>)
+    ensures 
+        c.len() == a.len() + b.len(),
+        forall|i: int| 0 <= i < a.len() ==> a[i] == c[i],
+        forall|i: int| 0 <= i < b.len() ==> b[i] == c[a.len() + i],
+// </vc-spec>
+// <vc-code>
 {
-    if chars.len() == 0 {
-        acc
-    } else {
-        reverse_aux(chars.drop_first(), acc.push(chars.first()))
+    let mut c: Vec<i32> = Vec::new();
+
+    let mut i: usize = 0;
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            c.len() == i,
+            forall|k: int| 0 <= k < i ==> #[trigger] c[k] == a[k],
+        decreases a.len() - i
+    {
+        c.push(a[i]);
+        i += 1;
     }
+
+    assert(i == a.len());
+
+    let mut j: usize = 0;
+    while j < b.len()
+        invariant
+            j <= b.len(),
+            c.len() == a.len() + j,
+            forall|k: int| 0 <= k < a.len() ==> #[trigger] c[k] == a[k],
+            forall|k: int| 0 <= k < j ==> #[trigger] c[a.len() + k] == b[k],
+        decreases b.len() - j
+    {
+        c.push(b[j]);
+        j += 1;
+    }
+
+    assert(j == b.len());
+
+    c
+}
+// </vc-code>
+
+fn main() {
 }
 
-// Main reverse function (mimicking the Lean reverseString)
-pub open spec fn reverse_string_seq(s: Seq<char>) -> Seq<char>
-{
-    reverse_aux(s, Seq::<char>::empty())
 }
-
-// Postcondition specification (mimicking the Lean postcondition)
-pub open spec fn reverse_string_postcond(s: Seq<char>, result: Seq<char>) -> bool {
-    result.len() == s.len() && result == s.reverse()
-}
-
-// The theorem (mimicking the Lean theorem, but we leave the proof incomplete like the original)
-proof fn reverse_string_spec_satisfied(s: Seq<char>)
-    requires reverse_string_precond(s)
-    ensures reverse_string_postcond(s, reverse_string_seq(s))
-{
-    assume(false);  // TODO: Remove this line and implement the proof
-}
-
-}
-
-fn main() {}

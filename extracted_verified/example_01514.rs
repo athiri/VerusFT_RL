@@ -1,29 +1,19 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn numpy_where(condition: Vec<bool>, x: Vec<f32>, y: Vec<f32>) -> (result: Vec<f32>)
-    requires 
-        condition@.len() == x@.len(),
-        condition@.len() == y@.len(),
-    ensures 
-        result@.len() == condition@.len(),
-        forall|i: int| 0 <= i < condition@.len() ==> 
-            (condition@[i] ==> result@[i] == x@[i]) &&
-            (!condition@[i] ==> result@[i] == y@[i])
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus! {
+
+fn append(v: &Vec<u64>, elem: u64) -> (c: Vec<u64>)
+    requires
+        v.len() <= 100,
+    ensures
+        c@.len() == v@.len() + 1,
+        forall|i: int| (0 <= i && i < v.len()) ==> c[i] == v[i],
+        c@.last() == elem,
+{
+    let mut c = v.clone();
+    c.push(elem);
+    c
+}
+
+} // verus!

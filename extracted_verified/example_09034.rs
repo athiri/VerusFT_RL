@@ -1,41 +1,24 @@
-use vstd::prelude::*;
+impl<M: AnyFrameMeta + Repr<MetaSlot> + OwnerOf> UniqueFrame<M> {
 
-verus! {
-
-// Check if a sequence is strictly increasing
-spec fn is_strictly_increasing(xs: Seq<i32>) -> bool
-    decreases xs.len()
-{
-    if xs.len() <= 1 {
-        true
-    } else {
-        xs[0] < xs[1] && is_strictly_increasing(xs.subrange(1, xs.len() as int))
+    pub open spec fn from_unused_spec(paddr: Paddr, metadata: M, pre: MetaRegionModel)
+        -> (Self, MetaRegionModel)
+        recommends
+            paddr % PAGE_SIZE() == 0,
+            paddr < MAX_PADDR(),
+            pre.inv(),
+            pre.slots[frame_to_index(paddr)].ref_count == REF_COUNT_UNUSED,
+    {
+        let (ptr, post) = MetaSlot::get_from_unused_spec(paddr, metadata, true, pre);
+        (UniqueFrame { ptr, _marker: PhantomData }, post)
     }
-}
 
-// Precondition for the main function
-spec fn longest_increasing_subseq_length_precond(xs: Seq<i32>) -> bool {
-    true
-}
-
-// Simple postcondition - just check that result is not too large
-spec fn longest_increasing_subseq_length_postcond(xs: Seq<i32>, result: nat) -> bool {
-    result <= xs.len()
-}
-
-// Executive function (implementation) - simplified to just return 1 for non-empty sequences
-fn longest_increasing_subseq_length(xs: &Vec<i32>) -> (result: usize)
-    requires longest_increasing_subseq_length_precond(xs@),
-    ensures longest_increasing_subseq_length_postcond(xs@, result as nat),
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-// Executive version of is_strictly_increasing with simpler ensures
-fn is_strictly_increasing_exec(xs: &Vec<i32>) -> (result: bool) {
-    return false;  // TODO: Remove this line and implement the function body
-}
-
-fn main() {}
-
+    pub proof fn from_unused_properties(paddr: Paddr, metadata: M, pre: MetaRegionModel)
+        requires
+            paddr % 4096 == 0,
+            paddr < MAX_PADDR(),
+            pre.inv(),
+            pre.slots[paddr / 4096].ref_count == REF_COUNT_UNUSED,
+        ensures
+            UniqueFrame::from_unused_spec(paddr, metadata, pre).1.inv(),
+    { }
 }

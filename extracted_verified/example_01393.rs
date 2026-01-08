@@ -1,27 +1,22 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn numpy_negative(x: Vec<i8>) -> (result: Vec<i8>)
-    ensures
-        result.len() == x.len(),
-        forall|i: int| 0 <= i < x.len() ==> result[i] as int == -(x[i] as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+spec fn f(seq: Seq<u64>, i: int) -> bool {
+    seq[i] == i + 2
+}
+
+fn get_element_check_property(arr: Vec<u64>, i: usize) -> (ret: u64)
+    requires
+        arr.len() > 0,
+        0 < i < arr@.len(),
+        forall |i: int| f(arr@, i),
+    ensures
+        ret == i + 2,
+        ret == arr@[i as int],
+{
+    arr[i]
+}
+}

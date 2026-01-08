@@ -1,27 +1,28 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-spec fn vec_sum(a: Seq<f32>) -> f32;
-
-fn sum(a: Vec<f32>) -> (result: f32)
-    ensures 
-        result == vec_sum(a@),
-        a.len() == 0 ==> result == 0.0f32,
-        (forall|i: int| 0 <= i < a.len() ==> a[i] == 0.0f32) ==> result == 0.0f32,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
+    requires 
+        forall |k1:int,k2:int| 0 <= k1 < k2 < v.len() ==> v[k1] != v[k2]
+    ensures
+        forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+        forall |k:int| 0 <= k < v.len() && v[k] <= e ==> result@.contains(v[k]),
+{  
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < v.len()
+        invariant
+            0 <= i <= v.len(),
+            forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+            forall |k:int| 0 <= k < i && v[k] <= e ==> result@.contains(v[k]),
+    {
+        if v[i] <= e {
+            result.push(v[i]);
+        }
+        i = i + 1;
+    }
+    
+    result
+}
+}

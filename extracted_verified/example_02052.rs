@@ -1,45 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(n: int, m: Seq<int>) -> bool {
-    n > 0 && m.len() == n && 
-    forall|i: int| 0 <= i < n ==> 0 <= #[trigger] m[i] < i + 1
-}
-
-spec fn valid_solution(n: int, m: Seq<int>, dm: Seq<int>) -> bool {
-    dm.len() == n && m.len() == n &&
-    (forall|i: int| 0 <= i < n ==> #[trigger] dm[i] >= #[trigger] m[i] + 1) &&
-    (forall|i: int| 0 <= i < n - 1 ==> #[trigger] dm[i] <= dm[i + 1])
-}
-
-spec fn sum_below(m: Seq<int>, dm: Seq<int>) -> int
-    decreases m.len()
-{
-    if m.len() == 0 {
-        0
-    } else {
-        (dm[0] - 1 - m[0]) + sum_below(m.subrange(1, m.len() as int), dm.subrange(1, dm.len() as int))
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, m: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, m@.map(|_i, v: i8| v as int))
-    ensures result >= 0
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn replace_blanks_with_chars(str1: &[u8], ch: u8) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if str1[i] == 32 {
+    return Vec::new();  // TODO: Remove this line and implement the function body
+            } else {
+                str1[i]
+            }),
+{
+    let mut out_str: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len() {
+        if str1[index] == 32 {
+            out_str.push(ch);
+        } else {
+            out_str.push(str1[index]);
+        }
+        index += 1;
+    }
+    out_str
+}
+
+} // verus!

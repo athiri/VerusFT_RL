@@ -1,29 +1,29 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
-    requires
-        arr.len() > 0,
-    ensures
-        is_sorted == (forall|i: int, j: int| 0 <= i < j < arr.len() ==> (arr[i] <= arr[j])),
+spec fn seq_max(a: Seq<i32>) -> (ret: i32)
+    decreases a.len(),
 {
-    let mut idx = 1;
-    while idx < arr.len()
-        invariant
-            1 <= idx <= arr.len(),
-            forall|i: int, j: int| 0 <= i < j < idx ==> arr[i] <= arr[j],
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases arr.len() - idx,
-    {
-        if arr[idx - 1] > arr[idx] {
-            return false;
-        }
-        idx += 1;
+    if a.len() == 0 {
+        i32::MIN
+    } else if a.last() > seq_max(a.drop_last()) {
+        a.last()
+    } else {
+        seq_max(a.drop_last())
     }
-    true
+}
+// pure-end
+
+fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
+    // post-conditions-start
+    ensures
+        result.len() == numbers.len(),
+        forall|i: int| 0 <= i < numbers.len() ==> result[i] == seq_max(numbers@.take(i + 1)),
+    // post-conditions-end
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
-} // verus!
+}
+fn main() {}

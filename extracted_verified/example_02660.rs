@@ -1,25 +1,49 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(sum).len() == 1,
-	ensures
-		forall |k:int| 0 <= k < N ==> a[k] == 0,
-{
-    let mut i = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < N
-        invariant
-            0 <= i <= N,
-            a.len() == N,
-            forall |k:int| 0 <= k < i ==> a[k] == 0,
-        decreases N - i,
-    {
-        a[i as usize] = 0;
-        i = i + 1;
+
+verus! {
+
+spec fn is_divisible(n: int, divisor: int) -> (ret:bool) {
+    (n % divisor) == 0
+}
+// pure-end
+
+spec fn is_prime(n: int) -> (ret:bool) {
+    if n < 2 {
+        false
+    } else {
+        (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k))
     }
 }
+// pure-end
+
+fn prime_length(str: &[char]) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == is_prime(str.len() as int),
+    // post-conditions-end
+{
+    let len = str.len();
+    
+    /* code modified by LLM (iteration 1): removed int cast, work with usize in executable code */
+    if len < 2 {
+        return false;
+    }
+    
+    let mut i: usize = 2;
+    while i < len
+        invariant
+            2 <= i <= len,
+            /* code modified by LLM (iteration 1): cast to int for spec function in invariant */
+            forall|k: int| 2 <= k < i ==> !is_divisible(len as int, k),
+    {
+        if len % i == 0 {
+            return false;
+        }
+        i += 1;
+    }
+    
+    true
 }
+
+} // verus!
+fn main() {}

@@ -1,40 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let input = b"hello world";
+    let result = replace_chars(input, b'l', b'x');
+    println!("Original: {:?}", std::str::from_utf8(input).unwrap());
+    println!("Result: {:?}", std::str::from_utf8(&result).unwrap());
+}
+
 verus! {
-spec fn valid_pascal_triangle(triangle: Seq<Seq<int>>, num_rows: int) -> bool {
-    triangle.len() == num_rows &&
-    (num_rows == 0 ==> triangle == Seq::<Seq<int>>::empty()) &&
-    (num_rows > 0 ==> (
-        forall|i: int| 0 <= i < triangle.len() ==> #[trigger] triangle[i].len() == i + 1
-    )) &&
-    (num_rows > 0 ==> (
-        forall|i: int| 0 <= i < triangle.len() ==> 
-            #[trigger] triangle[i][0] == 1 && #[trigger] triangle[i][triangle[i].len() - 1] == 1
-    )) &&
-    (num_rows > 1 ==> (
-        forall|i: int, j: int| 1 <= i < triangle.len() && 1 <= j < triangle[i].len() - 1 ==> 
-            #[trigger] triangle[i][j] == triangle[i-1][j-1] + triangle[i-1][j]
-    ))
-}
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn generate(num_rows: i8) -> (result: Vec<Vec<i8>>)
-    requires num_rows >= 0
-    ensures valid_pascal_triangle(result@.map(|i, row: Vec<i8>| row@.map(|j, x: i8| x as int)), num_rows as int)
-// </vc-spec>
-// <vc-code>
+fn replace_chars(str1: &[u8], old_char: u8, new_char: u8) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if str1[i] == old_char {
+                new_char
+            } else {
+                str1[i]
+            }),
 {
-    assume(false);
-    unreached()
+    let mut result_str = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1@.len(),
+            result_str@.len() == index,
+            forall|k: int|
+                0 <= k < index ==> result_str[k] == (if str1[k] == old_char {
+                    new_char
+                } else {
+                    str1[k]
+                }),
+    {
+        if str1[index] == old_char {
+            result_str.push(new_char);
+        } else {
+            result_str.push(str1[index]);
+        }
+        index += 1;
+    }
+    result_str
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

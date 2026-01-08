@@ -1,49 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(a: int, b: int, c: int, d: int) -> bool {
-  a >= 1 && b >= a && c >= 1 && d >= 1
-}
-
-spec fn not_divisible_by_either(x: int, c: int, d: int) -> bool
-  recommends c > 0 && d > 0
+spec fn sum_to(arr: Seq<i64>) -> int
+    decreases arr.len(),
 {
-  x % c != 0 && x % d != 0
+    if arr.len() == 0 {
+        0
+    } else {
+        sum_to(arr.drop_last()) + arr.last()
+    }
 }
 
-spec fn count_not_divisible(a: int, b: int, c: int, d: int) -> int
-  recommends valid_input(a, b, c, d)
+fn sum(arr: &Vec<i64>) -> (sum: i128)
+    ensures
+        sum_to(arr@) == sum,
 {
-  /* Count of integers in range [a, b] not divisible by either c or d */
-  (Set::new(|x: int| a <= x <= b && not_divisible_by_either(x, c, d))).len() as int
-}
-spec fn f(n: int, c: int, d: int) -> int {
-  /* Helper function f referenced in postcondition */
-  0 as int  /* Placeholder specification */
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: i8, b: i8, c: i8, d: i8) -> (result: i8)
-  requires
-      valid_input(a as int, b as int, c as int, d as int),
-  ensures
-      result as int >= 0,
-      result as int == f(b as int, c as int, d as int) - f((a as int) - 1, c as int, d as int),
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
+    let mut result: i128 = 0;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result == sum_to(arr@.subrange(0, i as int)),
+    {
+        result = result + arr[i] as i128;
+        i = i + 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

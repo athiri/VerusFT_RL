@@ -1,22 +1,20 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
+fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> (0 <= #[trigger] arr[i] + 1 < i32::MAX),
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
+        is_consecutive == (forall|i: int, j: int|
+            0 <= i < j < arr.len() && j == i + 1 ==> (arr[i] + 1 == arr[j])),
 {
-    for i in 0..arr.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != k,
-    {
-        if arr[i] == k {
-            return true;
-        }
-    }
-    false
+    return false;  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

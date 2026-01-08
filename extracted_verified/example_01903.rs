@@ -1,38 +1,42 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let nums = vec![1, 2, 3, -2];
+    let cubed = cube_element(&nums);
+    println!("{:?}", cubed);
+}
+
 verus! {
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() >= 1 && forall|i: int| 0 <= i < s.len() ==> 'a' <= #[trigger] s[i] <= 'z'
-}
 
-spec fn expected_length(s: Seq<char>) -> nat {
-    (s.len() + 1) / 2
-}
-
-spec fn correct_extraction(s: Seq<char>, result: Seq<char>) -> bool {
-    result.len() == expected_length(s) &&
-    forall|i: int| 0 <= i < result.len() ==> 0 <= 2*i < s.len() && #[trigger] result[i] == s[2*i] &&
-    forall|i: int| 0 <= i < s.len() && i % 2 == 0 ==> exists|j: int| 0 <= j < result.len() && result[j] == #[trigger] s[i] && j == i / 2
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: Vec<char>)
-    requires valid_input(s@)
-    ensures correct_extraction(s@, result@)
-// </vc-spec>
-// <vc-code>
+fn cube_element(nums: &Vec<i32>) -> (cubed: Vec<i32>)
+    requires
+        forall|k: int|
+            0 <= k < nums.len() ==> (i32::MIN <= #[trigger] nums[k] * #[trigger] nums[k]
+                <= i32::MAX),
+        forall|k: int|
+            0 <= k < nums.len() ==> (i32::MIN <= #[trigger] nums[k] * #[trigger] nums[k]
+                * #[trigger] nums[k] <= i32::MAX),
+    ensures
+        forall|i: int|
+            0 <= i < nums.len() ==> cubed[i] == #[trigger] nums[i] * #[trigger] nums[i]
+                * #[trigger] nums[i],
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < nums.len()
+        invariant
+            i <= nums.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == nums[j] * nums[j] * nums[j],
+    {
+        let val = nums[i as usize];
+        let cubed_val = val * val * val;
+        result.push(cubed_val);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

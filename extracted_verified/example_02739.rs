@@ -2,33 +2,63 @@ use vstd::prelude::*;
 
 verus! {
 
-fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
-    requires
-        v.len() <= 100_000,
-        forall|i: int, j: int| 0 <= i < j < v.len() ==> v[i] <= v[j],
-        0 <= c <= f + 1 <= v.len(),
-        forall|k: int| 0 <= k < c ==> v[k] <= elem,
-        forall|k: int| f < k < v.len() ==> v[k] > elem,
-    ensures
-        -1 <= p < v.len(),
-        forall|u: int| 0 <= u <= p ==> v[u] <= elem,
-        forall|w: int| p < w < v.len() ==> v[w] > elem,
-    decreases f - c + 1
+spec fn is_upper_case(c: char) -> (ret:bool) {
+    c >= 'A' && c <= 'Z'
+}
+
+/* code modified by LLM (iteration 1): Added executable version of is_upper_case */
+fn is_upper_case_exec(c: char) -> (ret: bool)
+    ensures ret == is_upper_case(c)
 {
-    if c > f {
-        return c - 1;
-    }
-    
-    let mid = c + (f - c) / 2;
-    
-    if v[mid as usize] <= elem {
-        return binary_search_recursive(v, elem, mid + 1, f);
+    c >= 'A' && c <= 'Z'
+}
+// pure-end
+
+spec fn count_uppercase_sum(seq: Seq<char>) -> (ret:int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
     } else {
-        return binary_search_recursive(v, elem, c, mid - 1);
+        count_uppercase_sum(seq.drop_last()) + if is_upper_case(seq.last()) {
+            seq.last() as int
+        } else {
+            0 as int
+        }
     }
 }
+// pure-end
 
-fn main() {}
+fn digit_sum(text: &[char]) -> (sum: u128)
+    // post-conditions-start
+    ensures
+        /* code modified by LLM (iteration 1): Fixed type mismatch by casting spec result to u128 */
+        count_uppercase_sum(text@) == sum as int,
+    // post-conditions-end
+{
+    let mut sum: u128 = 0;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            sum == count_uppercase_sum(text@.subrange(0, i as int)) as u128,
+        /* code modified by LLM (iteration 2): Added decreases clause for loop termination */
+        decreases text.len() - i
+    {
+        /* code modified by LLM (iteration 1): Use executable version of is_upper_case */
+        if is_upper_case_exec(text[i]) {
+            sum = sum + text[i] as u128;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    sum
 }
 
-/* code modified by LLM (iteration 1): Removed all text outside the verus block that was causing compilation errors. The implementation is a correct recursive binary search that maintains the required preconditions and postconditions. */
+} // verus!
+fn main() {}

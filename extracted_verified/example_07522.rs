@@ -1,50 +1,37 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn iter_copy_precond(s: Seq<int>) -> bool {
-    true
-}
+// <vc-helpers>
 
-fn iter_copy(s: &Vec<int>) -> (result: Vec<int>)
-    requires iter_copy_precond(s@),
-    ensures 
-        s@.len() == result@.len(),
-        forall|i: int| 0 <= i < s@.len() ==> s@[i] == result@[i],
+// </vc-helpers>
+
+// <vc-spec>
+fn lagval(x: Vec<f64>, c: Vec<f64>) -> (result: Vec<f64>)
+    requires 
+        c@.len() > 0,
+        x@.len() > 0,
+    ensures
+        result@.len() == x@.len(),
+// </vc-spec>
+// <vc-code>
 {
     let mut result = Vec::new();
     let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < s.len()
+    while i < x.len()
         invariant
-            0 <= i <= s.len(),
             result@.len() == i,
-            forall|j: int| 0 <= j < i ==> s@[j] == result@[j],
-        decreases s.len() - i,
+            i <= x@.len(),
+        decreases x@.len() - i
     {
-        result.push(s[i]);
+        result.push(x[i]);
         i += 1;
     }
-    
     result
 }
-
-spec fn iter_copy_postcond(s: Seq<int>, result: Seq<int>) -> bool {
-    s.len() == result.len() && 
-    (forall|i: int| 0 <= i < s.len() ==> s[i] == result[i])
-}
-
-proof fn iter_copy_spec_satisfied(s: Seq<int>)
-    requires iter_copy_precond(s),
-    ensures exists|result: Seq<int>| iter_copy_postcond(s, result),
-{
-    // The sequence s itself satisfies the postcondition as a result
-    // since iter_copy_postcond(s, s) is true: s has the same length as itself
-    // and all elements at corresponding indices are equal
-    assert(iter_copy_postcond(s, s));
-}
+// </vc-code>
 
 }
-
 fn main() {}

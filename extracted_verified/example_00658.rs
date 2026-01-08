@@ -1,54 +1,69 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn power10(n: nat) -> nat
-    decreases n
+spec fn count_boolean(seq: Seq<bool>) -> (result: int)
+    decreases seq.len(),
 {
-    if n == 0 { 1 } else { 10 * power10((n - 1) as nat) }
-}
-
-spec fn sum_digits(n: nat) -> nat {
-    let ndigits = number_of_digits(n);
-    let p = power10((ndigits - 1) as nat);
-    sum_digits_recursive(n, p)
-}
-
-spec fn sum_digits_recursive(n: nat, p: nat) -> nat
-    decreases p
-{
-    if n == 0 || p == 0 { 0 }
-    else {
-        let left_most_digit = n/p;
-        let rest = n%p;
-        left_most_digit + sum_digits_recursive(rest, (p/10) as nat)
+    if seq.len() == 0 {
+        0
+    } else {
+        count_boolean(seq.drop_last()) + if (seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
 
-spec fn number_of_digits(n: nat) -> nat
-    decreases n
+/* code modified by LLM (iteration 3): added helper lemma to prove relationship between consecutive prefixes */
+proof fn lemma_count_boolean_extend(seq: Seq<bool>, i: int)
+    requires 0 < i <= seq.len()
+    ensures count_boolean(seq.take(i)) == count_boolean(seq.take(i-1)) + if seq[i-1] { 1 as int } else { 0 as int }
 {
-    if 0 <= n <= 9 { 1 } else { 1 + number_of_digits((n/10) as nat) }
+    let prefix_i = seq.take(i);
+    let prefix_i_minus_1 = seq.take(i-1);
+    
+    assert(prefix_i == prefix_i_minus_1.push(seq[i-1]));
+    assert(prefix_i.drop_last() == prefix_i_minus_1);
+    assert(prefix_i.last() == seq[i-1]);
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+// pure-end
 
-// <vc-spec>
-fn sum_of_digits(number: u64) -> (sum: u64)
-    requires number >= 0,
-    ensures 
-        sum >= 0,
-        sum == sum_digits(number as nat),
-// </vc-spec>
-// <vc-code>
+fn count_true(arr: &Vec<bool>) -> (count: u64)
+    // pre-conditions-start
+    ensures
+        0 <= count <= arr.len(),
+        count_boolean(arr@) == count,
+    // pre-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut count = 0u64;
+    let mut i = 0usize;
+    
+    /* code modified by LLM (iteration 4): restructured loop body to maintain invariant and added proof with helper lemma */
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            0 <= count <= i,
+            count_boolean(arr@.take(i as int)) == count,
+        decreases arr.len() - i,
+    {
+        if arr[i] {
+            count = count + 1;
+        }
+        i = i + 1;
+        
+        /* code modified by LLM (iteration 4): wrap proof function call in proof block to handle ghost context */
+        proof {
+            lemma_count_boolean_extend(arr@, i as int);
+        }
+    }
+    
+    assert(arr@.take(arr.len() as int) == arr@);
+    count
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

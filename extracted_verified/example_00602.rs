@@ -1,22 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn cal_div() -> (result: (i32, i32))
-  ensures result.0 == 191i32 / 7i32 && result.1 == 191i32 % 7i32,
-// </vc-spec>
-// <vc-code>
+verus!{
+//IMPL myfun
+fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 2 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 2 * N);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

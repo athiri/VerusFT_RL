@@ -1,45 +1,68 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-// Precondition: list must be non-empty  
-spec fn max_of_list_precond(lst: Seq<u32>) -> bool {
-    lst.len() > 0
+spec fn valid_input(s: Seq<char>) -> bool {
+  s.len() == 19 && 
+  s.len() >= 2 && s[5] == ',' && s[13] == ',' &&
+  forall|i: int| 0 <= i < s.len() ==> (s[i] == ',' || ('a' <= s[i] <= 'z'))
 }
 
-// Postcondition: result is in the list and is the maximum element
-spec fn max_of_list_postcond(lst: Seq<u32>, result: u32) -> bool {
-    (exists|i: int| 0 <= i < lst.len() && lst[i] == result) &&
-    (forall|i: int| 0 <= i < lst.len() ==> lst[i] <= result)
-}
-
-// Executable version using Vec
-fn max_of_list(lst: &Vec<u32>) -> (result: u32)
-    requires 
-        max_of_list_precond(lst@),
-    ensures 
-        max_of_list_postcond(lst@, result),
+spec fn commas_to_spaces(s: Seq<char>) -> Seq<char>
+  recommends valid_input(s)
 {
-    let mut max_val = lst[0];
-    let mut i = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-    while i < lst.len()
+  Seq::new(s.len(), |i: int| { if s[i] == ',' { ' ' } else { s[i] } })
+}
+
+spec fn correct_output(s: Seq<char>, result: Seq<char>) -> bool
+  recommends valid_input(s)
+{
+  result.len() == s.len() + 1 &&
+  result[result.len() - 1] == '\n' &&
+  forall|i: int| 0 <= i < s.len() ==> 
+    (s[i] == ',' ==> result[i] == ' ') &&
+    (s[i] != ',' ==> result[i] == s[i])
+}
+// </vc-preamble>
+
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn solve(s: Vec<char>) -> (result: Vec<char>)
+  requires valid_input(s@)
+  ensures correct_output(s@, result@)
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 2): added decreases clause to while loop */
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < s.len()
         invariant
-            0 < i <= lst.len(),
-            exists|j: int| 0 <= j < i && lst@[j] == max_val,
-            forall|j: int| 0 <= j < i ==> lst@[j] <= max_val,
-        decreases lst.len() - i,
+            0 <= i <= s.len(),
+            result.len() == i,
+            valid_input(s@),
+            forall|j: int| 0 <= j < i ==> (
+                (s@[j] == ',' ==> result@[j] == ' ') &&
+                (s@[j] != ',' ==> result@[j] == s@[j])
+            ),
+        decreases s.len() - i
     {
-        if lst[i] > max_val {
-            max_val = lst[i];
+        if s[i] == ',' {
+            result.push(' ');
+        } else {
+            result.push(s[i]);
         }
         i += 1;
     }
-    
-    max_val
+    result.push('\n');
+    result
+}
+// </vc-code>
+
+
 }
 
 fn main() {}
-
-} // verus!

@@ -1,29 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn cum_prod(a: Vec<i8>) -> (result: Vec<i8>)
-    requires a.len() > 0,
-    ensures 
-        result.len() == a.len(),
-        result[0] == a[0],
-        forall|i: int| 0 < i < a.len() ==> result[i] as int == result[i-1] as int * a[i] as int
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+
+//IMPL myfun4
+pub fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
+requires 
+    old(y).len() == 0,
+ensures 
+    forall |k:int| 0 <= k < y.len() ==> y[k] % 3 == 0 && x@.contains(y@[k]),
+{
+    for i in 0..x.len()
+        invariant
+            forall |k:int| 0 <= k < y.len() ==> y[k] % 3 == 0 && x@.contains(y@[k]),
+    {
+        if x[i] % 3 == 0 {
+            y.push(x[i]);
+        }
+    }
+}
+
+}

@@ -1,59 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, statuses: Seq<char>) -> bool {
-    n >= 2 && statuses.len() == n && 
-    forall|i: int| 0 <= i < statuses.len() ==> (statuses[i] == 'A' || statuses[i] == 'I' || statuses[i] == 'F')
+spec fn rotation_split(len: usize, n: usize) -> int {
+    len - (n % len)
 }
 
-spec fn count_status(statuses: Seq<char>, status: char) -> int {
-    seq_count(statuses, status)
-}
-
-spec fn seq_count(s: Seq<char>, target: char) -> int
-    decreases s.len()
+fn rotate_right(list: &Vec<u32>, n: usize) -> (new_list: Vec<u32>)
+    requires
+        list.len() > 0,
+    ensures
+        new_list.len() == list.len(),
+        new_list@ == list@.subrange(rotation_split(list.len(), n) as int, list@.len() as int).add(
+            list@.subrange(0, rotation_split(list.len(), n) as int),
+        ),
 {
-    if s.len() == 0 {
-        0
-    } else {
-        let rest_count = seq_count(s.drop_first(), target);
-        if s[0] == target {
-            rest_count + 1
-        } else {
-            rest_count
-        }
+    let len = list.len();
+    let split_point = len - (n % len);
+    
+    let mut new_list = Vec::new();
+    
+    // Add elements from split_point to end
+    let mut i = split_point;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i < len
+        invariant
+            new_list.len() == i - split_point,
+            new_list@ == list@.subrange(split_point as int, i as int),
+        decreases len - i,
+    {
+        new_list.push(list[i]);
+        i += 1;
     }
+    
+    // Add elements from beginning to split_point
+    let mut j = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while j < split_point
+        invariant
+            new_list.len() == (len - split_point) + j,
+            new_list@ == list@.subrange(split_point as int, len as int).add(
+                list@.subrange(0, j as int)
+            ),
+        decreases split_point - j,
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
 
-spec fn expected_result(statuses: Seq<char>) -> int {
-    let cnt_i = count_status(statuses, 'I');
-    let cnt_a = count_status(statuses, 'A');
-    if cnt_i == 0 { cnt_a }
-    else if cnt_i == 1 { 1 }
-    else { 0 }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, statuses: Vec<char>) -> (result: i8)
-    requires valid_input(n as int, statuses@)
-    ensures result as int == expected_result(statuses@)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

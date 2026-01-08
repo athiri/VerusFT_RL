@@ -1,17 +1,41 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(c).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		sum[0] <= 3 * N,
+
+verus! {
+
+fn all_prefixes(s: &Vec<u8>) -> (prefixes: Vec<Vec<u8>>)
+    // post-conditions-start
+    ensures
+        prefixes.len() == s.len(),
+        forall|i: int| #![auto] 0 <= i < s.len() ==> prefixes[i]@ == s@.subrange(0, i + 1),
+    // post-conditions-end
 {
-    sum.set(0, 0);
+    /* code modified by LLM (iteration 1): added explicit type annotation to fix compilation error */
+    let mut prefixes: Vec<Vec<u8>> = Vec::new();
+    let mut i = 0;
+    
+    while i < s.len()
+        invariant
+            prefixes.len() == i,
+            forall|j: int| #![auto] 0 <= j < i ==> prefixes[j]@ == s@.subrange(0, j + 1),
+    {
+        let mut prefix = Vec::new();
+        let mut k = 0;
+        
+        while k <= i
+            invariant
+                prefix.len() == k,
+                forall|m: int| #![auto] 0 <= m < k ==> prefix[m] == s[m],
+        {
+            prefix.push(s[k]);
+            k += 1;
+        }
+        
+        prefixes.push(prefix);
+        i += 1;
+    }
+    
+    prefixes
 }
+
 }
+fn main() {}

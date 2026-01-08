@@ -1,29 +1,20 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-
-spec fn is_sorted(a: &[i32]) -> bool {
-    forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn binary_search(a: &[i32], x: i32) -> (index: i32)
-    requires is_sorted(a)
-    ensures -1 <= index < a.len() && 
-            (index != -1 ==> a[index as int] == x) &&
-            (index == -1 ==> !a@.contains(x))
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] == N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, N);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

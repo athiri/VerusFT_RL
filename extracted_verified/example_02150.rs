@@ -1,45 +1,37 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(c: int, hr: int, hb: int, wr: int, wb: int) -> bool {
-    c >= 0 && hr > 0 && hb > 0 && wr > 0 && wb > 0
-}
-
-spec fn valid_candy_combination(red_count: int, blue_count: int, c: int, wr: int, wb: int) -> bool {
-    red_count >= 0 && blue_count >= 0 && red_count * wr + blue_count * wb <= c
-}
-
-spec fn joy(red_count: int, blue_count: int, hr: int, hb: int) -> int {
-    red_count * hr + blue_count * hb
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(c: i8, hr: i8, hb: i8, wr: i8, wb: i8) -> (result: i8)
+fn min_second_value_first(arr: &Vec<Vec<i32>>) -> (first_of_min_second: i32)
     requires
-        valid_input(c as int, hr as int, hb as int, wr as int, wb as int),
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() >= 2,
     ensures
-        result >= 0,
-        exists|red_count: int, blue_count: int| 
-            valid_candy_combination(red_count, blue_count, c as int, wr as int, wb as int) &&
-            result as int == joy(red_count, blue_count, hr as int, hb as int),
-        forall|red_count: int, blue_count: int|
-            valid_candy_combination(red_count, blue_count, c as int, wr as int, wb as int) ==>
-            joy(red_count, blue_count, hr as int, hb as int) <= result as int,
-// </vc-spec>
-// <vc-code>
+        exists|i: int|
+            0 <= i < arr.len() && first_of_min_second == #[trigger] arr[i][0] && (forall|j: int|
+                0 <= j < arr.len() ==> (arr[i][1] <= #[trigger] arr[j][1])),
 {
-    assume(false);
-    0
+    let mut min_second = arr[0][1];
+    let mut result_first = arr[0][0];
+    let mut min_idx = 0;
+    
+    for i in 1..arr.len()
+        invariant
+            0 <= min_idx < arr.len(),
+            min_second == arr[min_idx][1],
+            result_first == arr[min_idx][0],
+            forall|j: int| 0 <= j < i ==> min_second <= arr[j][1],
+    {
+        if arr[i][1] < min_second {
+            min_second = arr[i][1];
+            result_first = arr[i][0];
+            min_idx = i;
+        }
+    }
+    
+    result_first
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

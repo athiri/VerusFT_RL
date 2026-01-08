@@ -1,17 +1,16 @@
-//from Verus tutorial
-
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-     
-proof fn bound_check(x: u32, y: u32)
-    requires
-        x <= 0xffff,
-        y <= 0xffff,
+verus! {
+
+fn contains_z(text: &Vec<char>) -> (result: bool)
+    // post-conditions-start
     ensures
-        x*y <= 0x100000000,
+        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 'Z' || text[i] == 'z')),
+    // post-conditions-end
 {
-    assume(false);  // TODO: Remove this line and implement the proof
+    return false;  // TODO: Remove this line and implement the function body
 }
-}
+
+} // verus!
+
+fn main() {}

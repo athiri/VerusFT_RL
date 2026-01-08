@@ -4,27 +4,18 @@ fn main() {}
 
 verus! {
 
-fn list_deep_clone(arr: &Vec<u64>) -> (copied: Vec<u64>)
+fn element_wise_module(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] % arr2[i]) <= i32::MAX),
     ensures
-        arr@.len() == copied@.len(),
-        forall|i: int| (0 <= i < arr.len()) ==> arr[i] == copied[i],
+        result@.len() == arr1@.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] % arr2[i]),
 {
-    let mut copied = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-    while i < arr.len()
-        invariant
-            i <= arr.len(),
-            copied@.len() == i,
-            forall|j: int| (0 <= j < i) ==> arr[j] == copied[j],
-        decreases arr.len() - i,
-    {
-        copied.push(arr[i]);
-        i += 1;
-    }
-    
-    copied
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

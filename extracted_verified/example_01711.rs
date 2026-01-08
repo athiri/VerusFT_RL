@@ -1,49 +1,33 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(input: Seq<char>) -> bool {
-    (input.len() == 3 && input[1] == ' ') || 
-    (input.len() == 4 && input[1] == ' ' && input[3] == '\n')
-}
 
-spec fn valid_hex_digit(c: char) -> bool {
-    c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
-}
-
-spec fn valid_input_format(input: Seq<char>) -> bool {
-    input.len() >= 3 &&
-    valid_input(input) &&
-    valid_hex_digit(input[0]) &&
-    valid_hex_digit(input[2])
-}
-
-spec fn correct_comparison(x: char, y: char, result: Seq<char>) -> bool {
-    (result == seq!['<', '\n'] || result == seq!['>', '\n'] || result == seq!['=', '\n']) &&
-    (((x as int) < (y as int)) <==> (result == seq!['<', '\n'])) &&
-    (((x as int) > (y as int)) <==> (result == seq!['>', '\n'])) &&
-    (((x as int) == (y as int)) <==> (result == seq!['=', '\n']))
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(stdin_input: Vec<char>) -> (result: Vec<char>)
-    requires valid_input_format(stdin_input@)
-    ensures correct_comparison(stdin_input@[0], stdin_input@[2], result@)
-// </vc-spec>
-// <vc-code>
+fn has_only_one_distinct_element(arr: &Vec<i32>) -> (result: bool)
+    ensures
+        result == (forall|i: int| 1 <= i < arr@.len() ==> arr[0] == #[trigger] arr[i]),
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    if arr.len() == 0 {
+        return true;
+    }
+    
+    let first = arr[0];
+    let mut idx = 1;
+    
+    while idx < arr.len()
+        invariant
+            1 <= idx <= arr.len(),
+            forall|j: int| 1 <= j < idx ==> arr[0] == arr[j],
+    {
+        if arr[idx] != first {
+            return false;
+        }
+        idx += 1;
+    }
+    
+    true
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

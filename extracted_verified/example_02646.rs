@@ -1,16 +1,49 @@
+#![crate_name = "mcontained"]
+
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		N <= i32::MAX / 2,  /* code modified by LLM (iteration 2): Added precondition to prevent overflow */
-		old(a).len() == N,
-		old(sum).len() == 1,
-	ensures
-		sum[0] == 2 * N,
-{
-    /* code modified by LLM (iteration 2): Simplified implementation since overflow is now guaranteed not to happen */
-    sum.set(0, 2 * N);
+
+verus! {
+
+spec fn strict_sorted(arr: &[i32]) -> bool {
+    forall|k: int, l: int| 0 <= k < l < arr.len() ==> arr[k] < arr[l]
 }
+
+#[verifier::loop_isolation(false)]
+fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
+    requires
+        n <= m && n>= 0,
+        strict_sorted(v),
+        strict_sorted(w),
+        v.len() >= n && w.len() >= m
+    ensures
+        b ==> (forall|k: int| #![trigger v[k]]
+            0 <= k < n ==> (
+                exists|j: int| #![trigger w[j]]
+                0 <= j < m && v[k] == w[j]
+            ))
+{
+    let mut i = 0;
+    let mut j = 0;
+    
+    while i < n && j < m
+        invariant
+            i <= n,
+            j <= m,
+            forall|k: int| 0 <= k < i ==> exists|l: int| 0 <= l < m && v[k] == w[l],
+            j > 0 ==> forall|k: int| 0 <= k < i ==> v[k] <= w[(j-1) as int]
+    {
+        if v[i] == w[j] {
+            i += 1;
+            j += 1;
+        } else if v[i] < w[j] {
+            return false;
+        } else {
+            j += 1;
+        }
+    }
+    
+    i == n
+}
+
+fn main() {}
 }

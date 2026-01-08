@@ -1,25 +1,14 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn not_equal(x1: Vec<String>, x2: Vec<String>) -> (result: Vec<bool>)
-    requires x1.len() == x2.len(),
-    ensures 
-        result.len() == x1.len(),
-        forall|i: int| 0 <= i < result.len() ==> result[i] == (x1[i] != x2[i])
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+
+pub fn myfun(a: &mut Vec<u32>, N: u32) -> (sum: u32)
+	requires 
+		old(a).len() == N,
+		N <= 0x7FFF_FFFF,
+	ensures
+	    sum <= 2*N,
+{
+    0
+}
+}

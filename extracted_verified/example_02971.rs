@@ -2,30 +2,66 @@ use vstd::prelude::*;
 
 verus! {
 
-fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
+pub open spec fn is_alphabetic(c: char) -> (result: bool)
+{
+    /* code modified by LLM (iteration 2): Fixed spec function visibility and replaced uninterp with arbitrary */
+    arbitrary()
+}
+// pure-end
+
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_alphabetic)]
+fn ex_is_alphabetic(c: char) -> (result: bool)
     // post-conditions-start
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        result <==> (c.is_alphabetic()),
     // post-conditions-end
 {
-    let mut index = 0;
-    
-    /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
-    while index < arr.len()
-        invariant
-            0 <= index <= arr.len(),
-            forall|i: int| 0 <= i < index ==> ((i % 2) == (arr[i] % 2)),
-        decreases arr.len() - index
-    {
-        if (index % 2) != (arr[index] % 2) {
-            return false;
-        }
-        index += 1;
-    }
-    
-    true
+    c.is_alphabetic()
 }
 
-} // verus!
+pub open spec fn is_whitespace(c: char) -> (result: bool)
+{
+    /* code modified by LLM (iteration 2): Fixed spec function visibility and replaced uninterp with arbitrary */
+    arbitrary()
+}
+// pure-end
 
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_whitespace)]
+fn ex_is_whitespace(c: char) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> (c.is_whitespace()),
+    // post-conditions-end
+{
+    c.is_whitespace()
+}
+
+fn check_if_last_char_is_a_letter(txt: &str) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> (txt@.len() > 0 && txt@.last().is_alphabetic() && (txt@.len() == 1
+            || txt@.index(txt@.len() - 2).is_whitespace())),
+    // post-conditions-end
+{
+    /* code modified by LLM (iteration 2): Fixed implementation to use proper executable code and indexing */
+    if txt.len() == 0 {
+        return false;
+    }
+    
+    let last_char = txt.chars().last().unwrap();
+    if !last_char.is_alphabetic() {
+        return false;
+    }
+    
+    if txt.len() == 1 {
+        return true;
+    }
+    
+    let second_last_char = txt.chars().nth(txt.len() - 2).unwrap();
+    second_last_char.is_whitespace()
+}
+
+}
 fn main() {}

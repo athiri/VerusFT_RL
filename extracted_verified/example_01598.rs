@@ -1,95 +1,114 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn str2_int(s: Seq<char>) -> nat
-  decreases s.len()
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-  if s.len() == 0 { 
-    0nat 
-  } else { 
-    if valid_bit_string(s) {
-      2 * str2_int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat })
-    } else {
-      0nat
+    let pushed = vec.push(i);
+    assert(pushed.len() == vec.len() + 1);
+    assert(pushed.index(l as int) == i);
+    
+    assert forall|k: int| 0 <= k < vec.len() implies vec[k] == pushed[k] by {
+        assert(k < pushed.len() - 1);
     }
-  }
 }
 
-spec fn exp_int(x: nat, y: nat) -> nat
-  decreases y
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-  if y == 0 { 1nat } else { x * exp_int(x, (y - 1) as nat) }
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            !(exists|j: int| 0 <= j < i && arr[j] == key),
+        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+        decreases arr.len() - i
+    {
+        if arr[i] == key {
+            assert(exists|j: int| 0 <= j < arr.len() && arr[j] == key) by {
+                /* code modified by LLM (iteration 1): fixed type mismatch by casting i to int for vector indexing */
+                assert(0 <= i < arr.len() && arr[i as int] == key);
+            }
+            return true;
+        }
+        i += 1;
+    }
+    
+    assert(!(exists|j: int| 0 <= j < arr.len() && arr[j] == key)) by {
+        assert(forall|j: int| 0 <= j < arr.len() ==> arr[j] != key);
+    }
+    false
 }
 
-spec fn valid_bit_string(s: Seq<char>) -> bool
+fn find_dissimilar(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[i]) ==> result@.contains(
+                arr1[i],
+            )),
+        forall|i: int|
+            0 <= i < arr2.len() ==> (!arr1@.contains(#[trigger] arr2[i]) ==> result@.contains(
+                arr2[i],
+            )),
+        forall|i: int, j: int|
+            0 <= i < j < result.len() ==> #[trigger] result[i] != #[trigger] result[j],
 {
-  forall|i: int| 0 <= i < s.len() ==> (s[i] == '0' || s[i] == '1')
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            forall|k: int|
+                0 <= k < i ==> (!arr2@.contains(#[trigger] arr1[k]) ==> result@.contains(arr1[k])),
+            forall|k: int, l: int|
+                0 <= k < l < result.len() ==> #[trigger] result[k] != #[trigger] result[l],
+        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+        decreases arr1.len() - i
+    {
+        if !contains(arr2, arr1[i]) && !contains(&result, arr1[i]) {
+            result.push(arr1[i]);
+            proof {
+                /* code modified by LLM (iteration 1): fixed type mismatch by casting i to int and using usize for length */
+                lemma_vec_push(result@.drop_last(), arr1[i as int], (result.len() - 1) as usize);
+            }
+        }
+        i += 1;
+    }
+    
+    let mut j = 0;
+    while j < arr2.len()
+        invariant
+            0 <= j <= arr2.len(),
+            forall|k: int|
+                0 <= k < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[k]) ==> result@.contains(arr1[k])),
+            forall|k: int|
+                0 <= k < j ==> (!arr1@.contains(#[trigger] arr2[k]) ==> result@.contains(arr2[k])),
+            forall|k: int, l: int|
+                0 <= k < l < result.len() ==> #[trigger] result[k] != #[trigger] result[l],
+        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+        decreases arr2.len() - j
+    {
+        if !contains(arr1, arr2[j]) && !contains(&result, arr2[j]) {
+            result.push(arr2[j]);
+            proof {
+                /* code modified by LLM (iteration 1): fixed type mismatch by casting j to int and using usize for length */
+                lemma_vec_push(result@.drop_last(), arr2[j as int], (result.len() - 1) as usize);
+            }
+        }
+        j += 1;
+    }
+    
+    result
 }
 
-spec fn all_zero(s: Seq<char>) -> bool
-{
-  forall|i: int| 0 <= i < s.len() ==> s[i] == '0'
-}
-
-fn add(s1: Seq<char>, s2: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(s1) && valid_bit_string(s2),
-  ensures 
-    valid_bit_string(res) &&
-    str2_int(res) == str2_int(s1) + str2_int(s2),
-{
-  assume(false);
-  unreached()
-}
-
-fn div_mod(dividend: Seq<char>, divisor: Seq<char>) -> (quotient_remainder: (Seq<char>, Seq<char>))
-  requires 
-    valid_bit_string(dividend) && valid_bit_string(divisor) &&
-    str2_int(divisor) > 0,
-  ensures 
-    valid_bit_string(quotient_remainder.0) && valid_bit_string(quotient_remainder.1) &&
-    str2_int(quotient_remainder.0) == str2_int(dividend) / str2_int(divisor) &&
-    str2_int(quotient_remainder.1) == str2_int(dividend) % str2_int(divisor),
-{
-  assume(false);
-  unreached()
-}
-
-fn zeros(n: nat) -> (s: Seq<char>)
-  ensures 
-    s.len() == n &&
-    valid_bit_string(s) &&
-    str2_int(s) == 0 &&
-    all_zero(s),
-{
-  assume(false);
-  unreached()
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mod_exp(sx: Seq<char>, sy: Seq<char>, sz: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(sx) && valid_bit_string(sy) && valid_bit_string(sz) &&
-    sy.len() > 0 && str2_int(sz) > 1,
-  ensures 
-    valid_bit_string(res) &&
-    str2_int(res) == exp_int(str2_int(sx), str2_int(sy)) % str2_int(sz),
-  decreases sy.len(),
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

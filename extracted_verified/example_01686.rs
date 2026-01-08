@@ -1,53 +1,89 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {
+}
 
 verus! {
-spec fn valid_input(n: int, m: int, a: Seq<int>) -> bool {
-    n >= 0 && m >= 0 && m == a.len()
-}
 
-spec fn can_complete_all_assignments(n: int, a: Seq<int>) -> bool {
-    sum_seq(a) <= n
-}
-
-spec fn total_assignment_days(a: Seq<int>) -> int {
-    sum_seq(a)
-}
-
-spec fn sum_seq(s: Seq<int>) -> int 
-    decreases s.len()
+spec fn min_spec(seq: Seq<i32>) -> int
+    recommends
+        0 < seq.len(),
+    decreases seq.len(),
 {
-    if s.len() == 0 { 
-        0 
-    } else { 
-        s[0] + sum_seq(s.subrange(1, s.len() as int))
+    if seq.len() == 1 {
+        seq[0] as int
+    } else if seq.len() == 0 {
+        0
+    } else {
+        let later_min = min_spec(seq.drop_first());
+        if seq[0] <= later_min {
+            seq[0] as int
+        } else {
+            later_min as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+// change the signatue to return -> (min_index, second_min_index)
+fn second_smallest(numbers: &Vec<i32>) -> (indices: (
+    usize,
+    usize,
+))  //(min_index, second_min_index)
+    requires
+        numbers.len()
+            >= 2,  // There must be at least 2 different values, a minimum and another one
 
-// <vc-spec>
-fn solve(n: i8, m: i8, a: Vec<i8>) -> (result: i8)
-    requires 
-        valid_input(n as int, m as int, a@.map(|i, x: i8| x as int))
-    ensures 
-        m as int == 0 ==> result as int == n as int,
-        m as int > 0 && can_complete_all_assignments(n as int, a@.map(|i, x: i8| x as int)) ==> result as int == n as int - total_assignment_days(a@.map(|i, x: i8| x as int)),
-        m as int > 0 && !can_complete_all_assignments(n as int, a@.map(|i, x: i8| x as int)) ==> result as int == -1,
-        result as int >= -1
-// </vc-spec>
-// <vc-code>
+    ensures
+        forall|k: int|
+            0 <= k < numbers.len() && k != indices.0 && numbers[indices.0 as int] == min_spec(
+                numbers@,
+            ) ==> (#[trigger] numbers[k] >= numbers[indices.1 as int]),
+        exists|k: int|
+            0 <= k < numbers.len() && k != indices.0 && (#[trigger] numbers[k]
+                == numbers[indices.1 as int]),
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    let mut min_idx = 0;
+    let mut second_min_idx = 1;
+    
+    // Find the minimum index first
+    let mut i = 1;
+    while i < numbers.len()
+        invariant
+            0 <= min_idx < numbers.len(),
+            1 <= i <= numbers.len(),
+            forall|j: int| 0 <= j < i ==> numbers[min_idx as int] <= numbers[j],
+    {
+        if numbers[i] < numbers[min_idx] {
+            min_idx = i;
+        }
+        i += 1;
+    }
+    
+    // Find second minimum index (smallest among non-minimum elements)
+    if min_idx == 0 {
+        second_min_idx = 1;
+    } else {
+        second_min_idx = 0;
+    }
+    
+    let mut j = 0;
+    while j < numbers.len()
+        invariant
+            0 <= min_idx < numbers.len(),
+            0 <= second_min_idx < numbers.len(),
+            0 <= j <= numbers.len(),
+            min_idx != second_min_idx,
+            forall|k: int| 0 <= k < numbers.len() ==> numbers[min_idx as int] <= numbers[k],
+            forall|k: int| 0 <= k < j && k != min_idx ==> numbers[second_min_idx as int] <= numbers[k],
+    {
+        if j != min_idx {
+            if numbers[j] < numbers[second_min_idx] {
+                second_min_idx = j;
+            }
+        }
+        j += 1;
+    }
+    
+    (min_idx, second_min_idx)
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

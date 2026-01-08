@@ -1,44 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
+
 verus! {
-spec fn winner(a: char, b: char) -> char {
-    if (a, b) == ('R', 'P') || (a, b) == ('P', 'S') || (a, b) == ('S', 'R') {
-        b
-    } else {
-        a
-    }
-}
 
-spec fn valid_rps_char(c: char) -> bool {
-    c == 'R' || c == 'P' || c == 'S'
-}
-
-spec fn valid_rps_string(s: Seq<char>) -> bool {
-    forall|i: int| 0 <= i < s.len() ==> valid_rps_char(s[i])
-}
-
-spec fn valid_input(n: int, k: int, s: Seq<char>) -> bool {
-    n > 0 && k >= 0 && s.len() == n && valid_rps_string(s)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, s: Vec<char>) -> (result: char)
-    requires valid_input(n as int, k as int, s@)
-    ensures valid_rps_char(result)
-// </vc-spec>
-// <vc-code>
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    assume(false);
-    'R'
-}
-// </vc-code>
-
-
 }
 
-fn main() {}
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+{
+    return false;  // TODO: Remove this line and implement the function body
+}
+
+fn difference(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < arr1.len() ==> (!arr2@.contains(#[trigger] arr1[i]) ==> result@.contains(
+                arr1[i],
+            )),
+        forall|i: int|
+            0 <= i < arr2.len() ==> (!arr1@.contains(#[trigger] arr2[i]) ==> result@.contains(
+                arr2[i],
+            )),
+        forall|i: int, j: int|
+            0 <= i < j < result.len() ==> #[trigger] result[i] != #[trigger] result[j],
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

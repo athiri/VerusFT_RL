@@ -2,64 +2,79 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition function (always true in this case)
-pub open spec fn append_precond(a: Seq<int>, b: int) -> bool {
-    true
-}
-
-// Helper function to copy array elements
-fn copy(a: &Vec<int>, i: usize, acc: &mut Vec<int>)
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    // pre-conditions-start
     requires
-        i <= a.len(),
-        old(acc).len() == i,
-        forall|j: int| 0 <= j < i ==> old(acc)[j] == a[j],
+        l == vec.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        acc.len() == a.len(),
-        forall|j: int| 0 <= j < a.len() ==> acc[j] == a[j],
-    decreases a.len() - i,
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
+    // post-conditions-end
 {
-    if i < a.len() {
-        acc.push(a[i]);
-        copy(a, i + 1, acc);
-    }
+    // The properties follow directly from the definition of push
+    // push appends an element to the end, so all original indices remain unchanged
+    // and the new element is at position l (which equals vec.len())
 }
 
-// Main append function
-pub fn append(a: &Vec<int>, b: int) -> (result: Vec<int>)
-    requires
-        append_precond(a@, b),
+fn contains(str: &Vec<char>, key: char) -> (result: bool)
+    // post-conditions-start
     ensures
-        append_postcond(a@, b, result@),
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
+    // post-conditions-end
+{
+    let mut idx = 0;
+    while idx < str.len()
+        invariant
+            forall|i: int| 0 <= i < idx ==> str[i] != key,
+    {
+        if str[idx] == key {
+            return true;
+        }
+        idx += 1;
+    }
+    false
+}
+
+fn remove_chars(str1: &Vec<char>, str2: &Vec<char>) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (str1@.contains(#[trigger] result[i]) && !str2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < str1.len() ==> (str2@.contains(#[trigger] str1[i]) || result@.contains(
+                #[trigger] str1[i],
+            )),
+    // post-conditions-end
 {
     let mut result = Vec::new();
-    copy(a, 0, &mut result);
-    result.push(b);
+    let mut idx = 0;
+    
+    while idx < str1.len()
+        invariant
+            idx <= str1.len(),
+            forall|i: int|
+                0 <= i < result.len() ==> (str1@.contains(#[trigger] result[i]) && !str2@.contains(
+                    #[trigger] result[i],
+                )),
+            forall|i: int|
+                0 <= i < idx ==> (str2@.contains(#[trigger] str1[i]) || result@.contains(
+                    #[trigger] str1[i],
+                )),
+    {
+        let ch = str1[idx];
+        if !contains(str2, ch) {
+            result.push(ch);
+        }
+        idx += 1;
+    }
+    
     result
-}
-
-// Postcondition specification
-pub open spec fn append_postcond(a: Seq<int>, b: int, result: Seq<int>) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-    result[a.len() as int] == b &&
-    result.len() == a.len() + 1
-}
-
-// Theorem equivalent (specification-level lemma)
-proof fn append_spec_satisfied(a: Seq<int>, b: int, result: Seq<int>)
-    requires
-        append_precond(a, b),
-        // Assume the result satisfies what append would produce
-        (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-        result[a.len() as int] == b &&
-        result.len() == a.len() + 1,
-    ensures
-        append_postcond(a, b, result),
-{
-    // The postcondition is exactly the same as the assumptions,
-    // so the proof is trivial by the definition of append_postcond
 }
 
 } // verus!
 
-fn main() {
-}
+fn main() {}

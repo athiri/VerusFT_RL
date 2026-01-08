@@ -1,29 +1,25 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn npy_1_pi() -> (result: i32)
-    ensures
-        /* Mathematical constant representing 1/π as a fixed-point approximation */
-        result > 0,
-        /* Basic sanity check for positive value */
-        result < 1000000000,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    318309886
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+pub fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
+requires 
+    old(y).len() == 0,
+ensures 
+    y@ == x@.filter(|k:u64| k%3 == 0),
+{
+    let mut i = 0;
+    while i < x.len()
+        invariant
+            i <= x.len(),
+            y@ == x@.subrange(0, i as int).filter(|k:u64| k%3 == 0),
+        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+        decreases x.len() - i
+    {
+        if x[i] % 3 == 0 {
+            y.push(x[i]);
+        }
+        i += 1;
+    }
+}
+}

@@ -1,72 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-struct Matrix<T> {
-    m: usize,
-    n: usize,
-    data: Vec<Vec<T>>,
-}
-
-impl<T> Matrix<T> {
-    spec fn size(&self) -> nat {
-        (self.m as nat) * (self.n as nat)
-    }
-}
-
-enum Arrays {
-    ArrayOne(Vec<f32>),
-    ArrayTwo(Vec<Vec<f32>>),
-    ArrayThree(Vec<Vec<Vec<f32>>>),
-}
-
-spec fn arrays_ndim(a: &Arrays) -> nat {
-    match a {
-        Arrays::ArrayOne(_) => 1nat,
-        Arrays::ArrayTwo(_) => 2nat,
-        Arrays::ArrayThree(_) => 3nat,
-    }
-}
-
-fn shape_arrays(a: &Arrays) -> (result: Vec<usize>)
-    ensures
-        result.len() == arrays_ndim(a),
-        match a {
-            Arrays::ArrayOne(arr) => result.len() == 1 && result[0] == arr.len(),
-            Arrays::ArrayTwo(arr) => result.len() == 2 && result[0] == arr.len() && 
-                result[1] == (if arr.len() > 0 { arr[0].len() } else { 0 }),
-            Arrays::ArrayThree(arr) => result.len() == 3 && result[0] == arr.len() && 
-                result[1] == (if arr.len() > 0 { arr[0].len() } else { 0 }) &&
-                result[2] == (if arr.len() > 0 && arr[0].len() > 0 { arr[0][0].len() } else { 0 })
-        }
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-
-fn shape_matrix(a: &Matrix<f32>) -> (result: Vec<usize>)
-    ensures
-        result.len() == 2,
-        result[0] == a.m,
-        result[1] == a.n
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-spec>
-// <vc-code>
-// </vc-code>
-
-
-}
 fn main() {}
+verus!{
+//IMPL myfun2
+pub fn myfun2(x: &mut Vec<i32>) 
+requires 
+    forall |k:int| 0 <= k < old(x).len() ==> old(x)[k] <= 0x7FFF_FFFB,
+ensures 
+    x@.len() == old(x)@.len(),
+    forall |k:int| 0 <= k < x.len() ==> #[trigger] x@[k] == old(x)@[k] + 4,
+{
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added ghost variable to track original values */
+    let ghost original_x = x@;
+    
+    while i < x.len()
+        invariant
+            0 <= i <= x.len(),
+            x@.len() == old(x)@.len(),
+            /* code modified by LLM (iteration 1): use original_x instead of old(x) in invariants */
+            original_x == old(x)@,
+            forall |k:int| 0 <= k < i ==> #[trigger] x@[k] == original_x[k] + 4,
+            forall |k:int| i <= k < x.len() ==> #[trigger] x@[k] == original_x[k],
+            /* code modified by LLM (iteration 1): maintain arithmetic safety invariant */
+            forall |k:int| 0 <= k < x.len() ==> original_x[k] <= 0x7FFF_FFFB,
+        decreases x.len() - i
+    {
+        /* code modified by LLM (iteration 1): store the value and prove arithmetic safety */
+        let old_val = x[i];
+        assert(original_x[i as int] == old_val);
+        assert(old_val <= 0x7FFF_FFFB);
+        x.set(i, old_val + 4);
+        
+        /* code modified by LLM (iteration 1): help prove the invariant holds after modification */
+        assert(forall |k:int| 0 <= k < (i + 1) ==> #[trigger] x@[k] == original_x[k] + 4);
+        assert(forall |k:int| (i + 1) <= k < x.len() ==> #[trigger] x@[k] == original_x[k]);
+        
+        i += 1;
+    }
+    
+    /* code modified by LLM (iteration 1): help prove the postcondition */
+    assert(forall |k:int| 0 <= k < x.len() ==> #[trigger] x@[k] == old(x)@[k] + 4);
+}
+}

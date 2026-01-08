@@ -1,35 +1,64 @@
-/* code modified by LLM (iteration 1): Removed problematic comment lines with backticks that were causing compilation errors */
-
 use vstd::prelude::*;
 
 verus! {
 
-// Precondition function
-spec fn cube_surface_area_precond(size: nat) -> bool {
-    true
+spec fn is_alpha_char(c: char) -> bool {
+    ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
 }
 
-// Main function - using nat for simplicity to match Lean
-spec fn cube_surface_area(size: nat) -> nat {
-    6 * size * size
-}
-
-// Postcondition function (equivalent to the Lean postcondition)
-spec fn cube_surface_area_postcond(size: nat, result: nat) -> bool {
-    (result - 6 * size * size == 0) && (6 * size * size - result == 0)
-}
-
-// Proof that the specification is satisfied
-proof fn cube_surface_area_spec_satisfied(size: nat)
-    requires cube_surface_area_precond(size)
-    ensures cube_surface_area_postcond(size, cube_surface_area(size))
+fn check_alpha_char(c: char) -> (result: bool)
+    ensures result == is_alpha_char(c)
 {
-    // The proof is trivial since cube_surface_area(size) = 6 * size * size
-    // So we need to prove:
-    // (6 * size * size - 6 * size * size == 0) && (6 * size * size - 6 * size * size == 0)
-    // Both expressions are 0, so this is automatically verified
+    ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')
 }
 
+fn is_alpha(input: &Vec<&str>) -> (ret: Vec<bool>)
+    ensures 
+        ret.len() == input.len(),
+        forall|i: int| #![auto] 0 <= i < input.len() ==> 
+            ret[i] == (input[i]@.len() > 0 && 
+                       forall|j: int| #![auto] 0 <= j < input[i]@.len() ==> 
+                           is_alpha_char(input[i]@[j])),
+{
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < input.len()
+        invariant
+            idx <= input.len(),
+            result.len() == idx,
+            forall|i: int| #![auto] 0 <= i < idx ==> 
+                result[i] == (input[i]@.len() > 0 && 
+                             forall|j: int| #![auto] 0 <= j < input[i]@.len() ==> 
+                                 is_alpha_char(input[i]@[j])),
+    {
+        let s = input[idx];
+        /* code modified by LLM (iteration 1): changed char_idx from nat to usize for executable code */
+        let mut is_all_alpha = s@.len() > 0;
+        let mut char_idx: usize = 0;
+        
+        /* code modified by LLM (iteration 1): fixed indexing to use usize directly without cast */
+        while char_idx < s@.len() && is_all_alpha
+            invariant
+                char_idx <= s@.len(),
+                is_all_alpha ==> forall|j: int| #![auto] 0 <= j < char_idx ==> 
+                    is_alpha_char(s@[j]),
+                !is_all_alpha ==> exists|j: int| #![auto] 0 <= j < char_idx && 
+                    !is_alpha_char(s@[j]),
+        {
+            if !check_alpha_char(s@[char_idx]) {
+                is_all_alpha = false;
+            }
+            char_idx += 1;
+        }
+        
+        result.push(is_all_alpha);
+        idx += 1;
+    }
+    
+    result
 }
 
 fn main() {}
+
+}

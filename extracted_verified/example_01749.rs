@@ -1,32 +1,54 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn transform_element(x: int) -> int {
-    if x % 2 == 0 { x - 1 } else { x }
-}
 
-spec fn valid_transformation(input: Seq<int>, output: Seq<int>) -> bool {
-    output.len() == input.len() &&
-    forall|i: int| 0 <= i < input.len() ==> output[i] == transform_element(input[i])
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: Vec<i8>) -> (result: Vec<i8>)
-    ensures valid_transformation(a@.map(|_i, x| x as int), result@.map(|_i, x| x as int))
-// </vc-spec>
-// <vc-code>
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    assume(false);
-    unreached()
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
+        i += 1;
+    }
+    false
 }
-// </vc-code>
 
-
+fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
+                #[trigger] shared[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < list1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+    {
+        let elem = list1[i];
+        if contains(list2, elem) && !contains(&result, elem) {
+            result.push(elem);
+        }
+        i += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

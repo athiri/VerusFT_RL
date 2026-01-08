@@ -1,36 +1,28 @@
 use vstd::prelude::*;
-
-fn main() {
-    // Example usage
-    let text1 = b"hello";
-    let text2 = b"hello Z world";
-    let text3 = b"hello z world";
-    
-    println!("contains_z({:?}) = {}", std::str::from_utf8(text1).unwrap(), contains_z(text1));
-    println!("contains_z({:?}) = {}", std::str::from_utf8(text2).unwrap(), contains_z(text2));
-    println!("contains_z({:?}) = {}", std::str::from_utf8(text3).unwrap(), contains_z(text3));
-}
-
-verus! {
-
-fn contains_z(text: &[u8]) -> (result: bool)
+fn main() {}
+verus!{
+pub fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
+    requires 
+        forall |k1:int,k2:int| 0 <= k1 < k2 < v.len() ==> v[k1] != v[k2]
     ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
-{
+        forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+        forall |k:int| 0 <= k < v.len() && v[k] <= e ==> result@.contains(v[k]),
+{  
+    let mut result = Vec::new();
     let mut i = 0;
-    /* code modified by LLM (iteration 1): Added decreases clause to fix verification error */
-    while i < text.len()
+    
+    while i < v.len()
         invariant
-            0 <= i <= text.len(),
-            forall|j: int| 0 <= j < i ==> !(text[j] == 90 || text[j] == 122),
-        decreases text.len() - i,
+            0 <= i <= v.len(),
+            forall |k:int| 0 <= k < result.len() ==> result[k] <= e && v@.contains(result[k]),
+            forall |k:int| 0 <= k < i && v[k] <= e ==> result@.contains(v[k]),
     {
-        if text[i] == 90 || text[i] == 122 {
-            return true;
+        if v[i] <= e {
+            result.push(v[i]);
         }
         i += 1;
     }
-    false
+    
+    result
 }
-
-} // verus!
+}

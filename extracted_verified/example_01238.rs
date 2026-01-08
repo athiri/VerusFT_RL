@@ -1,37 +1,51 @@
-// <vc-preamble>
 use vstd::prelude::*;
+fn main() {}
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-spec fn count_true(mask: Seq<bool>) -> nat
-    decreases mask.len()
+verus!{
+     
+spec fn triangle(n: nat) -> nat
+    decreases n
 {
-    if mask.len() == 0 {
+    if n == 0 {
         0
     } else {
-        (if mask[0] { 1nat } else { 0nat }) + count_true(mask.skip(1))
+        n + triangle((n - 1) as nat)
     }
 }
 
-fn place(arr: Vec<f32>, mask: Vec<bool>, vals: Vec<f32>) -> (result: Vec<f32>)
-    requires 
-        arr.len() == mask.len(),
-        vals.len() > 0,
-    ensures 
-        result.len() == arr.len(),
-        forall|i: int| 0 <= i < arr.len() ==> !mask@[i] ==> result@[i] == arr@[i],
-// </vc-spec>
-// <vc-code>
+proof fn triangle_is_monotonic(i: nat, j: nat)
+    requires
+        i <= j,
+    ensures
+        triangle(i) <= triangle(j),
+    decreases j
 {
-    assume(false);
-    unreached()
+    if i < j {
+        triangle_is_monotonic(i, (j - 1) as nat);
+    }
 }
-// </vc-code>
 
+fn tail_triangle(n: u32, idx: u32, sum: &mut u32)
+    requires
+        idx <= n,
+        *old(sum) == triangle(idx as nat),
+        triangle(n as nat) < 0x1_0000_0000,
+    ensures
+        *sum == triangle(n as nat),
+{
+    let mut current_idx = idx;
+    while current_idx < n
+        invariant
+            current_idx <= n,
+            *sum == triangle(current_idx as nat),
+            triangle(n as nat) < 0x1_0000_0000,
+    {
+        current_idx = current_idx + 1;
+        *sum = *sum + current_idx;
+        proof {
+            assert(*sum == triangle((current_idx - 1) as nat) + current_idx as nat);
+            assert(triangle(current_idx as nat) == current_idx as nat + triangle((current_idx - 1) as nat));
+        }
+    }
 }
-fn main() {}
+}

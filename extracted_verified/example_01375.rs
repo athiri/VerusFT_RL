@@ -1,24 +1,22 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn numpy_ceil(x: Vec<f64>) -> (result: Vec<f64>)
-    requires x.len() > 0,
-    ensures
-        result.len() == x.len(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+spec fn f(seq: Seq<u64>, i: int) -> bool {
+    seq[i] == i + 2
+}
+
+fn get_element_check_property(arr: Vec<u64>, i: usize) -> (ret: u64)
+    requires
+        arr.len() > 0,
+        0 < i < arr@.len(),
+        forall |i: int| f(arr@, i),
+    ensures
+        ret == i + 2,
+        ret == arr@[i as int],
+{
+    arr[i]
+}
+}

@@ -1,47 +1,39 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
+
 verus! {
-spec fn valid_input(n: int, m: int, squares: Seq<int>) -> bool {
-    n >= 1 && n <= 1000 &&
-    m >= 1 && m <= 1000 &&
-    squares.len() == m &&
-    forall|i: int| 0 <= i < squares.len() ==> #[trigger] squares[i] >= 1 && #[trigger] squares[i] <= n
-}
 
-spec fn count_occurrences(s: Seq<int>, value: int) -> int
-    decreases s.len()
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    if s.len() == 0 {
-        0int
-    } else {
-        (if s[0] == value { 1int } else { 0int }) + count_occurrences(s.subrange(1, s.len() as int), value)
-    }
 }
 
-spec fn correct_result(n: int, squares: Seq<int>, result: int) -> bool {
-    0 <= result <= squares.len() &&
-    (forall|col: int| 1 <= col <= n ==> result <= #[trigger] count_occurrences(squares, col)) &&
-    (exists|col: int| 1 <= col <= n && result == #[trigger] count_occurrences(squares, col))
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, m: i8, squares: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, m as int, squares@.map(|i: int, v: i8| v as int))
-    ensures correct_result(n as int, squares@.map(|i: int, v: i8| v as int), result as int)
-// </vc-spec>
-// <vc-code>
+fn contains(str: &[u8], key: u8) -> (result: bool)
+    ensures
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
 {
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    return false;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
+fn remove_chars(str1: &[u8], str2: &[u8]) -> (result: Vec<u8>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (str1@.contains(#[trigger] result[i]) && !str2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < str1.len() ==> (str2@.contains(#[trigger] str1[i]) || result@.contains(
+                #[trigger] str1[i],
+            )),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

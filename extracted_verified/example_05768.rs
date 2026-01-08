@@ -1,67 +1,153 @@
+use vstd::assert_seqs_equal;
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
-spec fn is_upper_case(c: u8) -> bool {
-    c >= 65 && c <= 90
-}
-
-spec fn shift32_spec(c: u8) -> u8 {
-    (c + 32) as u8
-}
-
-spec fn is_lower_case(c: u8) -> bool {
-    c >= 97 && c <= 122
-}
-
-spec fn shift_minus_32_spec(c: u8) -> u8 {
-    (c - 32) as u8
-}
-
-spec fn to_toggle_case_spec(s: u8) -> u8 {
-    if is_lower_case(s) {
-        shift_minus_32_spec(s)
-    } else if is_upper_case(s) {
-        shift32_spec(s)
+spec fn intersperse_spec(numbers: Seq<u64>, delimiter: u64) -> (result:Seq<u64>)
+    decreases numbers.len(),
+{
+    if numbers.len() <= 1 {
+        numbers
     } else {
-        s
+        intersperse_spec(numbers.drop_last(), delimiter) + seq![delimiter, numbers.last()]
     }
 }
+// pure-end
 
-fn to_toggle_case(str1: &[u8]) -> (toggle_case: Vec<u8>)
+spec fn even(i: int) -> (result:int) {
+    2 * i
+}
+// pure-end
+
+spec fn odd(i: int) -> (result:int) {
+    2 * i + 1
+}
+// pure-end
+
+spec fn intersperse_quantified(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>) -> (result:bool) {
+    (if numbers.len() == 0 {
+        interspersed.len() == 0
+    } else {
+        interspersed.len() == 2 * numbers.len() - 1
+    }) && (forall|i: int| 0 <= i < numbers.len() ==> #[trigger] interspersed[even(i)] == numbers[i])
+        && (forall|i: int|
+        0 <= i < numbers.len() - 1 ==> #[trigger] interspersed[odd(i)] == delimiter)
+}
+// pure-end
+
+proof fn intersperse_spec_len(numbers: Seq<u64>, delimiter: u64)
+    // post-conditions-start
     ensures
-        str1@.len() == toggle_case@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
+        numbers.len() > 0 ==> intersperse_spec(numbers, delimiter).len() == 2 * numbers.len() - 1,
+    decreases numbers.len(),
+    // post-conditions-end
+{
+    if numbers.len() > 1 {
+        intersperse_spec_len(numbers.drop_last(), delimiter);
+    }
+}
+// pure-end
+
+proof fn intersperse_quantified_is_spec(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>)
+    // pre-conditions-start
+    requires
+        intersperse_quantified(numbers, delimiter, interspersed),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        interspersed == intersperse_spec(numbers, delimiter),
+    decreases numbers.len(),
+    // post-conditions-end
+{
+    if numbers.len() == 0 {
+        // Base case: empty sequence
+    } else if numbers.len() == 1 {
+        // Base case: single element
+        assert(interspersed.len() == 1);
+        assert(interspersed[0] == numbers[0]);
+        assert(interspersed == numbers);
+        assert(intersperse_spec(numbers, delimiter) == numbers);
+    } else {
+        // Recursive case
+        let prefix = numbers.drop_last();
+        let interspersed_prefix = interspersed.take(interspersed.len() - 2);
+        
+        // Show that prefix satisfies the quantified property
+        assert forall|i: int| 0 <= i < prefix.len() implies #[trigger] interspersed_prefix[even(i)] == prefix[i] by {
+            assert(interspersed_prefix[even(i)] == interspersed[even(i)]);
+            assert(interspersed[even(i)] == numbers[i]);
+            assert(numbers[i] == prefix[i]);
+        }
+        
+        assert forall|i: int| 0 <= i < prefix.len() - 1 implies #[trigger] interspersed_prefix[odd(i)] == delimiter by {
+            assert(interspersed_prefix[odd(i)] == interspersed[odd(i)]);
+            assert(interspersed[odd(i)] == delimiter);
+        }
+        
+        assert(intersperse_quantified(prefix, delimiter, interspersed_prefix));
+        intersperse_quantified_is_spec(prefix, delimiter, interspersed_prefix);
+        
+        // Show the recursive relationship
+        let spec_prefix = intersperse_spec(prefix, delimiter);
+        assert(interspersed_prefix == spec_prefix);
+        
+        let last_two = interspersed.skip(interspersed.len() - 2);
+        assert(last_two.len() == 2);
+        assert(last_two[0] == delimiter);
+        assert(last_two[1] == numbers.last());
+        assert(last_two == seq![delimiter, numbers.last()]);
+        
+        assert(interspersed == interspersed_prefix + last_two);
+        assert(interspersed == spec_prefix + seq![delimiter, numbers.last()]);
+        assert(interspersed == intersperse_spec(numbers, delimiter));
+    }
+}
+// pure-end
+
+fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
+    // post-conditions-start
+    ensures
+        result@ == intersperse_spec(numbers@, delimiter),
+    // post-conditions-end
 {
     let mut result = Vec::new();
-    let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause for while loop */
-    while i < str1.len()
+    if numbers.len() == 0 {
+        return result;
+    }
+    
+    result.push(numbers[0]);
+    
+    let mut i = 1;
+    while i < numbers.len()
         invariant
-            i <= str1.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == to_toggle_case_spec(str1[j]),
-        decreases str1.len() - i
+            1 <= i <= numbers.len(),
+            result.len() == 2 * i - 1,
+            result@ == intersperse_spec(numbers@.take(i as int), delimiter),
     {
-        let c = str1[i];
-        let toggled = if c >= 97 && c <= 122 {
-            // lowercase to uppercase
-            c - 32
-        } else if c >= 65 && c <= 90 {
-            // uppercase to lowercase  
-            c + 32
-        } else {
-            // leave unchanged
-            c
-        };
-        result.push(toggled);
-        i = i + 1;
+        result.push(delimiter);
+        result.push(numbers[i]);
+        
+        proof {
+            let take_i = numbers@.take(i as int);
+            let take_i_plus_1 = numbers@.take((i + 1) as int);
+            assert(take_i_plus_1 == take_i + seq![numbers[i]]);
+            assert(take_i_plus_1.drop_last() == take_i);
+            assert(take_i_plus_1.last() == numbers[i]);
+            
+            let expected = intersperse_spec(take_i_plus_1, delimiter);
+            assert(expected == intersperse_spec(take_i, delimiter) + seq![delimiter, numbers[i]]);
+        }
+        
+        i += 1;
+    }
+    
+    proof {
+        assert(numbers@.take(numbers.len() as int) == numbers@);
     }
     
     result
 }
 
-} // verus!
+}
+fn main() {}

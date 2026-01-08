@@ -1,48 +1,106 @@
+use vstd::hash_set::HashSetWithView;
 use vstd::prelude::*;
+use vstd::std_specs::hash::axiom_u8_obeys_hash_table_key_model;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> bool {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
+broadcast use axiom_u8_obeys_hash_table_key_model;
+
+fn hash_set_from(s: &Vec<u8>) -> (res: HashSetWithView<u8>)
+    // post-conditions-start
+    ensures
+        forall|i: int| #![auto] 0 <= i < s.len() ==> res@.contains(s[i]),
+        forall|x: int|
+            0 <= x < 256 ==> #[trigger] res@.contains(x as u8) ==> #[trigger] s@.contains(x as u8),
+    // post-conditions-end
+{
+    let mut res = HashSetWithView::new();
+    let mut i = 0;
+    while i < s.len()
+        invariant
+            0 <= i <= s.len(),
+            forall|j: int| #![auto] 0 <= j < i ==> res@.contains(s[j]),
+            forall|x: int|
+                0 <= x < 256 ==> #[trigger] res@.contains(x as u8) ==> #[trigger] s@.contains(x as u8),
+    {
+        res.insert(s[i]);
+        i = i + 1;
+    }
+    res
 }
 
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
+proof fn implies_contains(s0: Seq<u8>, s1: Seq<u8>, hs1: Set<u8>)
+    // pre-conditions-start
+    requires
+        forall|i: int| #![trigger s0[i]] 0 <= i < s0.len() ==> 0 <= s0[i] < 256,
+        forall|x: int|
+            0 <= x < 256 ==> #[trigger] hs1.contains(x as u8) ==> #[trigger] s1.contains(x as u8),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result == in_array(a@, x),
+        forall|i: int|
+            #![auto]
+            0 <= i < s0.len() && 0 <= s0[i] < 256 && hs1.contains(s0[i]) ==> s1.contains(s0[i]),
+    // post-conditions-end
 {
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a[j as int] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
-    }
-    false
+    // impl-start
+    assert forall|i: int|
+        #![auto]
+        0 <= i < s0.len() && 0 <= s0[i] < 256 && hs1.contains(s0[i]) implies s1.contains(s0[i]) by {
+        let x = s0[i];
+        assert(0 <= x < 256);
+        assert(hs1.contains(x as u8));
+        assert(s1.contains(x as u8));
+    };
+    // impl-end
 }
+// pure-end
 
 #[verifier::loop_isolation(false)]
-fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        a.len() >= 1,
+fn same_chars(s0: &Vec<u8>, s1: &Vec<u8>) -> (same: bool)
+    // post-conditions-start
     ensures
-        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+        same <==> (forall|i: int| #![auto] 0 <= i < s0.len() ==> s1@.contains(s0[i])) && (forall|
+            i: int,
+        |
+            #![auto]
+            0 <= i < s1.len() ==> s0@.contains(s1[i])),
+    // post-conditions-end
 {
-    let mut result = Vec::new();
+    let hs0 = hash_set_from(s0);
+    let hs1 = hash_set_from(s1);
     
-    for i in 0..a.len()
+    // Check if all chars in s0 are in s1
+    let mut i = 0;
+    while i < s0.len()
         invariant
-            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+            0 <= i <= s0.len(),
+            forall|j: int| #![auto] 0 <= j < i ==> s1@.contains(s0[j]),
     {
-        if !in_array_exec(&result, a[i]) {
-            result.push(a[i]);
+        /* code modified by LLM (iteration 1): use exec contains method instead of spec contains */
+        if !hs1.contains(&s0[i]) {
+            return false;
         }
+        i = i + 1;
     }
     
-    result
+    // Check if all chars in s1 are in s0
+    let mut j = 0;
+    while j < s1.len()
+        invariant
+            0 <= j <= s1.len(),
+            forall|k: int| #![auto] 0 <= k < j ==> s0@.contains(s1[k]),
+            forall|k: int| #![auto] 0 <= k < s0.len() ==> s1@.contains(s0[k]),
+    {
+        /* code modified by LLM (iteration 1): use exec contains method instead of spec contains */
+        if !hs0.contains(&s1[j]) {
+            return false;
+        }
+        j = j + 1;
+    }
+    
+    true
 }
 
-fn main() {}
 }
+fn main() {}

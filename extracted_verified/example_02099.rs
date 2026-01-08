@@ -1,44 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-    spec fn valid_input(n: int) -> bool {
-        1 <= n <= 1000
-    }
-    
-    spec fn max_groups_with_at_least_three(n: int) -> int
-        recommends valid_input(n)
-    {
-        n / 3
-    }
-    
-    spec fn valid_solution(n: int, result: int) -> bool
-        recommends valid_input(n)
-    {
-        result == max_groups_with_at_least_three(n) &&
-        result >= 0 &&
-        result <= n
-    }
-
-    fn solve_groups(n: i8) -> (result: i8)
-        requires valid_input(n as int)
-        ensures valid_solution(n as int, result as int)
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-// </vc-spec>
-// <vc-code>
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            0 <= i <= arr1.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
+    {
+        let div_result = arr1[i] / arr2[i];
+        result.push(div_result);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,39 +1,34 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // Main function - can be empty or contain test code
+}
 
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+fn has_common_element(list1: &Vec<i32>, list2: &Vec<i32>) -> (result: bool)
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        result == (exists|i: int, j: int|
+            0 <= i < list1.len() && 0 <= j < list2.len() && (list1[i] == list2[j])),
 {
-    for i in 0..arr.len()
+    let mut i: usize = 0;
+    while i < list1.len()
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            forall|ii: int, jj: int| 0 <= ii < i && 0 <= jj < list2.len() ==> list1[ii] != list2[jj],
     {
-        if arr[i] == key {
-            return true;
-        }
-    }
-    false
-}
-
-fn any_value_exists(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
-    ensures
-        result == exists|k: int| 0 <= k < arr1.len() && arr2@.contains(#[trigger] arr1[k]),
-{
-    /* code modified by LLM (iteration 1): replaced arr2@.contains() with contains() function call and added proof block */
-    for i in 0..arr1.len()
-        invariant
-            forall|k: int| 0 <= k < i ==> !arr2@.contains(arr1[k]),
-    {
-        if contains(arr2, arr1[i]) {
-            proof {
-                assert(arr2@.contains(arr1[i as int]));
+        let mut j: usize = 0;
+        while j < list2.len()
+            invariant
+                i < list1.len(),
+                forall|ii: int, jj: int| 0 <= ii < i && 0 <= jj < list2.len() ==> list1[ii] != list2[jj],
+                forall|jj: int| 0 <= jj < j ==> list1[i as int] != list2[jj],
+        {
+            if list1[i] == list2[j] {
+                return true;
             }
-            return true;
+            j += 1;
         }
+        i += 1;
     }
     false
 }

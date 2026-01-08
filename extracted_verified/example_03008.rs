@@ -1,46 +1,42 @@
 use vstd::prelude::*;
 
+
 verus! {
 
-fn element_wise_divide(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+spec fn is_divisible(n: int, divisor: int) -> bool {
+    (n % divisor) == 0
+}
+// pure-end
+
+fn is_non_prime(n: u64) -> (result: bool)
     // pre-conditions-start
     requires
-        arr1.len() == arr2.len(),
-        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
-        forall|i: int|
-            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] / arr2[i]) <= i32::MAX),
+        n >= 2,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        result@.len() == arr1@.len(),
-        forall|i: int|
-            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
+        result == (exists|k: int| 2 <= k < n && is_divisible(n as int, k)),
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
+    let mut i = 2u64;
     
-    /* code modified by LLM (iteration 1): added bounds checks and division by zero protection in loop invariant */
-    while i < arr1.len()
+    while i < n
         invariant
-            0 <= i <= arr1.len(),
-            arr1.len() == arr2.len(),
-            result@.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
-            forall|j: int| 0 <= j < arr2.len() ==> arr2[j] != 0,
-        decreases arr1.len() - i
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
     {
-        /* code modified by LLM (iteration 1): fixed type mismatch by casting usize to int for assertions */
-        assert(i < arr1.len());
-        assert(i < arr2.len());
-        assert(arr2[i as int] != 0);
-        
-        let quotient = arr1[i] / arr2[i];
-        result.push(quotient);
+        if n % i == 0 {
+            assert(is_divisible(n as int, i as int));
+            /* code modified by LLM (iteration 1): fixed syntax error by properly separating boolean conditions with && */
+            assert(2 <= i as int);
+            assert(i as int < n as int);
+            return true;
+        }
         i += 1;
     }
     
-    result
+    assert(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k));
+    false
 }
 
 } // verus!

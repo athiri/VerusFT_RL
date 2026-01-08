@@ -1,38 +1,58 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(h: int, w: int, h_selected: int, w_selected: int) -> bool {
-    1 <= h <= 20 && 1 <= w <= 20 && 1 <= h_selected <= h && 1 <= w_selected <= w
-}
-
-spec fn white_cells_remaining(h: int, w: int, h_selected: int, w_selected: int) -> int
-    recommends valid_input(h, w, h_selected, w_selected)
+fn is_sub_list_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    (h - h_selected) * (w - w_selected)
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx + j] == sub@[j],
+        /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
+        decreases sub.len() - i,
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(h: i8, w: i8, h_selected: i8, w_selected: i8) -> (result: i8)
-    requires 
-        valid_input(h as int, w as int, h_selected as int, w_selected as int),
-    ensures 
-        result as int == white_cells_remaining(h as int, w as int, h_selected as int, w_selected as int),
-        result >= 0,
-// </vc-spec>
-// <vc-code>
+fn is_sub_list(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    assume(false);
-    unreached()
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= (main.len() - sub.len()) + 1,
+            /* code modified by LLM (iteration 3): fixed trigger to avoid arithmetic operations with quantified variable */
+            forall|k: int, l: int| 0 <= k < idx && l == k + sub@.len() ==> !(#[trigger] main@.subrange(k, l) =~= sub@),
+        /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
+        decreases (main.len() - sub.len()) + 1 - idx,
+    {
+        if is_sub_list_at_index(main, sub, idx) {
+            return true;
+        }
+        idx += 1;
+    }
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,22 +1,56 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    let text = b"abc123def";
+    let count = count_digits(text);
+    println!("Digit count: {}", count);
+}
 
 verus! {
 
-fn contains_z(text: &[u8]) -> (result: bool)
-    ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
+spec fn is_digit(c: u8) -> bool {
+    (c >= 48 && c <= 57)
+}
+
+spec fn count_digits_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    for i in 0..text.len()
-        invariant
-            !(exists|j: int| 0 <= j < i && (text[j] == 90 || text[j] == 122)),
-    {
-        if text[i] == 90 || text[i] == 122 {
-            return true;
+    if seq.len() == 0 {
+        0
+    } else {
+        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
+            1 as int
+        } else {
+            0 as int
         }
     }
-    false
+}
+
+fn count_digits(text: &[u8]) -> (count: usize)
+    ensures
+        0 <= count <= text.len(),
+        count_digits_recursively(text@) == count,
+{
+    let mut count: usize = 0;
+    let mut i: usize = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count == count_digits_recursively(text@.subrange(0, i as int)),
+    {
+        if is_digit(text[i]) {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) =~= text@);
+    }
+    
+    count
 }
 
 } // verus!

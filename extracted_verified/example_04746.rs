@@ -1,38 +1,38 @@
-#![crate_name="barrier"]
-
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn barrier(arr: &[i32], p: usize) -> (result: bool)
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
     ensures
-        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
 {
-    // Handle edge cases
-    if p >= arr.len() || p + 1 >= arr.len() {
-        return true;
-    }
+    let mut new_list = Vec::new();
     
-    /* code modified by LLM (iteration 1): Changed from 0..=p to 0..(p+1) since RangeInclusive is not supported, and fixed type conversions */
-    // Check all pairs: left partition elements vs right partition elements
-    for i in 0..(p + 1)
+    // Add elements from index 0 to k-2 (inclusive)
+    for i in 0..(k - 1)
         invariant
-            forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k as int] < arr[l],
+            new_list@ == list@.subrange(0, i as int),
     {
-        for j in (p + 1)..arr.len()
-            invariant
-                forall|k: int, l: int| 0 <= k < i && p < l < arr.len() ==> arr[k as int] < arr[l],
-                forall|l: int| (p + 1) <= l < j ==> arr[i as int] < arr[l],
-        {
-            if arr[i] >= arr[j] {
-                return false;
-            }
-        }
+        new_list.push(list[i]);
     }
     
-    true
+    // Add elements from index k to end
+    for i in k..list.len()
+        invariant
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, i as int)
+            ),
+    {
+        new_list.push(list[i]);
+    }
+    
+    new_list
 }
 
-fn main() {}
-}
+} // verus!

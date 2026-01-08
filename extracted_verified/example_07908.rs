@@ -1,35 +1,45 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition: array size must be at least 8
-spec fn update_elements_precond(a: &Vec<i32>) -> bool {
-    a.len() >= 8
-}
+// <vc-helpers>
 
-// Postcondition: elements at indices 4 and 7 are updated correctly,
-// and all other elements remain unchanged
-spec fn update_elements_postcond(a: &Vec<i32>, result: &Vec<i32>) -> bool {
-    &&& result.len() == a.len()
-    &&& result[4] == a[4] + 3
-    &&& result[7] == 516
-    &&& forall|i: int| 0 <= i < a.len() && i != 4 && i != 7 ==> result[i] == a[i]
-}
+// </vc-helpers>
 
-// Main function that updates elements at indices 4 and 7
-fn update_elements(a: Vec<i32>) -> (result: Vec<i32>)
+// <vc-spec>
+fn bitwise_xor(a: Vec<u8>, b: Vec<u8>) -> (result: Vec<u8>)
     requires 
-        update_elements_precond(&a),
-        a[4] < i32::MAX - 3,
-        a[4] > i32::MIN
-    ensures update_elements_postcond(&a, &result)
+        a.len() == b.len(),
+        a.len() > 0,
+    ensures
+        result.len() == a.len(),
+        forall|i: int| 0 <= i < a@.len() ==> result@[i] == a@[i] ^ b@[i],
+// </vc-spec>
+// <vc-code>
 {
-    let mut result = a;
-    result.set(4, result[4] + 3);
-    result.set(7, 516);
+    /* code modified by LLM (iteration 4): added bounds checking assertions */
+    let mut result = Vec::new();
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            result.len() == i,
+            a.len() == b.len(),
+            forall|j: int| 0 <= j < i ==> 0 <= j < a@.len() && 0 <= j < b@.len() && result@[j] == a@[j] ^ b@[j],
+        decreases a.len() - i
+    {
+        assert(i < a.len());
+        assert(a.len() == b.len());
+        assert(i < b.len());
+        result.push(a[i] ^ b[i]);
+        i += 1;
+    }
     result
 }
+// </vc-code>
+
 
 }
-
 fn main() {}

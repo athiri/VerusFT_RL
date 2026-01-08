@@ -1,44 +1,58 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(angles: Seq<int>) -> bool {
-    forall|i: int| 0 <= i < angles.len() ==> #[trigger] angles[i] >= 1 && #[trigger] angles[i] < 180
-}
 
-spec fn gcd(a: int, b: int) -> int;
-
-spec fn compute_answer(angle: int) -> int {
-    let g = gcd(angle, 180int);
-    let de_over_g = angle / g;
-    let n180_over_g = 180int / g;
-    if de_over_g == n180_over_g - 1 { n180_over_g * 2 } else { n180_over_g }
-}
-
-spec fn correct_output(angles: Seq<int>, result: Seq<int>) -> bool {
-    valid_input(angles) ==> (
-        result.len() == angles.len() &&
-        forall|i: int| 0 <= i < angles.len() ==> #[trigger] result[i] == compute_answer(#[trigger] angles[i])
-    )
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(angles: Vec<i8>) -> (result: Vec<i8>)
-    requires valid_input(angles@.map(|i, x: i8| x as int))
-    ensures correct_output(angles@.map(|i, x: i8| x as int), result@.map(|i, x: i8| x as int))
-// </vc-spec>
-// <vc-code>
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    assume(false);
-    unreached()
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases arr.len() - i
+    {
+        if arr[i] == key {
+            return true;
+        }
+        i += 1;
+    }
+    false
 }
-// </vc-code>
 
-
+fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
+                #[trigger] shared[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < list1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases list1.len() - i
+    {
+        let elem = list1[i];
+        if contains(list2, elem) && !contains(&result, elem) {
+            result.push(elem);
+        }
+        i += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

@@ -1,41 +1,33 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_day(day: &str) -> bool {
-    day == "SUN" || day == "MON" || day == "TUE" || day == "WED" || day == "THU" || day == "FRI" || day == "SAT"
-}
-
-spec fn days_until_sunday(day: &str) -> int {
-    if day == "SUN" { 7 }
-    else if day == "MON" { 6 }
-    else if day == "TUE" { 5 }
-    else if day == "WED" { 4 }
-    else if day == "THU" { 3 }
-    else if day == "FRI" { 2 }
-    else { 1 }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn days_to_next_sunday(day: &str) -> (result: i8)
-    requires 
-        valid_day(day)
-    ensures 
-        result as int >= 1 && result as int <= 7,
-        result as int == days_until_sunday(day)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn extract_rear_chars(s: &Vec<Vec<u8>>) -> (result: Vec<u8>)
+    requires
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    ensures
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to fix termination verification */
+    while i < s.len()
+        invariant
+            0 <= i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+        decreases s.len() - i,
+    {
+        let last_char = s[i][s[i].len() - 1];
+        result.push(last_char);
+        i += 1;
+    }
+    
+    result
+}
+
+} // verus!

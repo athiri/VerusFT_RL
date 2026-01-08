@@ -1,35 +1,40 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn hermmul(c1: Vec<i8>, c2: Vec<i8>) -> (result: Vec<i8>)
-    ensures
-
-        (c1.len() == 0 || c2.len() == 0) ==> (result.len() == 1 && result[0] == 0),
-
-        (c1.len() > 0 && c2.len() > 0) ==> result.len() == c1.len() + c2.len() - 1,
-
-        (c2.len() == 1 && c1.len() > 0) ==>
-            forall|i: int| 0 <= i < c1.len() ==> result[i] as int == c1[i] as int * c2[0] as int,
-        (c1.len() == 1 && c2.len() > 0) ==>
-            forall|i: int| 0 <= i < c2.len() ==> result[i] as int == c2[i] as int * c1[0] as int,
-
-        ((forall|i: int| 0 <= i < c1.len() ==> c1[i] == 0) || 
-         (forall|j: int| 0 <= j < c2.len() ==> c2[j] == 0)) ==>
-            forall|k: int| 0 <= k < result.len() ==> result[k] == 0,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+
+proof fn lemma_seq_take_ascend<T>(v: Seq<T>, i: int)
+    requires
+        0< i <= v.len(),
+    ensures
+        v.take(i as int).drop_last() == v.take(i-1),
+{
+    assert(v.take(i as int).drop_last()=~=v.take(i-1));
+}
+
+proof fn lemma_seq_take_all<T>(v: Seq<T>)
+    ensures
+        v == v.take(v.len() as int),
+{
+    assert(v =~= v.take(v.len() as int));
+}
+
+pub fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
+requires 
+    old(y).len() == 0,
+ensures 
+    y@ == x@.filter(|k:u64| k%3 == 0),
+{
+    let mut i = 0;
+    while i < x.len()
+        invariant
+            i <= x.len(),
+            y@ == x@.take(i as int).filter(|k:u64| k%3 == 0),
+    {
+        if x[i] % 3 == 0 {
+            y.push(x[i]);
+        }
+        i += 1;
+    }
+}
+}

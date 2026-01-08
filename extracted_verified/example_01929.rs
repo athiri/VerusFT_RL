@@ -1,52 +1,62 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(columns: Seq<(int, int)>) -> bool {
-    forall|i: int| 0 <= i < columns.len() ==> columns[i].0 > 0 && columns[i].1 > 0
-}
 
-spec fn abs(x: int) -> int {
-    if x >= 0 { x } else { -x }
-}
-
-spec fn sum_left(columns: Seq<(int, int)>) -> int
-    decreases columns.len()
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    if columns.len() == 0 {
-        0
-    } else {
-        columns[0].0 + sum_left(columns.drop_first())
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            idx + i <= main.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
     }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+    
+    true
 }
 
-spec fn sum_right(columns: Seq<(int, int)>) -> int
-    decreases columns.len()
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    if columns.len() == 0 {
-        0
-    } else {
-        columns[0].1 + sum_right(columns.drop_first())
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < idx ==> main@.subrange(k, k + sub@.len()) !=~= sub@,
+    {
+        if sub_array_at_index(main, sub, idx) {
+            assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+            return true;
+        }
+        idx += 1;
     }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(columns: Vec<(i8, i8)>) -> (result: i8)
-    requires valid_input(columns@.map(|i: int, pair: (i8, i8)| (pair.0 as int, pair.1 as int)))
-    ensures 0 <= result as int <= columns@.len()
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    
+    assert(forall|k: int| 0 <= k <= main.len() - sub.len() ==> main@.subrange(k, k + sub@.len()) !=~= sub@);
+    
+    false
 }
 
-fn main() {}
+} // verus!

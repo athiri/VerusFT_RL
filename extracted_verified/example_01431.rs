@@ -1,26 +1,15 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn nditer(arr: Vec<i8>) -> (iter: (usize, Vec<i8>))
-    ensures
-        iter.0 == 0,
-        iter.1@ == arr@,
-        iter.0 <= arr.len(),
-        forall|i: int| 0 <= i < arr.len() ==> iter.1[i] == arr[i]
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] == 6 * N,
+{
+    sum[0] = 6 * (N as i32);
+}
+}

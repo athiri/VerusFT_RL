@@ -1,37 +1,69 @@
+
 use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)
-    requires
-        0 <= pos < a.len(),
-    ensures
-        result.len() == a.len() - 1,
-        forall|i: int| 0 <= i < pos ==> result[i] == a[i],
-        forall|i: int| pos <= i < result.len() ==> result[i] == a[i + 1],
+spec fn sum(s: Seq<int>) -> (result:int)
+    decreases s.len(),
 {
-    let mut result = Vec::new();
-    
-    let mut i = 0;
-    while i < a.len()
-        invariant
-            i <= a.len(),
-            /* code modified by LLM (iteration 1): Fixed type mismatch by casting usize to int for conditional expression */
-            result.len() == if i <= pos { i as int } else { i as int - 1 },
-            forall|j: int| 0 <= j < result.len() && j < pos ==> result[j] == a[j],
-            forall|j: int| pos <= j < result.len() ==> result[j] == a[j + 1],
-        /* code modified by LLM (iteration 2): Added decreases clause to prove loop termination */
-        decreases a.len() - i
-    {
-        if i != pos {
-            result.push(a[i]);
-        }
-        i += 1;
+    if s.len() == 0 {
+        0
+    } else {
+        s[0] + sum(s.skip(1))
     }
-    
-    result
+}
+// pure-end
+
+spec fn sum_other_way(s: Seq<int>) -> (result:int)
+    decreases s.len(),
+{
+    if s.len() == 0 {
+        0
+    } else {
+        s[s.len() - 1] + sum_other_way(s.take(s.len() - 1))
+    }
+}
+// pure-end
+
+proof fn lemma_sum_equals_sum_other_way(s: Seq<int>)
+    // post-conditions-start
+    ensures
+        sum(s) == sum_other_way(s),
+    decreases s.len(),
+    // post-conditions-end
+{
+    // impl-start
+    if s.len() == 1 {
+        assert(sum(s.skip(1)) == 0);
+        assert(sum_other_way(s.take(s.len() - 1)) == 0);
+    } else if s.len() > 1 {
+        let ss = s.skip(1);
+        lemma_sum_equals_sum_other_way(ss);
+        assert(sum_other_way(ss) == ss[ss.len() - 1] + sum_other_way(ss.take(ss.len() - 1)));
+        lemma_sum_equals_sum_other_way(ss.take(ss.len() - 1));
+        assert(ss.take(ss.len() - 1) == s.take(s.len() - 1).skip(1));
+        lemma_sum_equals_sum_other_way(s.take(s.len() - 1));
+    }
+    // impl-end
+}
+// pure-end
+
+fn below_zero(operations: Vec<i32>) -> (result: bool)
+    // pre-conditions-start
+    requires
+        forall|i: int|
+            0 <= i <= operations@.len() ==> sum(operations@.take(i).map(|_idx, j: i32| j as int))
+                <= i32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        result <==> exists|i: int|
+            0 <= i <= operations@.len() && sum(operations@.take(i).map(|_idx, j: i32| j as int))
+                < 0,
+    // post-conditions-end
+{
+    return false;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
 }
+fn main() {}

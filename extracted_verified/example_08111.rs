@@ -1,16 +1,30 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-fn derivative(xs: &Vec<usize>) -> (ret: Option<Vec<usize>>)
-    // post-conditions-start
+// <vc-helpers>
+spec fn strictly_increasing(s: Seq<i32>) -> bool { forall|i: int, j: int| 0 <= i && i < j && j < s.len() ==> s[i] < s[j] }
+// </vc-helpers>
+
+// <vc-spec>
+#[verifier::loop_isolation(false)]
+fn unique_better(a: &[i32]) -> (result: Vec<i32>)
+    requires
+        forall|i: int, j: int|
+            #![trigger a[i], a[j]]
+            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
     ensures
-        ret.is_some() ==> xs@.len() == 0 || xs@.map(|i: int, x| i * x).skip(1)
-            =~= ret.unwrap()@.map_values(|x| x as int),
-    // post-conditions-end
+        forall|i: int, j: int|
+            #![trigger result[i], result[j]]
+            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
+// </vc-spec>
+// <vc-code>
 {
-    return None;  // TODO: Remove this line and implement the function body
+    Vec::new()
 }
+// </vc-code>
 
 }
 fn main() {}

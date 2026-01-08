@@ -1,26 +1,37 @@
-// <vc-preamble>
+//This is an example taken from Verus tutorial
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn fabs(x: Vec<f32>) -> (result: Vec<f32>)
-    ensures
-        result.len() == x.len()
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}
+
+verus!{
+     
+pub proof fn lemma_len_intersect<A>(s1: Set<A>, s2: Set<A>)
+    requires
+        s1.finite(),
+    ensures
+        s1.intersect(s2).len() <= s1.len(),
+    decreases
+        s1.len(),
+{
+    if s1.is_empty() {
+        assert(s1.intersect(s2).len() == 0) by {
+            assert(s1.intersect(s2) =~= s1);
+        }
+    } else {
+        let a = s1.choose();
+        lemma_len_intersect(s1.remove(a), s2);
+        
+        assert(s1.intersect(s2).remove(a).len() <= s1.remove(a).len()) by {
+            assert(s1.intersect(s2).remove(a) =~= s1.remove(a).intersect(s2));
+        }
+        
+        if s2.contains(a) {
+            assert(s1.intersect(s2).len() == s1.intersect(s2).remove(a).len() + 1);
+            assert(s1.len() == s1.remove(a).len() + 1);
+        } else {
+            assert(s1.intersect(s2) =~= s1.intersect(s2).remove(a));
+            assert(s1.len() == s1.remove(a).len() + 1);
+        }
+    }
+}
+}

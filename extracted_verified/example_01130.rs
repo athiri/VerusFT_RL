@@ -1,30 +1,56 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    // MFES, Exam 8/Sept/20201, Exercise 5 
 
-// <vc-helpers>
-// </vc-helpers>
+    spec fn seq_equal_prefix(a: Seq<i32>, b: Seq<i32>, len: int) -> bool {
+        forall|k: int| 0 <= k < len ==> a[k] == b[k]
+    }
 
-// <vc-spec>
-spec fn string_le(s1: String, s2: String) -> bool;
+    // Computes the length (i) of the longest common prefix (initial subarray) 
+    // of two sequences a and b. 
+    fn longest_prefix(a: &[i32], b: &[i32]) -> (i: usize)
+        ensures 
+            i <= a.len() && i <= b.len(),
+            seq_equal_prefix(a@, b@, i as int),
+            i < a.len() && i < b.len() ==> a@[i as int] != b@[i as int]
+    {
+        let mut i: usize = 0;
+        let min_len = if a.len() < b.len() { a.len() } else { b.len() };
+        
+        while i < min_len
+            invariant
+                i <= min_len,
+                min_len <= a.len(),
+                min_len <= b.len(),
+                seq_equal_prefix(a@, b@, i as int)
+        {
+            if a[i] != b[i] {
+                break;
+            }
+            i += 1;
+        }
+        
+        i
+    }
+ 
+    // Test method with an example.
+    fn test_longest_prefix() {
+        let a = [1, 2, 3, 4, 5];
+        let b = [1, 2, 3, 7, 8];
+        let result = longest_prefix(&a, &b);
+        assert(result == 3);
+        
+        let c = [1, 2, 3];
+        let d = [1, 2, 3, 4, 5];
+        let result2 = longest_prefix(&c, &d);
+        assert(result2 == 3);
+        
+        let e = [1, 2];
+        let f = [3, 4];
+        let result3 = longest_prefix(&e, &f);
+        assert(result3 == 0);
+    }
 
-fn less_equal(x1: Vec<String>, x2: Vec<String>) -> (result: Vec<bool>)
-    requires x1@.len() == x2@.len(),
-    ensures 
-        result@.len() == x1@.len(),
-        forall|i: int| 0 <= i < result@.len() ==> result@[i] == string_le(x1@[i], x2@[i]),
-        forall|i: int| 0 <= i < result@.len() ==> (result@[i] == true <==> string_le(x1@[i], x2@[i])),
-        x1@ == x2@ ==> forall|i: int| 0 <= i < result@.len() ==> result@[i] == true,
-        forall|i: int| 0 <= i < result@.len() ==> (string_le(x1@[i], x2@[i]) && string_le(x2@[i], x1@[i])) ==> x1@[i] == x2@[i],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn main() {}
 }
-// </vc-code>
-
-}
-fn main() {}

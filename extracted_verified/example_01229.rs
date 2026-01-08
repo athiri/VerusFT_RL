@@ -1,86 +1,53 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-#[derive(PartialEq, Eq, Structural)]
-pub enum NumpyDType {
-
-    Int8,
-
-    Int16,
-
-    Int32,
-
-    Int64,
-
-    Float32,
-
-    Float64,
-
-    Complex64,
-
-    Complex128,
-
-    Bool,
-}
-
-spec fn type_rank(dtype: NumpyDType) -> nat {
-    match dtype {
-        NumpyDType::Bool => 0,
-        NumpyDType::Int8 => 1,
-        NumpyDType::Int16 => 2,
-        NumpyDType::Int32 => 3,
-        NumpyDType::Int64 => 4,
-        NumpyDType::Float32 => 5,
-        NumpyDType::Float64 => 6,
-        NumpyDType::Complex64 => 7,
-        NumpyDType::Complex128 => 8,
-    }
-}
-
-pub enum NumpyOperand {
-
-    Scalar(NumpyDType),
-
-    Array(NumpyDType, Vec<i32>),
-}
-
-spec fn operand_type(operand: NumpyOperand) -> NumpyDType {
-    match operand {
-        NumpyOperand::Scalar(dtype) => dtype,
-        NumpyOperand::Array(dtype, _) => dtype,
-    }
-}
-
-spec fn promote_types(t1: NumpyDType, t2: NumpyDType) -> NumpyDType {
-    if type_rank(t1) >= type_rank(t2) { t1 } else { t2 }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn result_type(operands: Vec<NumpyOperand>) -> (result: NumpyDType)
-    requires operands.len() > 0,
-    ensures
-
-        forall|i: int| 0 <= i < operands.len() as int ==> 
-            type_rank(result) >= type_rank(operand_type(operands@[i])),
-
-        exists|i: int| 0 <= i < operands.len() as int && 
-            type_rank(result) == type_rank(operand_type(operands@[i])),
-
-        forall|i: int, j: int| 0 <= i < operands.len() as int && 0 <= j < operands.len() as int ==>
-            type_rank(result) >= type_rank(promote_types(operand_type(operands@[i]), operand_type(operands@[j]))),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+     
+spec fn triangle(n: nat) -> nat
+    decreases n
+{
+    if n == 0 {
+        0
+    } else {
+        n + triangle((n - 1) as nat)
+    }
+}
+
+proof fn triangle_is_monotonic(i: nat, j: nat)
+    requires
+        i <= j,
+    ensures
+        triangle(i) <= triangle(j),
+    decreases j
+{
+    if i < j {
+        triangle_is_monotonic(i, (j - 1) as nat);
+    }
+}
+
+fn tail_triangle(n: u32, idx: u32, sum: &mut u32)
+    requires
+        idx <= n,
+        *old(sum) == triangle(idx as nat),
+        triangle(n as nat) < 0x1_0000_0000,
+    ensures
+        *sum == triangle(n as nat),
+{
+    let mut current_idx = idx;
+    while current_idx < n
+        invariant
+            current_idx <= n,
+            *sum == triangle(current_idx as nat),
+            triangle(n as nat) < 0x1_0000_0000,
+        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+        decreases n - current_idx
+    {
+        current_idx = current_idx + 1;
+        *sum = *sum + current_idx;
+        proof {
+            assert(*sum == triangle((current_idx - 1) as nat) + current_idx as nat);
+            assert(triangle(current_idx as nat) == current_idx as nat + triangle((current_idx - 1) as nat));
+        }
+    }
+}
+}

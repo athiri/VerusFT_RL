@@ -1,37 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // Simple demonstration of the functions
+    let vec1 = vec![1, 2, 3, 4];
+    let vec2 = vec![3, 4, 5, 6];
+    let shared = shared_elements(&vec1, &vec2);
+    println!("Shared elements: {:?}", shared);
+}
 
 verus! {
 
-spec fn total_chars(lst: Seq<Seq<char>>) -> nat
-    decreases lst.len()
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    if lst.len() == 0 {
-        0
-    } else {
-        lst[0].len() + total_chars(lst.subrange(1, lst.len() as int))
+    for i in 0..arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
     }
+    false
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn total_match(lst1: Vec<Vec<char>>, lst2: Vec<Vec<char>>) -> (result: Vec<Vec<char>>)
-    ensures 
-        result@ == lst1@ || result@ == lst2@,
-        total_chars(lst1@.map_values(|v: Vec<char>| v@)) <= total_chars(lst2@.map_values(|v: Vec<char>| v@)) ==> result@ == lst1@,
-        total_chars(lst1@.map_values(|v: Vec<char>| v@)) > total_chars(lst2@.map_values(|v: Vec<char>| v@)) ==> result@ == lst2@
-// </vc-spec>
-// <vc-code>
+fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
+                #[trigger] shared[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    
+    for i in 0..list1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+    {
+        let elem = list1[i];
+        if contains(list2, elem) && !contains(&result, elem) {
+            result.push(elem);
+        }
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

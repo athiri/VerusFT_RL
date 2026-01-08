@@ -1,34 +1,56 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    let text = b"abc123def";
+    let count = count_digits(text);
+    println!("Digit count: {}", count);
+}
 
 verus! {
 
-fn smallest_num(nums: &Vec<i32>) -> (min: i32)
-    requires
-        nums.len() > 0,
-    ensures
-        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
-        exists|i: int| 0 <= i < nums.len() && min == nums[i],
+spec fn is_digit(c: u8) -> bool {
+    (c >= 48 && c <= 57)
+}
+
+spec fn count_digits_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    let mut min = nums[0];
-    let mut j = 1;
-    
-    /* code modified by LLM (iteration 1): Added decreases clause to fix verification error */
-    while j < nums.len()
-        invariant
-            1 <= j <= nums.len(),
-            forall|i: int| 0 <= i < j ==> min <= nums[i],
-            exists|i: int| 0 <= i < j && min == nums[i],
-        decreases nums.len() - j
-    {
-        if nums[j] < min {
-            min = nums[j];
+    if seq.len() == 0 {
+        0
+    } else {
+        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
+            1 as int
+        } else {
+            0 as int
         }
-        j = j + 1;
+    }
+}
+
+fn count_digits(text: &[u8]) -> (count: usize)
+    ensures
+        0 <= count <= text.len(),
+        count_digits_recursively(text@) == count,
+{
+    let mut count: usize = 0;
+    let mut i: usize = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count == count_digits_recursively(text@.subrange(0, i as int)),
+    {
+        if is_digit(text[i]) {
+            count = count + 1;
+        }
+        i = i + 1;
     }
     
-    min
+    proof {
+        assert(text@.subrange(0, text.len() as int) =~= text@);
+    }
+    
+    count
 }
 
 } // verus!

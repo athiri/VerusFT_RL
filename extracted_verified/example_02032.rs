@@ -1,33 +1,35 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn is_hard_to_enter(s: Seq<char>) -> bool
-    recommends s.len() == 4
-{
-    s[0] == s[1] || s[1] == s[2] || s[2] == s[3]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: Vec<char>)
-    requires s@.len() == 4
-    ensures 
-        result@.len() > 0,
-        (result@ == seq!['B', 'a', 'd'] <==> is_hard_to_enter(s@)),
-        (result@ == seq!['G', 'o', 'o', 'd'] <==> !is_hard_to_enter(s@))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn replace_blanks_with_chars(str1: &[u8], ch: u8) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if str1[i] == 32 {
+                ch
+            } else {
+                str1[i]
+            }),
+{
+    let mut out_str: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            out_str.len() == index,
+            forall|i: int| 0 <= i < index ==> out_str[i] == (if str1[i] == 32 { ch } else { str1[i] }),
+    {
+        if str1[index] == 32 {
+            out_str.push(ch);
+        } else {
+            out_str.push(str1[index]);
+        }
+        index += 1;
+    }
+    out_str
+}
+
+} // verus!

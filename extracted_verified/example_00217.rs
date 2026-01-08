@@ -1,29 +1,49 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn is_prime_number(n: int) -> bool
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    n >= 2 && forall|k: int| 2 <= k < n ==> #[trigger] (n % k) != 0
+    for i in 0..arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
+    }
+    false
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_prime(n: i8) -> (result: bool)
-    ensures result <==> is_prime_number(n as int)
-// </vc-spec>
-// <vc-code>
+fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
+                #[trigger] shared[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    
+    for i in 0..list1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] != result[l],
+    {
+        let element = list1[i];
+        if contains(list2, element) && !contains(&result, element) {
+            result.push(element);
+        }
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

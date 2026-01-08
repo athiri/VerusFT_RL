@@ -2,61 +2,39 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn abs_spec(i: int) -> int {
-    if i < 0 { -i } else { i }
-}
-
-fn abs(i: i32) -> (res: i32)
-    requires
-        i != i32::MIN,
-    ensures
-        i < 0 ==> res == -i,
-        i >= 0 ==> res == i
-{
-    if i < 0 {
-        -i
-    } else {
-        i
-    }
-}
-
 #[verifier::loop_isolation(false)]
-fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+fn smallest_missing_number(s: &[i32]) -> (v: i32)
     requires
-        threshold > 0,
-        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+        forall|i: int, j: int| 0 <= i < j < s.len() ==> s[i] <= s[j],
+        forall|i: int| 0 <= i < s.len() ==> s[i] >= 0,
+        s.len() <= 100_000,
     ensures
-        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+        0 <= v,
+        forall|i: int| 0 <= i < s.len() ==> s[i] != v,
+        /* code modified by LLM (iteration 2): added explicit trigger annotation */
+        forall|k: int| 0 <= k < v ==> exists|j: int| 0 <= j < s.len() && #[trigger] s[j] == k,
 {
-    /* code modified by LLM (iteration 1): added decreases clauses to both loops */
-    let mut i = 0usize;
-    while i < numbers.len()
+    let mut expected = 0;
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 2): added explicit trigger annotations to loop invariants */
+    while i < s.len()
         invariant
-            0 <= i <= numbers.len(),
-            forall|ii: int, jj: int| 0 <= ii && ii < i && 0 <= jj && jj < numbers.len() && ii != jj ==> abs_spec(numbers[ii] - numbers[jj]) >= threshold
-        decreases numbers.len() - i
+            0 <= i <= s.len(),
+            expected >= 0,
+            forall|k: int| 0 <= k < expected ==> exists|j: int| 0 <= j < s.len() && #[trigger] s[j] == k,
+            forall|j: int| 0 <= j < i ==> s[j] < expected,
+        decreases s.len() - i
     {
-        let mut j = 0usize;
-        while j < numbers.len()
-            invariant
-                0 <= i < numbers.len(),
-                0 <= j <= numbers.len(),
-                forall|ii: int, jj: int| 0 <= ii && ii < i && 0 <= jj && jj < numbers.len() && ii != jj ==> abs_spec(numbers[ii] - numbers[jj]) >= threshold,
-                forall|jj: int| 0 <= jj && jj < j && (i as int) != jj ==> abs_spec(numbers[i as int] - numbers[jj]) >= threshold
-            decreases numbers.len() - j
-        {
-            if i != j {
-                let diff = numbers[i] - numbers[j];
-                let abs_diff = abs(diff);
-                if abs_diff < threshold {
-                    return true;
-                }
-            }
-            j += 1;
+        if s[i] == expected {
+            expected = expected + 1;
+        } else if s[i] > expected {
+            break;
         }
-        i += 1;
+        i = i + 1;
     }
-    false
+    
+    expected
 }
 
 fn main() {}

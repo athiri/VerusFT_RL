@@ -1,76 +1,75 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    let arr1 = vec![1, 2, 3, 4, 5];
+    let arr2 = vec![2, 4];
+    let result = remove_elements(&arr1, &arr2);
+    println!("Result: {:?}", result);
+}
 
 verus! {
 
-spec fn valid_input(n: int, l: int, r: int) -> bool {
-    n >= 1 && l >= 1 && r >= l && r <= n && r <= 20
-}
-
-spec fn power(base: int, exp: int) -> int
-    decreases exp
+proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
+    requires
+        l == vec.len(),
+    ensures
+        forall|k: int| 0 <= k < vec.len() ==> #[trigger] vec[k] == vec.push(i)[k],
+        vec.push(i).index(l as int) == i,
 {
-    if exp <= 0 { 1 } else { base * power(base, exp - 1) }
+    // The proof is automatic in Verus for these sequence properties
 }
 
-spec fn sum_with_decreasing_powers(n: int, start_power: int) -> int
-    decreases n
+fn contains(str: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result <==> (exists|i: int| 0 <= i < str.len() && (str[i] == key)),
 {
-    if n <= 0 { 0 } 
-    else if start_power <= 1 { n }
-    else { start_power + sum_with_decreasing_powers(n - 1, start_power / 2) }
-}
-
-spec fn sum_with_increasing_powers(n: int, max_power: int) -> int
-    decreases n
-{
-    if n <= 0 { 0 }
-    else if n == 1 { max_power }
-    else { max_power + sum_with_increasing_powers(n - 1, max_power * 2) }
-}
-
-spec fn min_sum_calculation(n: int, l: int) -> int {
-    if n >= 1 && l >= 1 {
-        let start_power = power(2, l - 1);
-        sum_with_decreasing_powers(n, start_power)
-    } else {
-        0
+    let mut idx = 0;
+    while idx < str.len()
+        invariant
+            forall|i: int| 0 <= i < idx ==> str[i] != key,
+    {
+        if str[idx] == key {
+            return true;
+        }
+        idx += 1;
     }
+    false
 }
 
-spec fn max_sum_calculation(n: int, r: int) -> int {
-    if n >= 1 && r >= 1 {
-        let max_power = power(2, r - 1);
-        sum_with_increasing_powers(n, max_power)
-    } else {
-        0
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, l: i8, r: i8) -> (result: (i8, i8))
-    requires valid_input(n as int, l as int, r as int)
-    ensures ({
-        let (min_sum, max_sum) = result;
-        min_sum > 0 &&
-        max_sum > 0 &&
-        min_sum <= max_sum &&
-        min_sum as int == min_sum_calculation(n as int, l as int) &&
-        max_sum as int == max_sum_calculation(n as int, r as int)
-    })
-// </vc-spec>
-// <vc-code>
+fn remove_elements(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && !arr2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int|
+            0 <= i < arr1.len() ==> (arr2@.contains(#[trigger] arr1[i]) || result@.contains(
+                #[trigger] arr1[i],
+            )),
 {
-    assume(false);
-    (0, 0)
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < arr1.len()
+        invariant
+            0 <= idx <= arr1.len(),
+            forall|i: int|
+                0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && !arr2@.contains(
+                    #[trigger] result[i],
+                )),
+            forall|i: int|
+                0 <= i < idx ==> (arr2@.contains(#[trigger] arr1[i]) || result@.contains(
+                    #[trigger] arr1[i],
+                )),
+    {
+        let current_element = arr1[idx];
+        if !contains(arr2, current_element) {
+            result.push(current_element);
+        }
+        idx += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

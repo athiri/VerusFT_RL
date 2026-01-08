@@ -2,48 +2,57 @@ use vstd::prelude::*;
 
 verus! {
 
-fn square_nums(nums: &Vec<i32>) -> (squared: Vec<i32>)
+spec fn three_distinct_spec(s: Seq<char>, i: int) -> (ret:bool)
+    recommends
+        0 < i && i + 1 < s.len(),
+{
+    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i] != s[i + 1])
+}
+// pure-end
+
+fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
     // pre-conditions-start
     requires
-        forall|k: int|
-            0 <= k < nums.len() ==> (0 <= #[trigger] nums[k] * #[trigger] nums[k] < i32::MAX),
+        0 < i && i + 1 < s.len(),
     // pre-conditions-end
     // post-conditions-start
     ensures
-        nums.len() == squared.len(),
-        forall|k: int| 0 <= k < nums.len() ==> (#[trigger] squared[k] == nums[k] * nums[k]),
+        is <==> three_distinct_spec(s@, i as int),
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 3): fixed trigger annotation in loop invariant */
-    while i < nums.len()
-        invariant
-            i <= nums.len(),
-            result.len() == i,
-            forall|k: int| 0 <= k < i ==> result[k] == nums[k] * nums[k],
-            /* code modified by LLM (iteration 3): added proper trigger annotations */
-            forall|k: int| 0 <= k < nums.len() ==> (0 <= #[trigger] nums[k] * #[trigger] nums[k] < i32::MAX),
-        decreases nums.len() - i,
-    {
-        /* code modified by LLM (iteration 3): added assertion to help with overflow check */
-        assert(0 <= i < nums.len());
-        assert(0 <= nums[i as int] * nums[i as int] < i32::MAX);
-        
-        let squared_val = nums[i] * nums[i];
-        result.push(squared_val);
-        
-        /* code modified by LLM (iteration 3): added assertion to maintain invariant */
-        assert(result.len() == i + 1);
-        assert(result[i as int] == nums[i as int] * nums[i as int]);
-        
-        i += 1;
-    }
-    
-    result
+    (s[i - 1] != s[i]) && (s[i] != s[i + 1])
 }
 
-} // verus!
+spec fn happy_spec(s: Seq<char>) -> (ret:bool) {
+    s.len() >= 3 && (forall|i: int| 0 < i && i + 1 < s.len() ==> three_distinct_spec(s, i))
+}
+// pure-end
 
+#[verifier::loop_isolation(false)]
+fn is_happy(s: &Vec<char>) -> (happy: bool)
+    // post-conditions-start
+    ensures
+        happy <==> happy_spec(s@),
+    // post-conditions-end
+{
+    if s.len() < 3 {
+        return false;
+    }
+    
+    let mut j: usize = 1;
+    while j + 1 < s.len()
+        invariant
+            s.len() >= 3,
+            1 <= j <= s.len() - 1,
+            forall|i: int| 1 <= i < j ==> three_distinct_spec(s@, i),
+    {
+        if !three_distinct(s, j) {
+            return false;
+        }
+        j = j + 1;
+    }
+    true
+}
+
+}
 fn main() {}

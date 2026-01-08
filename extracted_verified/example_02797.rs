@@ -2,52 +2,59 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn array_concat(a: Vec<i32>, b: Vec<i32>) -> (result: Vec<i32>)
+spec fn modp_rec(n: nat, p: nat) -> (result:nat)
+    decreases n,
+{
+    if n == 0 {
+        1nat % p
+    } else {
+        (modp_rec((n - 1) as nat, p) * 2) % p
+    }
+}
+// pure-end
+
+fn modmul(a: u32, b: u32, p: u32) -> (mul: u32)
+    by (nonlinear_arith)
+    // pre-conditions-start
+    requires
+        p > 0,
+    // pre-conditions-end
     // post-conditions-start
     ensures
-        result.len() == a.len() + b.len(),
-        forall|i: int| 0 <= i && i < a.len() ==> result[i] == a[i],
-        forall|i: int| 0 <= i && i < b.len() ==> result[i + a.len()] == b[i],
+        mul == ((a as int) * (b as int)) % (p as int),
     // post-conditions-end
 {
-    let mut result = Vec::new();
+    let product = (a as u64) * (b as u64);
+    (product % (p as u64)) as u32
+}
+
+#[verifier::loop_isolation(false)]
+fn modp(n: u32, p: u32) -> (r: u32)
+    by (nonlinear_arith)
+    // pre-conditions-start
+    requires
+        p > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        r == modp_rec(n as nat, p as nat),
+    // post-conditions-end
+{
+    let mut result: u32 = 1 % p;
+    let mut i: u32 = 0;
     
-    let mut i = 0;
-    while i < a.len()
+    while i < n
         invariant
-            0 <= i <= a.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j && j < i ==> result[j] == a[j],
-        decreases a.len() - i
+            p > 0,
+            i <= n,
+            result == modp_rec(i as nat, p as nat),
     {
-        result.push(a[i]);
-        i += 1;
+        result = modmul(result, 2, p);
+        i = i + 1;
     }
-    
-    /* code modified by LLM (iteration 1): strengthened assertion with explicit bounds check */
-    assert(i == a.len() && result.len() == i);
-    assert(result.len() == a.len());
-    
-    let mut j = 0;
-    while j < b.len()
-        invariant
-            0 <= j <= b.len(),
-            result.len() == a.len() + j,
-            forall|k: int| 0 <= k && k < a.len() ==> result[k] == a[k],
-            forall|k: int| 0 <= k && k < j ==> result[k + a.len()] == b[k],
-        decreases b.len() - j
-    {
-        result.push(b[j]);
-        j += 1;
-    }
-    
-    /* code modified by LLM (iteration 1): strengthened assertion with explicit bounds check */
-    assert(j == b.len() && result.len() == a.len() + j);
-    assert(result.len() == a.len() + b.len());
     
     result
 }
 
-fn main() {}
 }
+fn main() {}

@@ -1,43 +1,35 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(a: int, b: int) -> bool {
-    0 <= a <= 100 && 0 <= b <= 100
-}
 
-spec fn valid_output(result: String) -> bool {
-    result@ == "YES"@ || result@ == "NO"@
-}
-
-spec fn interval_exists(a: int, b: int) -> bool {
-    abs_spec(a - b) <= 1 && a + b > 0
-}
-
-spec fn abs_spec(x: int) -> int {
-    if x >= 0 { x } else { -x }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: i8, b: i8) -> (result: String)
-    requires 
-        valid_input(a as int, b as int)
-    ensures 
-        valid_output(result) &&
-        ((result@ == "YES"@) <==> interval_exists(a as int, b as int))
-// </vc-spec>
-// <vc-code>
+fn element_wise_multiplication(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] * arr2[i]) <= i32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] * arr2[i]),
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            result.len() == i,
+            i <= arr1.len(),
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] (arr1[j] * arr2[j]),
+    {
+        let product = arr1[i] * arr2[i];
+        result.push(product);
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

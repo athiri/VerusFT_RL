@@ -1,39 +1,33 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> bool {
-    (n % divisor) == 0
-}
-
-fn prime_num(n: u64) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn unique_better(a: &[i32]) -> (result: Vec<i32>)
     requires
-        n >= 2,
+        forall|i: int, j: int|
+            #![trigger a[i], a[j]]
+            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
     ensures
-        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
+        forall|i: int, j: int|
+            #![trigger result[i], result[j]]
+            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
 {
-    let mut i: u64 = 2;
-    while i < n
+    let mut result = Vec::new();
+    
+    for i in 0..a.len()
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
-        decreases n - i,
+            forall|x: int, y: int|
+                #![trigger result[x], result[y]]
+                0 <= x && x < y && y < result.len() ==> result[x] < result[y],
     {
-        if (n % i) == 0 {
-            /* code modified by LLM (iteration 2): added assertion to help Dafny understand why postcondition is satisfied when returning false */
-            assert(is_divisible(n as int, i as int));
-            assert(2 <= i < n);
-            assert(!(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)));
-            return false;
+        if result.len() == 0 || a[i] != result[result.len() - 1] {
+            result.push(a[i]);
         }
-        i = i + 1;
     }
-    /* code modified by LLM (iteration 2): added assertion to help Dafny understand why postcondition is satisfied when returning true */
-    assert(i == n);
-    assert(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k));
-    return true;
+    
+    result
 }
 
-} // verus!
+fn main() {}
+}

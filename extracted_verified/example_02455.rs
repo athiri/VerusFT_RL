@@ -1,18 +1,25 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(c).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		sum[0] <= 3 * N,
+
+verus! {
+
+fn replace_char(s: Vec<char>, old: char, new: char) -> (result: Vec<char>)
+    ensures
+        result.len() == s.len(),
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == (if s[i] == old { new } else { s[i] }),
 {
-    sum.set(0, 3 * N);
+    let mut result: Vec<char> = Vec::new();
+    let mut i = 0;
+    while i < s.len()
+        invariant
+            0 <= i && i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == (if s[j] == old { new } else { s[j] }),
+    {
+        result.push(if s[i] == old { new } else { s[i] });
+        i = i + 1;
+    }
+    result
 }
+
+fn main() {}
 }

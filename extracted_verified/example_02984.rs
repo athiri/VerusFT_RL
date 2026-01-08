@@ -1,24 +1,48 @@
+use vstd::arithmetic::logarithm::log;
+use vstd::arithmetic::power::pow;
 use vstd::prelude::*;
-
 verus! {
-
-fn contains_z(text: &Vec<char>) -> (result: bool)
-    // post-conditions-start
+#[verifier::external_fn_specification]
+/* code modified by LLM (iteration 1): added pub visibility to external function specification */
+pub fn ex_ilog(x: u32, base: u32) -> (ret: u32)
+    requires
+        x > 0,
+        base > 1,
     ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 'Z' || text[i] == 'z')),
-    // post-conditions-end
+        ret == log(base as int, x as int),
 {
-    for i in 0..text.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> text[j] != 'Z' && text[j] != 'z'
-    {
-        if text[i] == 'Z' || text[i] == 'z' {
-            return true;
-        }
-    }
-    false
+    x.ilog(base)
 }
 
-} // verus!
+#[verifier::external_fn_specification]
+/* code modified by LLM (iteration 1): added pub visibility to external function specification */
+pub fn ex_checked_pow(x: u32, exp: u32) -> (ret: Option<u32>)
+    ensures
+        ret.is_some() <==> ret.unwrap() == pow(x as int, exp as nat),
+        ret.is_none() <==> pow(x as int, exp as nat) > u32::MAX,
+{
+    x.checked_pow(exp)
+}
 
+fn is_simple_power(x: u32, n: u32) -> (ret: bool)
+    // pre-conditions-start
+    requires
+        x > 0,
+        n > 1,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ret <==> x == pow(n as int, log(n as int, x as int) as nat),
+    // post-conditions-end
+{
+    let log_val = ex_ilog(x, n);
+    let power_result = ex_checked_pow(n, log_val);
+    
+    match power_result {
+        Some(val) => val == x,
+        None => false,
+    }
+}
+
+}
 fn main() {}

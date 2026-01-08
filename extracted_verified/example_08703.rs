@@ -1,48 +1,65 @@
-use vstd::prelude::*;
+#![allow(unused_imports)]
+
+use super::super::prelude::*;
+use core::mem::ManuallyDrop;
+use core::ops::Deref;
 
 verus! {
-    // Ghost function to count even numbers in sequence up to index hi
-    spec fn count(hi: nat, s: Seq<int>) -> int
-        decreases hi
-    {
-        if hi == 0 {
-            0
-        } else if s[hi - 1] % 2 == 0 {
-            1 + count((hi - 1) as nat, s)
-        } else {
-            count((hi - 1) as nat, s)
-        }
-    }
 
-    // Method to compute count with memoization in array b
-    fn foo_count(count_index: usize, a: Seq<int>, b: &mut Vec<i32>) -> (p: usize) {
-    return 0;  // TODO: Remove this line and implement the function body
-    }
+#[verifier::external_type_specification]
+#[verifier::external_body]
+#[verifier::reject_recursive_types_in_ground_variants(V)]
+pub struct ExManuallyDrop<V: ?Sized>(ManuallyDrop<V>);
 
-    // Precompute all count values
-    fn foo_precompute(a: Vec<i32>, b: &mut Vec<i32>) {
-    // TODO: Remove this comment and implement the function body
-    }
+pub trait ManuallyDropAdditionalFns<T: ?Sized> {
+    spec fn view_ref(&self) -> &T;
+}
 
-    // Simplified compute count method
-    fn compute_count(count_index: usize, a: Seq<int>, b: &mut Vec<i32>) -> (p: usize) {
-    return 0;  // TODO: Remove this line and implement the function body
-    }
+impl<T: ?Sized> ManuallyDropAdditionalFns<T> for ManuallyDrop<T> {
+    uninterp spec fn view_ref(&self) -> &T;
+}
 
-    // Precompute wrapper
-    fn precompute(a: Vec<i32>, b: &mut Vec<i32>) -> (p: usize) {
-    return 0;  // TODO: Remove this line and implement the function body
-    }
+impl<T> View for ManuallyDrop<T> {
+    type V = T;
 
-    // Main evens method - simplified version
-    fn evens(a: Vec<i32>) -> Vec<Vec<i32>> {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-    }
-
-    // Multiplication method
-    fn mult(x: i32, y: i32) -> (r: i32) {
-    return 0;  // TODO: Remove this line and implement the function body
+    open spec fn view(&self) -> Self::V {
+        *self.view_ref()
     }
 }
 
-fn main() {}
+pub assume_specification<T>[ ManuallyDrop::<T>::new ](value: T) -> (res: ManuallyDrop<T>)
+    ensures
+        res@ === value,
+;
+
+pub assume_specification<T>[ ManuallyDrop::<T>::into_inner ](m: ManuallyDrop<T>) -> T
+    returns
+        m@,
+;
+
+pub assume_specification<T: Clone + ?Sized>[ <ManuallyDrop<T> as Clone>::clone ](
+    m: &ManuallyDrop<T>,
+) -> (res: ManuallyDrop<T>)
+    ensures
+        cloned(m@, res@),
+;
+
+pub assume_specification<T: ?Sized>[ <ManuallyDrop<T> as Deref>::deref ](
+    m: &ManuallyDrop<T>,
+) -> (res: &T)
+    returns
+        m.view_ref(),
+;
+
+pub broadcast axiom fn axiom_manually_drop_has_resolved<T: ?Sized>(m: &ManuallyDrop<T>)
+    ensures
+        #[trigger] has_resolved_unsized::<ManuallyDrop<T>>(m) ==> has_resolved_unsized::<T>(
+            m.view_ref(),
+        ),
+;
+
+pub broadcast group group_manually_drop_axioms {
+    axiom_manually_drop_has_resolved,
+}
+
+} // verus!

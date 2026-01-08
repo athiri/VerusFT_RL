@@ -1,28 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn twoSum(nums: &[i32], target: i32) -> (result: (usize, usize))
-    requires 
-        nums.len() > 1,
-        exists|i: int, j: int| 0 <= i < j < nums.len() && nums[i] + nums[j] == target,
-    ensures 
-        0 <= result.0 < result.1 < nums.len() && nums[result.0 as int] + nums[result.1 as int] == target
-        && forall|ii: int, jj: int| #![trigger nums[ii], nums[jj]] (0 <= ii < result.0 && ii < jj < nums.len()) ==> nums[ii] + nums[jj] != target
-        && forall|jj: int| #![trigger nums[jj]] result.0 < jj < result.1 ==> nums[result.0 as int] + nums[jj] != target,
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(c).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 3 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 0);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

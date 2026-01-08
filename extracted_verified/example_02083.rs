@@ -1,41 +1,32 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(n: int, d: int, points: Seq<(int, int)>) -> bool {
-    n >= 0 && d >= 0 && points.len() >= n
-}
-
-spec fn within_distance(point: (int, int), d: int) -> bool {
-    point.0 * point.0 + point.1 * point.1 <= d * d
-}
-
-spec fn count_points_within_distance(n: int, d: int, points: Seq<(int, int)>) -> int
-    recommends valid_input(n, d, points)
-{
-    points.subrange(0, n).filter(|point: (int, int)| within_distance(point, d)).len() as int
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, d: i8, points: Vec<(i8, i8)>) -> (result: i8)
-    requires 
-        valid_input(n as int, d as int, points@.map_values(|p: (i8, i8)| (p.0 as int, p.1 as int))),
-    ensures 
-        0 <= result as int <= n as int,
-        result as int == count_points_within_distance(n as int, d as int, points@.map_values(|p: (i8, i8)| (p.0 as int, p.1 as int)))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn bit_wise_xor(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    requires
+        arr1.len() == arr2.len(),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> result[i] == #[trigger] arr1[i] ^ #[trigger] arr2[i],
+{
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < arr1.len()
+        invariant
+            idx <= arr1.len(),
+            arr1.len() == arr2.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == arr1[i] ^ arr2[i],
+    {
+        result.push(arr1[idx] ^ arr2[idx]);
+        idx += 1;
+    }
+    
+    result
+}
+
+} // verus!

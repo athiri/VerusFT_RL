@@ -1,65 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn valid_input(number: int) -> bool {
-    number >= 0
-}
-
-spec fn valid_output(result: int, input: int) -> bool {
-    0 <= result < 1 && result == input - floor_spec(input)
-}
-
-spec fn floor_spec(x: int) -> int {
-    if x >= 0 {
-        floor_nonnegative(x)
-    } else {
-        -ceil_nonnegative(-x)
-    }
-}
-
-spec fn floor_nonnegative(x: int) -> int {
-    floor_helper(x, 0)
-}
-
-spec fn floor_helper(x: int, n: int) -> int 
-    decreases x when x >= 0 && n >= 0
-{
-    if x < 1 { 
-        n
-    } else { 
-        floor_helper(x - 1, n + 1)
-    }
-}
-
-spec fn ceil_nonnegative(x: int) -> int {
-    if x == 0 { 
-        0
-    } else if floor_nonnegative(x) == x {
-        x
-    } else {
-        floor_nonnegative(x) + 1
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn truncate_number(number: i8) -> (result: i8)
-    requires valid_input(number as int)
-    ensures valid_output(result as int, number as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, N: u32)
+	requires
+		N > 0,
+		old(a).len() == N,
+	ensures
+		forall |k:int| 0 <= k < N ==> a[k] % 2 == N % 2,
+{
+    let mut i = 0;
+    while i < N
+        invariant
+            0 <= i <= N,
+            a.len() == N,
+            forall |k:int| 0 <= k < i ==> a[k] % 2 == N % 2,
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        decreases N - i,
+    {
+        /* code modified by LLM (iteration 4): create value that preserves modulo 2 property */
+        let value = if N % 2 == 0 { 0i32 } else { 1i32 };
+        a.set(i as usize, value);
+        /* code modified by LLM (iteration 4): assert that the newly set element satisfies the modulo property */
+        assert(a[i as int] % 2 == N % 2);
+        i += 1;
+    }
+}
+}

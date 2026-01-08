@@ -1,76 +1,82 @@
 use vstd::prelude::*;
 
 verus! {
-    // Specification function for min
-    spec fn min(a: int, b: int) -> int {
-        if a < b { a } else { b }
-    }
 
-    // Proof function to establish properties of min
-    proof fn min_properties(a: int, b: int)
-        ensures 
-            min(a, b) <= a && min(a, b) <= b,
-            min(a, b) == a || min(a, b) == b,
-    {
-        // The properties follow from the definition
-    }
-
-    // Executable method for min with concrete types
-    fn minMethod(a: i32, b: i32) -> (c: i32)
-        ensures 
-            c <= a && c <= b,
-            c == a || c == b,
-            c == min(a as int, b as int),
-    {
-        if a < b {
-            a
+spec fn min_spec(seq: Seq<i32>) -> (result: int)
+    recommends
+        0 < seq.len(),
+    decreases seq.len(),
+{
+    if seq.len() == 1 {
+        seq[0] as int
+    } else if seq.len() == 0 {
+        0
+    } else {
+        let later_min = min_spec(seq.drop_first());
+        if seq[0] <= later_min {
+            seq[0] as int
         } else {
-            b
+            later_min as int
         }
-    }
-
-    // Ghost function (spec function in Verus)
-    spec fn minFunction(a: int, b: int) -> int {
-        if a < b { a } else { b }
-    }
-
-    // Proof function to establish properties of minFunction
-    proof fn minFunction_properties(a: int, b: int)
-        ensures 
-            minFunction(a, b) <= a && minFunction(a, b) <= b,
-            minFunction(a, b) == a || minFunction(a, b) == b,
-    {
-        // The properties follow from the definition
-    }
-
-    // Method to find minimum in array
-    fn minArray(a: &[i32]) -> (m: i32)
-        requires a.len() > 0
-        ensures 
-            forall|k: int| 0 <= k < a.len() ==> m <= a[k],
-            exists|k: int| 0 <= k < a.len() && m == a[k],
-    {
-        let mut min_val = a[0];
-        let mut i = 1;
-        
-        /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
-        while i < a.len()
-            invariant 
-                0 < i <= a.len(),
-                exists|k: int| 0 <= k < i && min_val == a[k],
-                forall|k: int| 0 <= k < i ==> min_val <= a[k],
-            decreases a.len() - i
-        {
-            if a[i] < min_val {
-                min_val = a[i];
-            }
-            i += 1;
-        }
-        
-        min_val
-    }
-
-    fn main() {
-        // Empty main function
     }
 }
+// pure-end
+
+fn second_smallest(numbers: &Vec<i32>) -> (indices: (usize, usize))
+    // pre-conditions-start
+    requires
+        numbers.len() >= 2,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        forall|k: int|
+            0 <= k < numbers.len() && k != indices.0 && numbers[indices.0 as int] == min_spec(
+                numbers@,
+            ) ==> (#[trigger] numbers[k] >= numbers[indices.1 as int]),
+        exists|k: int|
+            0 <= k < numbers.len() && k != indices.0 && (#[trigger] numbers[k]
+                == numbers[indices.1 as int]),
+    // post-conditions-end
+{
+    let mut min_idx = 0;
+    let mut second_min_idx = 1;
+    
+    // Find the minimum element first
+    for i in 1..numbers.len()
+        invariant
+            min_idx < numbers.len(),
+            forall|j: int| 0 <= j < i ==> numbers[min_idx as int] <= numbers[j],
+    {
+        if numbers[i] < numbers[min_idx] {
+            min_idx = i;
+        }
+    }
+    
+    // Find the second minimum (smallest among non-minimum elements)
+    if min_idx == 0 {
+        second_min_idx = 1;
+    } else {
+        second_min_idx = 0;
+    }
+    
+    for i in 0..numbers.len()
+        invariant
+            min_idx < numbers.len(),
+            second_min_idx < numbers.len(),
+            second_min_idx != min_idx,
+            forall|j: int| 0 <= j < numbers.len() ==> numbers[min_idx as int] <= numbers[j],
+            forall|j: int| 0 <= j < i && j != min_idx ==> numbers[second_min_idx as int] <= numbers[j],
+    {
+        if i != min_idx {
+            if numbers[i] < numbers[second_min_idx] {
+                second_min_idx = i;
+            }
+        }
+    }
+    
+    (min_idx, second_min_idx)
+}
+
+} // verus!
+
+fn main() {}

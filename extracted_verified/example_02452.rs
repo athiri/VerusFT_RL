@@ -1,38 +1,63 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+
+verus! {
+
+spec fn abs_spec(i: int) -> int {
+    if i < 0 { -i } else { i }
+}
+
+fn abs(i: i32) -> (res: i32)
     requires
-        N > 0,
-        old(a).len() == N,
-        old(b).len() == N,
-        old(sum).len() == 1,
-        N < 1000,
+        i != i32::MIN,
     ensures
-        forall |k:int| 0 <= k < N ==> a[k] == N + 1,
+        i < 0 ==> res == -i,
+        i >= 0 ==> res == i
 {
-    let mut i = 0;
-    while i < N
-        invariant
-            0 <= i <= N,
-            a.len() == N,
-            forall |k:int| 0 <= k < i ==> a[k] == N + 1,
-            /* code modified by LLM (iteration 1): added overflow safety invariant */
-            N < 1000, // ensures N + 1 won't overflow i32
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases N - i,
-    {
-        /* code modified by LLM (iteration 1): added assertion to help verification */
-        assert(i < N);
-        assert(0 <= i < a.len());
-        a[i as usize] = N + 1;
-        /* code modified by LLM (iteration 1): added assertion to help prove invariant maintenance */
-        assert(forall |k:int| 0 <= k < i ==> a[k] == N + 1); // old invariant still holds
-        assert(a[i as int] == N + 1); // we just set this
-        i = i + 1;
-        /* code modified by LLM (iteration 1): added assertion to prove new invariant holds */
-        assert(forall |k:int| 0 <= k < i ==> a[k] == N + 1); // now holds for new i
+    if i < 0 {
+        -i
+    } else {
+        i
     }
 }
+
+fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+    requires
+        threshold > 0,
+        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+    ensures
+        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+{
+    let mut i = 0;
+    while i < numbers.len()
+        invariant
+            0 <= i <= numbers.len(),
+            forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers@[x] - numbers@[y]) >= threshold
+        /* code modified by LLM (iteration 1): Added decreases clause for outer loop termination */
+        decreases numbers.len() - i
+    {
+        let mut j = 0;
+        while j < numbers.len()
+            invariant
+                0 <= i < numbers.len(),
+                0 <= j <= numbers.len(),
+                forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers@[x] - numbers@[y]) >= threshold,
+                forall|y: int| 0 <= y && y < j && i as int != y ==> abs_spec(numbers@[i as int] - numbers@[y]) >= threshold
+            /* code modified by LLM (iteration 1): Added decreases clause for inner loop termination */
+            decreases numbers.len() - j
+        {
+            if i != j {
+                let diff = numbers[i] - numbers[j];
+                let abs_diff = abs(diff);
+                if abs_diff < threshold {
+                    return true;
+                }
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    false
+}
+
+fn main() {}
 }

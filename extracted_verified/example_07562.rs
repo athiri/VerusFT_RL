@@ -1,30 +1,66 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition function
-spec fn my_min_precond(a: int, b: int) -> bool {
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn is_min_heap(a: &Vec<i32>) -> (result: bool)
+    requires a.len() > 0
+    ensures 
+        result ==> forall|i: int| 0 <= i < (a.len() as int) / 2 ==> {
+            let left_idx = 2 * i + 1;
+            let right_idx = 2 * i + 2;
+            (left_idx < a.len()) ==> (#[trigger] a[i as int] <= a[left_idx]) &&
+            (right_idx < a.len()) ==> (a[i as int] <= a[right_idx])
+        },
+        !result ==> exists|i: int| 0 <= i < (a.len() as int) / 2 && {
+            let left_idx = 2 * i + 1;
+            let right_idx = 2 * i + 2;
+            (#[trigger] a[i as int] > a[left_idx] && left_idx < a.len()) ||
+            (a[i as int] > a[right_idx] && right_idx < a.len())
+        }
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 2): added trigger to loop invariant to fix verification error */
+    let mut i: usize = 0;
+    let n = a.len();
+    while i < n / 2
+        invariant
+            n == a.len(),
+            0 <= i <= n / 2,
+            forall|j: int| 0 <= j < (i as int) ==> {
+                let left_idx = 2 * j + 1;
+                let right_idx = 2 * j + 2;
+                (left_idx < n as int) ==> (#[trigger] a.view()[j] <= a.view()[left_idx]) &&
+                (right_idx < n as int) ==> (a.view()[j] <= a.view()[right_idx])
+            },
+        decreases (n / 2) - i
+    {
+        let left_idx = 2 * i + 1;
+        if left_idx < n {
+            if a[i] > a[left_idx] {
+                return false;
+            }
+        }
+
+        let right_idx = 2 * i + 2;
+        if right_idx < n {
+            if a[i] > a[right_idx] {
+                return false;
+            }
+        }
+        
+        i = i + 1;
+    }
     true
 }
+// </vc-code>
 
-// Postcondition function
-spec fn my_min_postcond(a: int, b: int, result: int) -> bool {
-    (result <= a && result <= b) && 
-    (result == a || result == b)
 }
-
-// The main function with specification
-fn my_min(a: i32, b: i32) -> (result: i32)
-    requires my_min_precond(a as int, b as int),
-    ensures my_min_postcond(a as int, b as int, result as int),
-{
-    if a <= b {
-        a
-    } else {
-        b
-    }
-}
-
-} // verus!
-
 fn main() {}

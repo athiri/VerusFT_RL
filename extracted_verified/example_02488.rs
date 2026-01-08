@@ -1,38 +1,58 @@
 use vstd::prelude::*;
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
 verus! {
 
-fn smallest_list_length(list: &Vec<Vec<i32>>) -> (min: usize)
+#[verifier::loop_isolation(false)]
+fn is_prime(n: u32) -> (result: bool)
     requires
-        list.len() > 0,
+        n >= 2,
     ensures
-        min >= 0,
-        forall|i: int| 0 <= i < list.len() ==> min <= #[trigger] list[i].len(),
-        exists|i: int| 0 <= i < list.len() && min == #[trigger] list[i].len(),
+        result ==> (forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0),
+        !result ==> exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    let mut min = list[0].len();
-    let mut j = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while j < list.len()
+    let mut i = 2u32;
+    while i < n
         invariant
-            1 <= j <= list.len(),
-            min >= 0,
-            forall|i: int| 0 <= i < j ==> min <= #[trigger] list[i].len(),
-            exists|i: int| 0 <= i < j && min == #[trigger] list[i].len(),
-        decreases list.len() - j,
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
     {
-        if list[j].len() < min {
-            min = list[j].len();
+        if n % i == 0 {
+            return false;
         }
-        j += 1;
+        i = i + 1;
     }
-    
-    min
+    true
 }
 
-} // verus!
+spec fn is_prime_pred(n: u32) -> bool {
+    forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0
+}
+
+#[verifier::loop_isolation(false)]
+fn largest_prime_factor(n: u32) -> (result: u32)
+    requires
+        2 <= n <= u32::MAX - 1,
+    ensures
+        1 <= result <= n,
+        result == 1 || (result > 1 && is_prime_pred(result))
+{
+    let mut largest = 1u32;
+    let mut i = 2u32;
+    
+    while i <= n
+        invariant
+            2 <= i <= n + 1,
+            1 <= largest <= n,
+            largest == 1 || (largest > 1 && is_prime_pred(largest)),
+    {
+        if n % i == 0 && is_prime(i) {
+            largest = i;
+        }
+        i = i + 1;
+    }
+    
+    largest
+}
+
+fn main() {}
+}

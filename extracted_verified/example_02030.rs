@@ -1,39 +1,52 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, r: int) -> bool {
-    n >= 1 && r >= 1
-}
-
-spec fn expected_result(n: int, r: int) -> int {
-    if valid_input(n, r) {
-        let k = if r < n - 1 { r } else { n - 1 };
-        k * (k + 1) / 2 + if r >= n { 1int } else { 0int }
-    } else {
-        0int
-    }
-}
-
-fn solve_shapes(n: i8, r: i8) -> (result: i8)
-    requires valid_input(n as int, r as int)
-    ensures result as int == expected_result(n as int, r as int)
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-// </vc-spec>
-// <vc-code>
+fn is_sub_list_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    assume(false);
-    unreached()
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
-// </vc-code>
 
-
+fn is_sub_list(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
+{
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int, l: int| 0 <= k < idx && l == k + sub.len() ==> main@.subrange(k, l) !=~= sub@,
+    {
+        if is_sub_list_at_index(main, sub, idx) {
+            return true;
+        }
+        idx += 1;
+    }
+    false
 }
 
-fn main() {}
+} // verus!

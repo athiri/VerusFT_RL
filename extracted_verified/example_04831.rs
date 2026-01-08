@@ -2,28 +2,33 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn has_only_one_distinct_element(a: &[i32]) -> (result: bool)
+fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
     ensures
-        result ==> forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() ==> a[i] == a[j],
-        !result ==> exists|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() && a[i] != a[j],
+        -1 <= p < v@.len(),
+        forall|u: int| 0 <= u <= p ==> v@[u] <= elem,
+        forall|w: int| p < w < v@.len() ==> v@[w] > elem,
+    decreases f - c + 1
 {
-    if a.len() == 0 {
-        return true;
+    if c > f {
+        return -1;
     }
     
-    let first = a[0];
+    let mid = c + (f - c) / 2;
     
-    for i in 1..a.len()
-        invariant
-            forall|k: int| 0 <= k < i ==> a[k] == first,
-    {
-        if a[i] != first {
-            return false;
+    /* code modified by LLM (iteration 1): fixed compilation error by using v@.len() instead of v.len() for Verus compatibility */
+    if 0 <= mid < v@.len() as isize {
+        if v[mid as usize] <= elem {
+            if mid == f || (mid + 1 < v@.len() as isize && v[(mid + 1) as usize] > elem) {
+                return mid;
+            } else {
+                return binary_search_recursive(v, elem, mid + 1, f);
+            }
+        } else {
+            return binary_search_recursive(v, elem, c, mid - 1);
         }
+    } else {
+        return binary_search_recursive(v, elem, c, mid - 1);
     }
-    
-    true
 }
 
 fn main() {}

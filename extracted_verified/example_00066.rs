@@ -1,52 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn int_to_binary(n: nat) -> Seq<char> {
-    if n == 0 { seq!['0'] }
-    else { int_to_binary_helper(n) }
-}
-
-spec fn int_to_binary_helper(n: nat) -> Seq<char>
-    decreases n
-{
-    if n <= 1 { seq!['1'] }
-    else { int_to_binary_helper(n / 2) + (if n % 2 == 1 { seq!['1'] } else { seq!['0'] }) }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn rounded_avg(n: int, m: int) -> (result: String)
-    requires n > 0 && m > 0
-    ensures (n > m) ==> (result@ == seq!['-', '1']) &&
-            (n <= m) ==> (
-        result@.len() >= 3 &&
-        result@.subrange(0, 2) == seq!['0', 'b'] &&
-        ({
-            let count = m - n + 1;
-            let total_sum = count * (n + m) / 2;
-            let quotient = total_sum / count;
-            let remainder = total_sum % count;
-            let rounded = if remainder * 2 < count { quotient }
-                         else if remainder * 2 > count { quotient + 1 }
-                         else if quotient % 2 == 0 { quotient }
-                         else { quotient + 1 };
-            result@ == seq!['0', 'b'] + int_to_binary(rounded as nat)
-        })
-    )
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    "".to_string()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		forall |k:int| 0 <= k < N ==> b[k] == N + 2,
+{
+    let mut i = 0;
+    while i < N
+        invariant
+            0 <= i <= N,
+            b.len() == N,
+            forall |k:int| 0 <= k < i ==> b[k] == N + 2,
+            /* code modified by LLM (iteration 1): added bound to prevent overflow */
+            N + 2 <= i32::MAX,
+        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+        decreases N - i,
+    {
+        /* code modified by LLM (iteration 1): reordered operations to maintain invariant */
+        b[i as usize] = N + 2;
+        i = i + 1;
+    }
+}
+}

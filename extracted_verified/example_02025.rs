@@ -1,59 +1,31 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(cards: Seq<int>) -> bool {
-    cards.len() == 5 && forall|i: int| 0 <= i < cards.len() ==> cards[i] > 0
-}
-
-spec fn sum(cards: Seq<int>) -> int
-    decreases cards.len()
+fn get_first_elements(arr: &Vec<Vec<i32>>) -> (result: Vec<i32>)
+    requires
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] arr[i].len() > 0,
+    ensures
+        arr.len() == result.len(),
+        forall|i: int| 0 <= i < arr.len() ==> #[trigger] result[i] == #[trigger] arr[i][0],
 {
-    if cards.len() == 0 {
-        0
-    } else {
-        cards[0] + sum(cards.subrange(1, cards.len() as int))
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] arr[j][0],
+            forall|k: int| 0 <= k < arr.len() ==> #[trigger] arr[k].len() > 0,
+    {
+        result.push(arr[i][0]);
+        i += 1;
     }
+    
+    result
 }
 
-spec fn min_possible_sum_up_to_index(cards: Seq<int>, index: int) -> int 
-    decreases index when index >= 0
-{
-    if index <= 0 {
-        sum(cards)
-    } else {
-        min_possible_sum_up_to_index(cards, index - 1)
-    }
-}
-
-spec fn min_possible_sum(cards: Seq<int>) -> int {
-    min_possible_sum_up_to_index(cards, 5)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(cards: Vec<i8>) -> (result: i8)
-    requires 
-        valid_input(cards@.map(|_index, x: i8| x as int)),
-    ensures 
-        result >= 0,
-        result as int <= sum(cards@.map(|_index, x: i8| x as int)),
-        result as int == min_possible_sum(cards@.map(|_index, x: i8| x as int))
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

@@ -1,50 +1,65 @@
-// <vc-preamble>
+#![verifier::loop_isolation(false)]
+use vstd::math::*;
 use vstd::prelude::*;
 
-verus! {
-spec fn sum_seq(s: Seq<int>) -> int
-    decreases s.len()
-{
-    if s.len() == 0 { 0 } else { s[0] + sum_seq(s.subrange(1, s.len() as int)) }
+fn main() {
 }
 
-spec fn min_seq(s: Seq<int>) -> int
-    decreases s.len()
+verus! {
+
+spec fn max_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    if s.len() == 0 { 
-        0
-    } else if s.len() == 1 { 
-        s[0] 
-    } else { 
-        let rest_min = min_seq(s.subrange(1, s.len() as int));
-        if s[0] <= rest_min { s[0] } else { rest_min }
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        max(seq.last() as int, max_rcur(seq.drop_last()))
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: Vec<i8>) -> (result: i8)
-    requires a@.len() >= 2
-    ensures ({
-        let count_neg = Set::new(|i: int| 0 <= i < a@.len() && a@[i] < 0).len();
-        let sum_abs = sum_seq(Seq::new(a@.len(), |i: int| if a@[i] < 0 { -a@[i] as int } else { a@[i] as int }));
-        let min_abs = min_seq(Seq::new(a@.len(), |i: int| if a@[i] < 0 { -a@[i] as int } else { a@[i] as int }));
-        result as int == if count_neg % 2 == 0 { sum_abs } else { sum_abs - 2 * min_abs }
-    })
-// </vc-spec>
-// <vc-code>
+spec fn min_rcur(seq: Seq<i32>) -> int
+    decreases seq.len(),
 {
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
+    if seq.len() <= 1 {
+        seq.first() as int
+    } else {
+        min(seq.last() as int, min_rcur(seq.drop_last()))
+    }
 }
 
-fn main() {}
+fn difference_max_min(arr: &Vec<i32>) -> (diff: i32)
+    requires
+        arr.len() > 0,
+        forall|i: int| 0 <= i < arr.len() ==> i32::MIN / 2 < #[trigger] arr[i] < i32::MAX / 2,
+    ensures
+        diff == max_rcur(arr@) - min_rcur(arr@),
+{
+    let mut max_val = arr[0];
+    let mut min_val = arr[0];
+    
+    let mut i = 1;
+    while i < arr.len()
+        invariant
+            1 <= i <= arr.len(),
+            max_val == max_rcur(arr@.subrange(0, i as int)),
+            min_val == min_rcur(arr@.subrange(0, i as int)),
+            i32::MIN / 2 < max_val < i32::MAX / 2,
+            i32::MIN / 2 < min_val < i32::MAX / 2,
+    {
+        if arr[i] > max_val {
+            max_val = arr[i];
+        }
+        if arr[i] < min_val {
+            min_val = arr[i];
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr@.subrange(0, arr.len() as int) == arr@);
+    }
+    
+    max_val - min_val
+}
+
+} // verus!

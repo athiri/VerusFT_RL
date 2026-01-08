@@ -1,27 +1,37 @@
-// <vc-preamble>
+//This is an example taken from Verus tutorial
+
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn frombuffer(buffer: &Vec<u8>, count: usize, offset: usize) -> (result: Vec<u8>)
-    requires 
-        offset + count <= buffer.len(),
-        offset < buffer.len() || count == 0,
-    ensures
-        result.len() == count,
-        forall|i: int| 0 <= i < count ==> result[i] == buffer[offset + i],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus!{
+     
+pub proof fn lemma_len_intersect<A>(s1: Set<A>, s2: Set<A>)
+    requires
+        s1.finite(),
+    ensures
+        s1.intersect(s2).len() <= s1.len(),
+    decreases
+        s1.len(),
+{
+    if s1.is_empty() {
+        assert(s1.intersect(s2).len() == 0) by {
+            assert(s1.intersect(s2) =~= s1);
+        }
+    } else {
+        let a = s1.choose();
+        lemma_len_intersect(s1.remove(a), s2);
+        
+        assert(s1.intersect(s2).remove(a).len() <= s1.remove(a).len()) by {
+            assert(s1.intersect(s2).remove(a) =~= s1.remove(a).intersect(s2));
+        }
+        
+        if s2.contains(a) {
+            assert(s1.intersect(s2).len() == s1.intersect(s2).remove(a).len() + 1);
+            assert(s1.len() == s1.remove(a).len() + 1);
+        } else {
+            assert(s1.intersect(s2) =~= s1.intersect(s2).remove(a));
+            assert(s1.len() == s1.remove(a).len() + 1);
+        }
+    }
+}
+}

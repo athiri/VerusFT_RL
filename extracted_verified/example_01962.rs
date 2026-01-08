@@ -1,55 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // Main function can be empty for this verification exercise
+}
 
 verus! {
 
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() > 0 &&
-    (exists|i: int| 0 <= i < input.len() && input[i] == ' ') &&
-    (forall|j: int| 0 <= j < input.len() ==> 
-        ('0' <= input[j] <= '9' || input[j] == ' ' || input[j] == '\n'))
-}
-
-spec fn gcd(a: nat, b: nat) -> nat 
-    decreases a + b
+fn is_odd_at_odd_index(arr: &Vec<usize>) -> (result: bool)
+    ensures
+        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
 {
-    if a == 0 { b }
-    else if b == 0 { a }
-    else if a > b { gcd((a - b) as nat, b) }
-    else { gcd(a, (b - a) as nat) }
+    let mut index = 0;
+    
+    while index < arr.len()
+        invariant
+            0 <= index <= arr.len(),
+            forall|i: int| 0 <= i < index ==> ((i % 2) == (arr[i] % 2)),
+    {
+        if (index % 2) != (arr[index] % 2) {
+            return false;
+        }
+        index += 1;
+    }
+    
+    true
 }
 
-#[verifier::opaque]
-spec fn f_mathematical(x: nat, y: nat) -> nat
-    decreases y
-{
-    y / 2
-}
-
-spec fn valid_output(result: Seq<char>) -> bool {
-    result.len() > 0 &&
-    (forall|i: int| 0 <= i < result.len() ==> 
-        ('0' <= result[i] <= '9' || result[i] == '\n')) &&
-    result[result.len() - 1] == '\n'
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<char>)
-    requires valid_input(input@)
-    ensures valid_output(result@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

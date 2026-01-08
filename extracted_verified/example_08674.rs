@@ -1,95 +1,58 @@
-use vstd::prelude::*;
+//! The [`calc`] macro provides support for reasoning about a structured proof calculation.
+#![allow(unused_imports)]
+use super::pervasive::*;
+use super::prelude::*;
 
 verus! {
-    // Custom Real type for this translation
-    // In practice, you might want to use a more sophisticated real number representation
-    pub struct Real {
-        pub value: int, // simplified representation - in real usage you'd want proper reals
-    }
 
-    impl Real {
-        pub open spec fn new(value: int) -> Real {
-            Real { value }
-        }
-        
-        pub open spec fn add(self, other: Real) -> Real {
-            Real { value: self.value + other.value }
-        }
-        
-        pub open spec fn mul(self, other: Real) -> Real {
-            Real { value: self.value * other.value }
-        }
-        
-        pub open spec fn div(self, divisor: int) -> Real {
-            Real { value: self.value / divisor }
-        }
-        
-        pub open spec fn le(self, other: Real) -> bool {
-            self.value <= other.value
-        }
-        
-        pub open spec fn lt(self, other: Real) -> bool {
-            self.value < other.value
-        }
-        
-        pub open spec fn gt(self, other: Real) -> bool {
-            self.value > other.value
-        }
-        
-        pub open spec fn ge(self, other: Real) -> bool {
-            self.value >= other.value
-        }
-        
-        pub open spec fn eq(self, other: Real) -> bool {
-            self.value == other.value
-        }
-    }
-
-    // Uninterpreted function representing the exponential function
-    uninterp spec fn exp(x: Real) -> Real;
-
-    // Axiom: Functional equation Exp(x + y) == Exp(x) * Exp(y)
-    // Corresponds to Dafny's FunctionalEquation lemma
-    proof fn functional_equation(x: Real, y: Real)
-        ensures exp(x.add(y)).eq(exp(x).mul(exp(y)))
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    // Axiom: Increasing property
-    // Corresponds to Dafny's Increasing lemma
-    proof fn increasing(x: Real, y: Real)
-        requires x.lt(y)
-        ensures exp(x).lt(exp(y))
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    // Axiom: Evaluation at 1 (bounds for e)
-    // Corresponds to Dafny's EvalOne lemma
-    proof fn eval_one()
-        ensures Real::new(2718281828).le(exp(Real::new(1))) && exp(Real::new(1)).le(Real::new(2718281829))
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    // Lemma: Exponential is always positive
-    // Corresponds to Dafny's Positive lemma
-    proof fn positive(x: Real)
-        ensures exp(x).gt(Real::new(0))
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
-
-    // Lemma: Evaluation at 0
-    // Corresponds to Dafny's EvalZero lemma
-    proof fn eval_zero()
-        ensures exp(Real::new(0)).eq(Real::new(1))
-    {
-    assume(false);  // TODO: Remove this line and implement the proof
-    }
+/// The `calc!` macro supports structured proofs through calculations.
+///
+/// In particular, one can show `a_1 R a_n` for some transitive relation `R` by performing a series
+/// of steps `a_1 R a_2`, `a_2 R a_3`, ... `a_{n-1} R a_n`. The calc macro provides both convenient
+/// syntax sugar to perform such a proof conveniently, without repeating oneself too often, or
+/// exposing the internal steps to the outside context.
+///
+/// The expected usage looks like:
+///
+/// ```
+/// calc! {
+///   (R)
+///   a_1; { /* proof that a_1 R a_2 */ }
+///   a_2; { /* proof that a_2 R a_3 */ }
+///    ...
+///   a_n;
+/// }
+/// ```
+///
+/// Currently, the `calc!` macro supports common transitive relations for `R`, and this set of
+/// relations may be extended in the future.
+///
+/// Note that `calc!` also supports stating intermediate relations, as long as they are consistent
+/// with the main relation `R`. If consistency cannot be immediately shown, Verus will give a
+/// helpful message about this. Intermediate relations can be specified by placing them right before
+/// the proof block of that step.
+///
+/// A simple example of using intermediate relations looks like:
+///
+/// ```
+/// let x: int = 2;
+/// let y: int = 5;
+/// calc! {
+///   (<=)
+///   x; (==) {}
+///   5 - 3; (<) {}
+///   5; {} // Notice that no intermediate relation is specified here, so `calc!` will consider the top-level relation `R`; here `<=`.
+///   y;
+/// }
+/// ```
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! calc {
+    ($($tt:tt)*) => {
+        $crate::vstd::prelude::calc_proc_macro!($($tt)*)
+    };
 }
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+pub use calc;
+
+} // verus!

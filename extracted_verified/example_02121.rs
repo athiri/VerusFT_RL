@@ -1,49 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(n: int, p: int, a: Seq<int>) -> bool {
-    n >= 2 && p >= 2 && a.len() == n && forall|i: int| 0 <= i < n ==> a[i] >= 1
-}
-
-spec fn split_score(a: Seq<int>, split_idx: int, p: int) -> int {
-    0 /* placeholder for split score calculation */
-}
-
-spec fn max_seq(scores: Seq<int>) -> int {
-    0 /* placeholder for maximum value in sequence */
-}
-
-spec fn max_split_score(a: Seq<int>, p: int) -> int
-    recommends a.len() >= 2, p >= 2
+fn max_length_list(seq: &Vec<Vec<i32>>) -> (max_list: &Vec<i32>)
+    requires
+        seq.len() > 0,
+    ensures
+        forall|k: int| 0 <= k < seq.len() ==> max_list.len() >= #[trigger] (seq[k]).len(),
+        exists|k: int| 0 <= k < seq.len() && max_list@ =~= #[trigger] (seq[k]@),
 {
-    let scores = Seq::new((a.len() - 1) as nat, |i: int| split_score(a, i + 1, p));
-    max_seq(scores)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, p: i8, a: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, p as int, a@.map_values(|x: i8| x as int))
-    ensures 
-        result >= 0 &&
-        result < 2 * p &&
-        result as int == max_split_score(a@.map_values(|x: i8| x as int), p as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
+    let mut max_idx: usize = 0;
+    let mut i: usize = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+    while i < seq.len()
+        invariant
+            0 <= max_idx < seq.len(),
+            1 <= i <= seq.len(),
+            forall|k: int| 0 <= k < i ==> seq[max_idx as int].len() >= seq[k].len(),
+        decreases seq.len() - i
+    {
+        if seq[i].len() > seq[max_idx].len() {
+            max_idx = i;
+        }
+        i += 1;
+    }
+    
+    &seq[max_idx]
 }
 
-fn main() {}
+} // verus!

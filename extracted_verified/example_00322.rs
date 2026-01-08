@@ -1,25 +1,15 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn min_array(a: &Vec<i32>) -> (result: i32)
-    requires a.len() > 0,
-    ensures
-        forall|i: int| 0 <= i < a.len() ==> result <= a[i],
-        exists|i: int| 0 <= i < a.len() && result == a[i],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+	ensures
+		sum[0] <= N,
+{
+    sum.set(0, 0);
+}
+}

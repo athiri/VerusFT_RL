@@ -1,45 +1,27 @@
 use vstd::prelude::*;
 
-fn main() {}
 verus! {
+    // Predicate for primeness
+    spec fn prime(n: nat) -> bool {
+        n > 1 && (forall|nr: nat| 1 < nr < n ==> #[trigger] (n % nr) != 0)
+    }
 
-fn binary_search(v: &Vec<u64>, k: u64) -> (r: usize)
-    requires
-        forall|i: int, j: int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        exists|i: int| 0 <= i < v.len() && k == v[i],
-    ensures
-        r < v.len(),
-        k == v[r as int],
-{
-    let mut left: usize = 0;
-    let mut right: usize = v.len();
-    
-    while left < right
-        invariant
-            left <= right <= v.len(),
-            exists|i: int| left <= i < right && k == v[i],
-            forall|i: int, j: int| 0 <= i <= j < v.len() ==> v[i] <= v[j],
-        decreases right - left,
+    // Datatype for Answer
+    #[derive(PartialEq, Eq)]
+    enum Answer {
+        Yes,
+        No,
+        Unknown,
+    }
+
+    // Method to test whether a number is prime, returns bool
+    fn test_primeness(n: u64) -> (result: bool)
+        ensures result == prime(n as nat)
     {
-        let mid = left + (right - left) / 2;
-        
-        if v[mid] == k {
-            return mid;
-        } else if v[mid] < k {
-            left = mid + 1;
-        } else {
-            right = mid;
-        }
+    return false;  // TODO: Remove this line and implement the function body
     }
-    
-    /* code modified by LLM (iteration 1): replaced unreachable!() with assert(false) since the loop invariant guarantees this point is unreachable */
-    proof {
-        assert(left == right);
-        assert(exists|i: int| left <= i < right && k == v[i]);
-        assert(left <= left < right);
-        assert(false);
-    }
-    0  // This line will never be reached
-}
 
-} // verus!
+    fn main() {
+    // TODO: Remove this comment and implement the function body
+    }
+}

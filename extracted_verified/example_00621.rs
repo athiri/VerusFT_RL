@@ -1,34 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
+verus!{
 
-spec fn sum_ints(n: int) -> int
-    decreases n when n >= 0
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	// pre-conditions-start
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 5 * N,
+	// post-conditions-end
 {
-    if n <= 0 {
-        0
-    } else {
-        sum_ints(n - 1) + n
-    }
+    sum.set(0, 0);
 }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn sum_ints_loop(n: u32) -> (s: u32)
-    ensures 
-        s == sum_ints(n as int),
-        s == n * (n + 1) / 2
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
 }
-// </vc-code>
 
-}
 fn main() {}

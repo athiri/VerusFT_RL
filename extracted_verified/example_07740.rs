@@ -1,65 +1,121 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Precondition function (always true in this case)
-pub open spec fn append_precond(a: Seq<int>, b: int) -> bool {
-    true
+spec fn count7_r(x: nat) -> nat 
+    decreases x
+{
+    let lst = if x % 10 == 7 { 1 as nat } else { 0 as nat };
+    if x < 10 { lst } else { lst + count7_r(x / 10) }
 }
 
-// Helper function to copy array elements
-fn copy(a: &Vec<int>, i: usize, acc: &mut Vec<int>)
-    requires
-        i <= a.len(),
-        old(acc).len() == i,
-        forall|j: int| 0 <= j < i ==> old(acc)[j] == a[j],
-    ensures
-        acc.len() == a.len(),
-        forall|j: int| 0 <= j < a.len() ==> acc[j] == a[j],
-    decreases a.len() - i,
+spec fn sum(s: Seq<int>) -> int 
+    decreases s.len()
 {
-    if i < a.len() {
-        acc.push(a[i]);
-        copy(a, i + 1, acc);
+    if s.len() == 0 { 0 } else { s[0] + sum(s.subrange(1, s.len() as int)) }
+}
+// </vc-preamble>
+
+// <vc-helpers>
+/* helper modified by LLM (iteration 4): lemma decomposing count7_r into last digit and rest */
+proof fn count7_r_decompose(x: nat)
+    ensures count7_r(x) == (if x % 10 == 7 { 1 as nat } else { 0 as nat }) + count7_r(x / 10),
+    decreases x
+{
+    if x < 10 {
+        if x % 10 == 7 {
+            assert(count7_r(x) == 1);
+            assert(count7_r(x / 10) == 0);
+            assert(count7_r(x) == 1 + 0);
+        } else {
+            assert(count7_r(x) == 0);
+            assert(count7_r(x / 10) == 0);
+            assert(count7_r(x) == 0 + 0);
+        }
+    } else {
+        assert(count7_r(x) == (if x % 10 == 7 { 1 as nat } else { 0 as nat }) + count7_r(x / 10));
     }
 }
 
-// Main append function
-pub fn append(a: &Vec<int>, b: int) -> (result: Vec<int>)
-    requires
-        append_precond(a@, b),
-    ensures
-        append_postcond(a@, b, result@),
+/* helper modified by LLM (iteration 4): lemma bounding count7_r for u8 range */
+proof fn count7_r_le_3(x: nat)
+    requires x <= 255,
+    ensures count7_r(x) <= 3,
+    decreases x
 {
-    let mut result = Vec::new();
-    copy(a, 0, &mut result);
-    result.push(b);
-    result
+    if x < 10 {
+        assert(count7_r(x) <= 1);
+    } else if x < 100 {
+        let y = x / 10;
+        count7_r_le_3(y);
+        count7_r_decompose(x);
+        assert(count7_r(x) <= 2);
+    } else {
+        let y = x / 10; // y < 26 for x <= 255
+        if y < 10 {
+            count7_r_le_3(y);
+            count7_r_decompose(x);
+            assert(count7_r(x) <= 2);
+        } else {
+            let z = y / 10;
+            count7_r_le_3(z);
+            count7_r_decompose(y);
+            assert(count7_r(y) <= 2);
+            count7_r_decompose(x);
+            assert(count7_r(x) <= 3);
+        }
+    }
 }
 
-// Postcondition specification
-pub open spec fn append_postcond(a: Seq<int>, b: int, result: Seq<int>) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-    result[a.len() as int] == b &&
-    result.len() == a.len() + 1
-}
+// </vc-helpers>
 
-// Theorem equivalent (specification-level lemma)
-proof fn append_spec_satisfied(a: Seq<int>, b: int, result: Seq<int>)
-    requires
-        append_precond(a, b),
-        // Assume the result satisfies what append would produce
-        (forall|i: int| 0 <= i < a.len() ==> result[i] == a[i]) &&
-        result[a.len() as int] == b &&
-        result.len() == a.len() + 1,
-    ensures
-        append_postcond(a, b, result),
+// <vc-spec>
+fn count7(x: u8) -> (count: u8)
+    ensures count as nat == count7_r(x as nat)
+// </vc-spec>
+// <vc-code>
+/* code modified by LLM (iteration 4): maintain invariant using decomposition lemma and bounding lemma */
 {
-    // The postcondition is exactly the same as the assumptions,
-    // so the proof is trivial by the definition of append_postcond
+    let mut n: u8 = x;
+    let mut c: u8 = 0;
+    proof {
+        count7_r_le_3(x as nat);
+        assert((c as nat) + count7_r(n as nat) == count7_r(x as nat));
+        assert((c as nat) <= 3);
+    }
+    while n > 0
+        invariant
+            (c as nat) + count7_r(n as nat) == count7_r(x as nat),
+            (c as nat) <= 3,
+        decreases n as nat
+    {
+        let old_n = n;
+        let old_c = c;
+        proof {
+            count7_r_decompose(old_n as nat);
+        }
+        if old_n % 10u8 == 7u8 {
+            c = old_c + 1;
+        } else {
+            c = old_c;
+        }
+        n = old_n / 10u8;
+        proof {
+            // preserve invariant using decomposition and previous invariant
+            assert((old_c as nat) + count7_r(old_n as nat) == count7_r(x as nat));
+            assert(count7_r(old_n as nat) == (if old_n % 10u8 == 7u8 { 1 as nat } else { 0 as nat }) + count7_r((old_n / 10u8) as nat));
+            assert((c as nat) + count7_r(n as nat) == count7_r(x as nat));
+            count7_r_le_3(x as nat);
+            assert((c as nat) <= 3);
+        }
+    }
+    c
 }
 
-} // verus!
+// </vc-code>
 
-fn main() {
+
 }
+
+fn main() {}

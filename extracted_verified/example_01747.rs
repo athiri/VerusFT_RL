@@ -1,41 +1,19 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-spec fn pow(base: int, exp: int) -> int
-  decreases exp
+fn max_length_list(seq: &Vec<Vec<i32>>) -> (max_list: &Vec<i32>)
+    requires
+        seq.len() > 0,
+    ensures
+        forall|k: int| 0 <= k < seq.len() ==> max_list.len() >= #[trigger] (seq[k]).len(),
+        exists|k: int| 0 <= k < seq.len() && max_list@ =~= #[trigger] (seq[k]@),
 {
-  if exp <= 0 { 1 }
-  else { base * pow(base, exp - 1) }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(a: i8, b: i8) -> (years: i8)
-  requires 
-      1 <= a <= b <= 10,
-      forall|base: int, exp: int| exp >= 0 ==> (
-          (exp == 0 ==> pow(base, exp) == 1) &&
-          (exp > 0 && base > 0 ==> pow(base, exp) > 0) &&
-          (exp > 0 && base == 0 ==> pow(base, exp) == 0)
-      ),
-  ensures 
-      years >= 0,
-      (a as int) * pow(3, years as int) > (b as int) * pow(2, years as int),
-      years == 0 || (a as int) * pow(3, (years - 1) as int) <= (b as int) * pow(2, (years - 1) as int),
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
+} // verus!

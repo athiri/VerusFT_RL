@@ -1,27 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn argmax(arr: &Vec<i8>) -> (result: usize)
-    requires arr.len() > 0,
-    ensures 
-        result < arr.len(),
-        forall|i: int| 0 <= i && i < arr.len() ==> arr@[i] <= arr@[result as int],
-        forall|i: int| 0 <= i && i < result as int ==> arr@[i] < arr@[result as int],
-        forall|i: int| (result as int) < i && i < arr.len() ==> arr@[i] <= arr@[result as int],
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(c).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] <= 3 * N,
+{
+    sum.set(0, 0);
+}
+}

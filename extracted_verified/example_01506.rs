@@ -1,24 +1,19 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn ones_like<T>(a: &Vec<T>) -> (result: Vec<i32>)
-    ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i < result.len() ==> result[i] == 1,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus! {
+
+fn append(v: &Vec<u64>, elem: u64) -> (c: Vec<u64>)
+    requires
+        v.len() <= 100,
+    ensures
+        c@.len() == v@.len() + 1,
+        forall|i: int| (0 <= i && i < v.len()) ==> c[i] == v[i],
+        c@.last() == elem,
+{
+    let mut c = v.clone();
+    c.push(elem);
+    c
+}
+
+} // verus!

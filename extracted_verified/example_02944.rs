@@ -1,23 +1,48 @@
 use vstd::prelude::*;
 
-verus!{
-fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	// pre-conditions-start
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(c).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	// pre-conditions-end
-	// post-conditions-start
-	ensures
-		sum[0] <= 3 * N,
-	// post-conditions-end
-{
-    sum.set(0, 0);
+verus! {
+
+spec fn is_divisible(n: int, divisor: int) -> (ret:bool) {
+    (n % divisor) == 0
 }
+// pure-end
+
+spec fn is_prime(n: int) -> (ret:bool) {
+    if n < 2 {
+        false
+    } else {
+        (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k))
+    }
+}
+// pure-end
+
+fn prime_length(str: &[char]) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == is_prime(str.len() as int),
+    // post-conditions-end
+{
+    let len = str.len();
+    let n = len as int;
+    
+    if n < 2 {
+        return false;
+    }
+    
+    let mut i: usize = 2;
+    while i < len
+        invariant
+            2 <= i <= len,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n, k),
+    {
+        if len % i == 0 {
+            return false;
+        }
+        i += 1;
+    }
+    
+    true
 }
 
+} // verus!
 fn main() {}

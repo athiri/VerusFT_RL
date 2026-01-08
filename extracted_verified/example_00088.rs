@@ -1,34 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn monotonic(l: Seq<int>) -> bool {
-    if l.len() <= 1 {
-        true
-    } else {
-        let increasing = forall|i: nat| #![trigger l[i as int]] i < l.len() - 1 ==> l[i as int] <= l[(i + 1) as int];
-        let decreasing = forall|i: nat| #![trigger l[i as int]] i < l.len() - 1 ==> l[i as int] >= l[(i + 1) as int];
-        increasing || decreasing
-    }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_monotonic(l: Vec<i8>) -> (result: bool)
-    ensures result == monotonic(l@.map(|_i: int, x: i8| x as int))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    false
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+		N < 1000,
+	ensures
+		sum[0] <= 4 * N,
+{
+    sum.set(0, 0);
+}
+}

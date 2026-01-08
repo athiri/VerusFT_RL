@@ -1,22 +1,22 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn second_largest(a: &[i32]) -> (seclar: i32)
-    requires a.len() > 0
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(b).len() == N,
+		old(sum).len() == 1,
+        N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] <= 2 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum[0] = 0;
 }
-// </vc-code>
+}
 
-}
 fn main() {}

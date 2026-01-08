@@ -1,43 +1,64 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
-
-fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
-    requires
-        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-        0 <= (s1@.len() * 3) <= i32::MAX,
-    ensures
-        res@.len() == s1@.len() * 3,
-        forall|i: int|
-            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
-                == s3[i]),
-{
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < s1.len()
-        invariant
-            s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-            0 <= i <= s1@.len(),
-            result@.len() == i * 3,
-            forall|j: int| 0 <= j < i ==> (
-                result@[3 * j] == s1@[j] && 
-                result@[3 * j + 1] == s2@[j] && 
-                result@[3 * j + 2] == s3@[j]
-            ),
-        decreases s1@.len() - i
+    // Predicate checks if elements of a are in ascending order, two additional conditions are added to allow us to sort in specific range within array
+    spec fn sorted(a: Seq<int>, from: int, to: int) -> bool
+        recommends 0 <= from <= to <= a.len()
     {
-        result.push(s1[i]);
-        result.push(s2[i]);
-        result.push(s3[i]);
-        i += 1;
+        forall|x: int, y: int| from <= x < y < to ==> a[x] <= a[y]
     }
-    
-    result
-}
 
-} // verus!
+    // Helps ensure swapping is valid, it is used inside the nested while loop to make sure linear order is being kept 
+    spec fn pivot(a: Seq<int>, to: int, pvt: int) -> bool
+        recommends 0 <= pvt < to <= a.len()
+    {
+        forall|x: int, y: int| 0 <= x < pvt < y < to ==> a[x] <= a[y]
+    }
+
+    // Here having the algorithm for the bubblesort
+    fn bubble_sort(a: &mut Vec<int>)
+        requires 
+            old(a).len() > 0,
+        ensures 
+            sorted(a@, 0, a.len() as int),
+            a.len() == old(a).len(),
+    {
+        let n = a.len();
+        let mut i: usize = 0;
+        
+        while i < n
+            invariant
+                i <= n,
+                a.len() == n,
+                sorted(a@, (n - i) as int, n as int),
+                forall|x: int, y: int| (n - i) as int <= x < n as int && 0 <= y < (n - i) as int ==> a@[y] <= a@[x]
+        {
+            let mut j: usize = 0;
+            
+            while j < n - 1 - i
+                invariant
+                    j <= n - 1 - i,
+                    i < n,
+                    a.len() == n,
+                    sorted(a@, (n - i) as int, n as int),
+                    forall|x: int, y: int| (n - i) as int <= x < n as int && 0 <= y < (n - i) as int ==> a@[y] <= a@[x],
+                    /* code modified by LLM (iteration 1): fixed type mismatch by casting j to int */
+                    forall|k: int| 0 <= k < j as int ==> a@[k] <= a@[j as int]
+            {
+                if a[j] > a[j + 1] {
+                    let temp = a[j];
+                    a.set(j, a[j + 1]);
+                    a.set(j + 1, temp);
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+    }
+
+    fn main() {
+        /* code modified by LLM (iteration 2): cast integer literals to int type */
+        let mut vec: Vec<int> = vec![64int, 34int, 25int, 12int, 22int, 11int, 90int];
+        bubble_sort(&mut vec);
+    }
+}

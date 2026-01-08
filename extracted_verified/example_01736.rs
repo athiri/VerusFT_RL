@@ -1,44 +1,60 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr1 = vec![1, 2, 3, 4];
+    let arr2 = vec![1, 5, 3, 4];
+    let arr3 = vec![1, 2, 3, 4];
+    let count = count_identical_position(&arr1, &arr2, &arr3);
+    println!("Count of identical positions: {}", count);
+}
+
 verus! {
-spec fn valid_input(n: int, m: int, a: Seq<int>) -> bool {
-    n > 0 && m > 0 && a.len() == n && forall|i: int| 0 <= i < a.len() ==> a[i] > 0
-}
 
-spec fn valid_result(result: int, n: int) -> bool {
-    1 <= result <= n
-}
-
-spec fn sum_candies_still_needed(queue: Seq<Seq<int>>) -> nat
-    decreases queue.len()
+spec fn count_identical(s1: Seq<i32>, s2: Seq<i32>, s3: Seq<i32>) -> int
+    decreases s1.len(), s2.len(), s3.len(),
 {
-    if queue.len() == 0 {
-        0nat
+    if s1.len() == 0 || s2.len() == 0 || s3.len() == 0 {
+        0
     } else {
-        let child = queue[0];
-        let still_needed = if child.len() >= 2 && child[1] <= child[0] { 0nat } else if child.len() >= 2 { (child[1] - child[0]) as nat } else { 0nat };
-        still_needed + sum_candies_still_needed(queue.subrange(1, queue.len() as int))
+        count_identical(s1.drop_last(), s2.drop_last(), s3.drop_last()) + if (s1.last() == s2.last()
+            && s2.last() == s3.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, m: i8, a: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, m as int, a@.map_values(|x: i8| x as int))
-    ensures valid_result(result as int, n as int)
-// </vc-spec>
-// <vc-code>
+fn count_identical_position(arr1: &Vec<i32>, arr2: &Vec<i32>, arr3: &Vec<i32>) -> (count: usize)
+    requires
+        arr1.len() == arr2.len() && arr2.len() == arr3.len(),
+    ensures
+        0 <= count <= arr1.len(),
+        count_identical(arr1@, arr2@, arr3@) == count,
 {
-    assume(false);
-    unreached()
+    let mut count: usize = 0;
+    let mut i: usize = 0;
+    
+    while i < arr1.len()
+        invariant
+            i <= arr1.len(),
+            arr1.len() == arr2.len() && arr2.len() == arr3.len(),
+            0 <= count <= i,
+            count_identical(arr1@.take(i as int), arr2@.take(i as int), arr3@.take(i as int)) == count,
+    {
+        if arr1[i] == arr2[i] && arr2[i] == arr3[i] {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(arr1@.take(arr1.len() as int) == arr1@);
+        assert(arr2@.take(arr2.len() as int) == arr2@);
+        assert(arr3@.take(arr3.len() as int) == arr3@);
+    }
+    
+    count
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

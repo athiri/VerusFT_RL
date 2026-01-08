@@ -1,27 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn M(N: i32, a: &[i32]) -> (result: (i32, i32))
-    requires 
-        0 <= N,
-        a.len() == N,
-        (forall|k: int| 0 <= k && k < N ==> 0 <= a[k]),
-    ensures 
-        result.0 <= N * result.1,
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)
+	// pre-conditions-start
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	// pre-conditions-end
+	// post-conditions-start
+	ensures
+		sum[0] == 6 * N,
+	// post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 6 * N as i32);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

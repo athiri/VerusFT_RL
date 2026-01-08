@@ -2,36 +2,39 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)
+// Precondition definition - equivalent to Lean's List.Pairwise (· ≤ ·)
+spec fn is_sorted(arr: Seq<i32>) -> bool {
+    forall|i: int, j: int| 0 <= i < j < arr.len() ==> arr[i] <= arr[j]
+}
+
+spec fn merge_sorted_lists_precond(arr1: Seq<i32>, arr2: Seq<i32>) -> bool {
+    is_sorted(arr1) && is_sorted(arr2)
+}
+
+// Postcondition definition - equivalent to Lean's List.Pairwise (· ≤ ·) result ∧ List.isPerm (arr1 ++ arr2) result
+spec fn merge_sorted_lists_postcond(arr1: Seq<i32>, arr2: Seq<i32>, result: Seq<i32>) -> bool {
+    is_sorted(result) && result.to_multiset() =~= arr1.add(arr2).to_multiset()
+}
+
+// Main function that implements merge sort using iterative approach
+fn merge_sorted_lists(arr1: Vec<i32>, arr2: Vec<i32>) -> (result: Vec<i32>)
     requires
-        0 <= pos < a.len(),
+        merge_sorted_lists_precond(arr1@, arr2@),
     ensures
-        result.len() == a.len() - 1,
-        forall|i: int| 0 <= i < pos ==> result[i] == a[i],
-        forall|i: int| pos <= i < result.len() ==> result[i] == a[i + 1],
+        merge_sorted_lists_postcond(arr1@, arr2@, result@),
 {
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-    while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            0 <= pos < a.len(),
-            result.len() == if i <= pos { i as int } else { i as int - 1 },
-            forall|j: int| 0 <= j < pos && j < i ==> result[j] == a[j],
-            forall|j: int| pos < j < i ==> result[j - 1] == a[j],
-        decreases a.len() - i
-    {
-        if i != pos {
-            result.push(a[i]);
-        }
-        i += 1;
-    }
-    
-    result
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+// Proof function corresponding to mergeSortedLists_spec_satisfied
+proof fn merge_sorted_lists_spec_satisfied(arr1: Seq<i32>, arr2: Seq<i32>)
+    requires merge_sorted_lists_precond(arr1, arr2)
+    ensures exists|result: Vec<i32>| merge_sorted_lists_postcond(arr1, arr2, result@)
+{
+    // This corresponds to the "sorry" in the Lean proof  
+    admit();
 }
 
 fn main() {}
-}
+
+} // verus!

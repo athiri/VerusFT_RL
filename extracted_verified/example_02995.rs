@@ -2,43 +2,60 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> bool {
-    (n % divisor) == 0
-}
+pub spec fn is_alphabetic(c: char) -> (result: bool)
+    uninterp;
 // pure-end
 
-fn is_non_prime(n: u64) -> (result: bool)
-    // pre-conditions-start
-    requires
-        n >= 2,
-    // pre-conditions-end
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_alphabetic)]
+fn ex_is_alphabetic(c: char) -> (result: bool)
     // post-conditions-start
     ensures
-        result == (exists|k: int| 2 <= k < n && is_divisible(n as int, k)),
+        result <==> (c.is_alphabetic()),
     // post-conditions-end
 {
-    let mut k = 2;
-    while k < n
-        invariant
-            2 <= k <= n,
-            forall|j: int| 2 <= j < k ==> !is_divisible(n as int, j),
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases n - k
-    {
-        if n % k == 0 {
-            /* code modified by LLM (iteration 1): added assertion to help prove postcondition when returning true */
-            assert(is_divisible(n as int, k as int));
-            assert(2 <= k < n);
-            return true;
-        }
-        k = k + 1;
-    }
-    /* code modified by LLM (iteration 1): added assertion to prove no divisors exist when returning false */
-    assert(k == n);
-    assert(forall|j: int| 2 <= j < n ==> !is_divisible(n as int, j));
-    return false;
+    c.is_alphabetic()
 }
 
-} // verus!
+pub spec fn is_whitespace(c: char) -> (result: bool)
+    uninterp;
+// pure-end
 
+#[verifier::external_fn_specification]
+#[verifier::when_used_as_spec(is_whitespace)]
+fn ex_is_whitespace(c: char) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> (c.is_whitespace()),
+    // post-conditions-end
+{
+    c.is_whitespace()
+}
+
+fn check_if_last_char_is_a_letter(txt: &str) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result <==> (txt@.len() > 0 && txt@.last().is_alphabetic() && (txt@.len() == 1
+            || txt@.index(txt@.len() - 2).is_whitespace())),
+    // post-conditions-end
+{
+    /* code modified by LLM (iteration 1): Fixed type mismatches by converting integer literals to nat and using proper int conversion for indexing */
+    if txt@.len() == 0nat {
+        return false;
+    }
+    
+    let last_char = txt@.last();
+    if !last_char.is_alphabetic() {
+        return false;
+    }
+    
+    if txt@.len() == 1nat {
+        return true;
+    }
+    
+    let second_last_char = txt@.index((txt@.len() - 2nat) as int);
+    second_last_char.is_whitespace()
+}
+
+}
 fn main() {}

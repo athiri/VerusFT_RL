@@ -2,44 +2,47 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition for lastDigit function
-spec fn last_digit_precond(n: nat) -> bool {
-    true
+spec fn inner_epxr_replace_chars(str1: &Vec<char>, old_char: char, new_char: char, i: int) -> (result: char) {
+    if str1@[i] == old_char {
+        new_char
+    } else {
+        str1@[i]
+    }
 }
+// pure-end
 
-// Spec version of the function for use in specifications
-spec fn last_digit_spec(n: nat) -> nat {
-    n % 10
-}
-
-// The main lastDigit function
-fn last_digit(n: u32) -> (result: u32)
-    requires 
-        last_digit_precond(n as nat),
-    ensures 
-        0 <= result < 10,
-        result == last_digit_spec(n as nat),
+fn replace_chars(str1: &Vec<char>, old_char: char, new_char: char) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result@[i] == inner_epxr_replace_chars(str1, old_char, new_char, i),
+    // post-conditions-end
 {
-    n % 10
+    let mut result = Vec::new();
+    let mut j = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause and fixed indexing syntax */
+    while j < str1.len()
+        invariant
+            j <= str1.len(),
+            result.len() == j,
+            forall|i: int| 0 <= i < j ==> result@[i] == inner_epxr_replace_chars(str1, old_char, new_char, i),
+        decreases str1.len() - j
+    {
+        /* code modified by LLM (iteration 1): fixed indexing to use @ syntax */
+        let ch = if str1@[j] == old_char {
+            new_char
+        } else {
+            str1@[j]
+        };
+        result.push(ch);
+        j += 1;
+    }
+    
+    result
 }
 
-// Postcondition specification
-spec fn last_digit_postcond(n: nat, result: nat) -> bool {
-    (0 <= result < 10) && (result == n % 10)
-}
-
-// Proof that the function satisfies its specification
-proof fn last_digit_spec_satisfied(n: u32)
-    requires 
-        last_digit_precond(n as nat),
-    ensures 
-        last_digit_postcond(n as nat, last_digit_spec(n as nat)),
-{
-    // The proof is trivial since last_digit_spec(n) = n % 10
-    // and by the mathematical properties of modulo 10,
-    // we know that n % 10 is always between 0 and 9
-}
-
-}
+} // verus!
 
 fn main() {}

@@ -1,34 +1,52 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn sorted(s: Seq<i32>) -> bool {
-    forall|u: int, w: int| 0 <= u < w < s.len() ==> s[u] <= s[w]
+spec fn is_space_comma_dot_spec(c: char) -> (result: bool) {
+    (c == ' ') || (c == ',') || (c == '.')
 }
-// </vc-preamble>
+// pure-end
 
-// <vc-helpers>
-// </vc-helpers>
+spec fn inner_expr_replace_with_colon(str1: &Vec<char>, k: int) -> (result: char) {
+    if is_space_comma_dot_spec(str1[k]) {
+        ':'
+    } else {
+        str1[k]
+    }
+}
+// pure-end
 
-// <vc-spec>
-fn binary_search_rec(v: &Vec<i32>, elem: i32, c: usize, f: usize) -> (p: i32)
-    requires
-        sorted(v@),
-        0 <= c <= f + 1 <= v.len(),
-        forall|k: int| 0 <= k < c ==> v[k] <= elem,
-        forall|k: int| f < k < v.len() ==> v[k] > elem,
+fn replace_with_colon(str1: &Vec<char>) -> (result: Vec<char>)
+    // post-conditions-start
     ensures
-        -1 <= p < v.len(),
-        (forall|u: int| 0 <= u <= p ==> v[u] <= elem) && (forall|w: int| p < w < v.len() ==> v[w] > elem),
-    decreases f - c
-// </vc-spec>
-// <vc-code>
+        str1@.len() == result@.len(),
+        forall|k: int|
+            0 <= k < result.len() ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < str1.len()
+        invariant
+            0 <= i <= str1.len(),
+            result.len() == i,
+            forall|k: int| 0 <= k < i ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),
+        decreases str1.len() - i,
+    {
+        let c = str1[i];
+        if c == ' ' || c == ',' || c == '.' {
+            result.push(':');
+        } else {
+            result.push(c);
+        }
+        i += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

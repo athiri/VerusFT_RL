@@ -1,45 +1,27 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(a: int, p: int) -> bool {
-    0 <= a <= 100 && 0 <= p <= 100
-}
-
-spec fn total_pieces(a: int, p: int) -> int
-    recommends valid_input(a, p)
+fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
+    requires
+        arr.len() > 0,
+    ensures
+        is_sorted == (forall|i: int, j: int| 0 <= i < j < arr.len() ==> (arr[i] <= arr[j])),
 {
-    a * 3 + p
+    let mut idx = 0;
+    while idx < arr.len() - 1
+        invariant
+            0 <= idx <= arr.len() - 1,
+            forall|i: int, j: int| 0 <= i < j <= idx ==> arr[i] <= arr[j],
+    {
+        if arr[idx] > arr[idx + 1] {
+            return false;
+        }
+        idx += 1;
+    }
+    true
 }
 
-spec fn max_pies(a: int, p: int) -> int
-    recommends valid_input(a, p)
-{
-    total_pieces(a, p) / 2
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn calculate_max_pies(a: i8, p: i8) -> (pies: i8)
-    requires 
-        valid_input(a as int, p as int)
-    ensures 
-        pies as int == max_pies(a as int, p as int) &&
-        pies >= 0 &&
-        pies as int == (a as int * 3 + p as int) / 2
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

@@ -1,45 +1,35 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn str2int(s: Seq<char>) -> nat
-  decreases s.len()
+
+fn smallest_num(nums: &Vec<i32>) -> (min: i32)
+    requires
+        nums.len() > 0,
+    ensures
+        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
+        exists|i: int| 0 <= i < nums.len() && min == nums[i],
 {
-  if s.len() == 0 { 
-    0nat 
-  } else { 
-    2nat * str2int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat })
-  }
+    let mut min = nums[0];
+    let mut idx = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while idx < nums.len()
+        invariant
+            1 <= idx <= nums.len(),
+            forall|i: int| 0 <= i < idx ==> min <= nums[i],
+            exists|i: int| 0 <= i < idx && min == nums[i],
+        decreases nums.len() - idx,
+    {
+        if nums[idx] < min {
+            min = nums[idx];
+        }
+        idx += 1;
+    }
+    
+    min
 }
 
-spec fn valid_bit_string(s: Seq<char>) -> bool {
-  forall|i: int| 0 <= i < s.len() ==> s[i] == '0' || s[i] == '1'
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn compare(s1: Vec<char>, s2: Vec<char>) -> (res: i32)
-  requires 
-    valid_bit_string(s1@) && valid_bit_string(s2@)
-  ensures 
-    (str2int(s1@) < str2int(s2@)) ==> (res == -1) &&
-    (str2int(s1@) == str2int(s2@)) ==> (res == 0) &&
-    (str2int(s1@) > str2int(s2@)) ==> (res == 1)
-  decreases str2int(s1@) + str2int(s2@)
-// </vc-spec>
-// <vc-code>
-{
-  // impl-start
-  assume(false);
-  0
-  // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

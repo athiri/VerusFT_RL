@@ -1,34 +1,36 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn smallest_num(nums: &Vec<i32>) -> (min: i32)
+#[verifier::loop_isolation(false)]
+fn binary_search(arr: &[i32], target: i32) -> (result: Option<usize>)
     requires
-        nums.len() > 0,
+        forall|i: int, j: int| 0 <= i && i < j && j < arr.len() ==> arr[i] <= arr[j],
     ensures
-        forall|i: int| 0 <= i < nums.len() ==> min <= nums[i],
-        exists|i: int| 0 <= i < nums.len() && min == nums[i],
+        match result {
+            Some(idx) => 0 <= idx < arr.len() && arr[idx as int] == target,
+            None => forall|i: int| 0 <= i < arr.len() ==> arr[i] != target,
+        },
 {
-    let mut min = nums[0];
-    let mut idx = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < nums.len()
+    let mut low = 0;
+    let mut high = arr.len();
+    while low < high
         invariant
-            1 <= idx <= nums.len(),
-            forall|i: int| 0 <= i < idx ==> min <= nums[i],
-            exists|i: int| 0 <= i < idx && min == nums[i],
-        decreases nums.len() - idx
+            low <= high && high <= arr.len(),
+            forall|i: int| 0 <= i && i < low ==> arr[i] < target,
+            forall|i: int| high <= i && i < arr.len() ==> arr[i] > target,
     {
-        if nums[idx] < min {
-            min = nums[idx];
+        let mid = low + (high - low) / 2;
+        if arr[mid] == target {
+            return Some(mid);
+        } else if arr[mid] < target {
+            low = mid + 1;
+        } else {
+            high = mid;
         }
-        idx += 1;
     }
-    
-    min
+    None
 }
 
-} // verus!
+fn main() {}
+}

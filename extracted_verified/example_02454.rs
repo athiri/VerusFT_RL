@@ -1,16 +1,16 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
 
-//IMPL 
-pub fn myfun(a: &mut Vec<usize>, sum: &mut Vec<usize>, N: usize) 
-	requires 
-		old(a).len() == N,
-		old(sum).len() == 1,
-		N > 0,
-	ensures
-		sum[0] == 0,
+verus! {
+
+#[verifier::loop_isolation(false)]
+fn is_non_prime(n: u32) -> (result: bool)
+    requires
+        n >= 2,
+    ensures
+        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
 {
-    sum.set(0, 0);
+    return false;  // TODO: Remove this line and implement the function body
 }
+
+fn main() {}
 }

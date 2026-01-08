@@ -1,33 +1,50 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
-
-fn find_first_odd(arr: &Vec<u32>) -> (index: Option<usize>)
-    ensures
-        if let Some(idx) = index {
-            idx < arr.len() && arr@[idx as int] % 2 != 0 && forall|k: int| 0 <= k < idx as int ==> (arr@[k] % 2 == 0)
-        } else {
-            forall|k: int| 0 <= k < arr.len() as int ==> (arr@[k] % 2 == 0)
-        },
-{
-    let mut index = 0;
-    while index < arr.len()
-        invariant
-            0 <= index <= arr.len(),
-            forall|k: int| 0 <= k < index as int ==> (arr@[k] % 2 == 0),
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases arr.len() - index,
+    // Matrix copy function - translated from Dafny
+    fn copy_matrix(src: Vec<Vec<i32>>, dst: &mut Vec<Vec<i32>>)
+        requires 
+            src.len() == old(dst).len(),
+            src.len() > 0,
+            old(dst).len() > 0,
+            forall|i: int| 0 <= i < src.len() ==> #[trigger] src@[i].len() == src@[0].len(),
+            forall|i: int| 0 <= i < old(dst).len() ==> #[trigger] old(dst)@[i].len() == old(dst)@[0].len(),
+            src@[0].len() == old(dst)@[0].len(),
+        ensures
+            dst.len() == src.len(),
+            forall|i: int| 0 <= i < dst.len() ==> #[trigger] dst@[i].len() == dst@[0].len(),
+            forall|i: int, j: int| 0 <= i < src.len() && 0 <= j < src@[0].len() ==> 
+                dst@[i]@[j] == src@[i]@[j],
     {
-        /* code modified by LLM (iteration 2): use regular indexing in executable code, ghost operations only in specs */
-        if arr[index] % 2 != 0 {
-            return Some(index);
+        let mut i = 0;
+        while i < src.len()
+            invariant
+                i <= src.len(),
+                dst.len() == src.len(),
+                forall|k: int| 0 <= k < dst.len() ==> #[trigger] dst@[k].len() == dst@[0].len(),
+                forall|k: int, l: int| 0 <= k < i && 0 <= l < src@[0].len() ==> 
+                    dst@[k]@[l] == src@[k]@[l],
+        {
+            let mut j = 0;
+            while j < src[i].len()
+                invariant
+                    i < src.len(),
+                    j <= src@[i as int].len(),
+                    src@[i as int].len() == src@[0].len(),
+                    dst@[i as int].len() == dst@[0].len(),
+                    dst.len() == src.len(),
+                    forall|k: int| 0 <= k < dst.len() ==> #[trigger] dst@[k].len() == dst@[0].len(),
+                    forall|k: int, l: int| 0 <= k < i && 0 <= l < src@[0].len() ==> 
+                        dst@[k]@[l] == src@[k]@[l],
+                    forall|l: int| 0 <= l < j ==> dst@[i as int]@[l] == src@[i as int]@[l],
+            {
+                /* code modified by LLM (iteration 1): Fixed type mismatches by casting usize to int for sequence access */
+                dst[i].set(j, src[i][j]);
+                j += 1;
+            }
+            i += 1;
         }
-        index += 1;
     }
-    None
-}
 
-} // verus!
+    fn main() {}
+}

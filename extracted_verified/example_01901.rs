@@ -1,45 +1,64 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
+
 verus! {
-spec fn valid_input(n: int, a: Seq<int>) -> bool {
-    n >= 1 && a.len() == n
-}
 
-spec fn count_local_extrema(n: int, a: Seq<int>) -> int
-    recommends valid_input(n, a)
+pub open spec fn count_frequency_rcr(seq: Seq<u8>, key: u8) -> int
+    decreases seq.len(),
 {
-    Set::<int>::new(|i: int| 1 <= i < n - 1 && ((a[i] > a[i-1] && a[i] > a[i+1]) || (a[i] < a[i-1] && a[i] < a[i+1]))).len() as int
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
 }
 
-spec fn is_local_extremum(a: Seq<int>, i: int) -> bool
-    recommends 0 <= i < a.len()
+fn count_frequency(arr: &[u8], key: u8) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
 {
-    1 <= i < a.len() - 1 && ((a[i] > a[i-1] && a[i] > a[i+1]) || (a[i] < a[i-1] && a[i] < a[i+1]))
+    return 0;  // TODO: Remove this line and implement the function body
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, a: Vec<i8>) -> (result: i8)
-    requires 
-        valid_input(n as int, a@.map_values(|x: i8| x as int))
-    ensures 
-        result >= 0,
-        n <= 2 ==> result == 0,
-        n > 2 ==> result <= n - 2,
-        result as int == count_local_extrema(n as int, a@.map_values(|x: i8| x as int))
-// </vc-spec>
-// <vc-code>
+fn first_repeated_char(str1: &[u8]) -> (repeated_char: Option<(usize, u8)>)
+    ensures
+        if let Some((idx, rp_char)) = repeated_char {
+    return None;  // TODO: Remove this line and implement the function body
+        } else {
+            forall|k: int|
+                0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+        },
 {
-    assume(false);
-    unreached()
+    let input_len = str1.len();
+    assert(str1@.take(0int).filter(|x: u8| count_frequency_rcr(str1@, x) > 1) == Seq::<
+        u8,
+    >::empty());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            str1@.take(index as int) =~= str1@.take(index as int).filter(
+                |x: u8| count_frequency_rcr(str1@, x) <= 1,
+            ),
+    {
+        if count_frequency(&str1, str1[index]) > 1 {
+            return Some((index, str1[index]));
+        }
+        assert(str1@.take((index + 1) as int).drop_last() == str1@.take(index as int));
+        reveal(Seq::filter);
+        index += 1;
+    }
+    assert(str1@ =~= str1@.take(input_len as int));
+    assert(forall|k: int|
+        0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1);
+    None
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,41 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-spec fn pow_int(base: int, exp: nat) -> int
-    decreases exp
-{
-    if exp == 0 {
-        1
-    } else {
-        base * pow_int(base, (exp - 1) as nat)
+    // Predicate to check if a segment of array is sorted
+    spec fn sorted_seg(a: Seq<int>, i: int, j: int) -> bool 
+        recommends 0 <= i <= j <= a.len()
+    {
+        forall|l: int, k: int| i <= l <= k < j ==> a[l] <= a[k]
+    }
+
+    fn sel_sort(a: &mut Vec<int>, c: usize, f: usize)
+        requires 
+            c <= f,
+            f <= old(a).len(),
+        ensures 
+            a.len() == old(a).len(),
+            sorted_seg(a@, c as int, f as int),
+    {
+        let mut i = c;
+        
+        while i < f
+            invariant
+                c <= i <= f,
+                f <= a.len(),
+                a.len() == old(a).len(),
+                sorted_seg(a@, c as int, i as int),
+                forall|l: int, k: int| c <= l < i && i <= k < f ==> a@[l] <= a@[k],
+        {
+            // Find minimum element in a[i..f]
+            let mut min_idx = i;
+            let mut j = i + 1;
+            
+            while j < f
+                invariant
+                    i <= min_idx < j <= f,
+                    a.len() == old(a).len(),
+                    forall|k: int| i <= k < j ==> a@[min_idx as int] <= a@[k],
+            {
+                if a[j] < a[min_idx] {
+                    min_idx = j;
+                }
+                j += 1;
+            }
+            
+            // Swap a[i] and a[min_idx]
+            if i != min_idx {
+                let temp = a[i];
+                a.set(i, a[min_idx]);
+                a.set(min_idx, temp);
+            }
+            
+            i += 1;
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn vander(x: Vec<i8>, m: usize) -> (result: Vec<Vec<i8>>)
-    requires 
-        x@.len() > 0,
-        m > 0,
-    ensures
-        result@.len() == x@.len(),
-        forall|i: int| 0 <= i < result@.len() ==> result@[i]@.len() == m,
-        forall|i: int, j: int| 0 <= i < result@.len() && 0 <= j < m ==> 
-            result@[i]@[j] as int == pow_int(x@[i] as int, (m - 1 - j) as nat),
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}

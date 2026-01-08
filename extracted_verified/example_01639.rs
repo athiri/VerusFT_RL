@@ -1,69 +1,30 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn str2_int(s: Seq<char>) -> nat
-  decreases s.len()
+fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+    requires
+        seq.len() > 0,
+    ensures
+        result == (forall|i: int, j: int|
+            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
+                == #[trigger] seq[j].len())),
 {
-  if s.len() == 0 { 0nat } else { 2nat * str2_int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat }) }
+    let first_len = seq[0].len();
+    
+    for k in 1..seq.len()
+        invariant
+            forall|i: int| (0 <= i < k) ==> seq[i as int].len() == first_len,
+    {
+        if seq[k].len() != first_len {
+            return false;
+        }
+    }
+    
+    true
 }
 
-spec fn exp_int(x: nat, y: nat) -> nat
-  decreases y
-{
-  if y == 0 { 1nat } else { x * exp_int(x, (y - 1) as nat) }
-}
-
-spec fn valid_bit_string(s: Seq<char>) -> bool
-{
-  forall|i: int| 0 <= i < s.len() ==> s[i] == '0' || s[i] == '1'
-}
-
-fn add(s1: Seq<char>, s2: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(s1) && valid_bit_string(s2),
-  ensures 
-    valid_bit_string(res) &&
-    str2_int(res) == str2_int(s1) + str2_int(s2),
-{
-  assume(false);
-  unreached()
-}
-
-fn mul(s1: Seq<char>, s2: Seq<char>) -> (res: Seq<char>)
-  requires 
-    valid_bit_string(s1) && valid_bit_string(s2),
-  ensures 
-    valid_bit_string(res) &&
-    str2_int(res) == str2_int(s1) * str2_int(s2),
-{
-  assume(false);
-  unreached()
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn mod_exp(sx: Vec<char>, sy: Vec<char>, sz: Vec<char>) -> (res: Vec<char>)
-  requires 
-    valid_bit_string(sx@) && valid_bit_string(sy@) && valid_bit_string(sz@) &&
-    sy@.len() > 0 && str2_int(sz@) > 1,
-  ensures 
-    valid_bit_string(res@) &&
-    str2_int(res@) == exp_int(str2_int(sx@), str2_int(sy@)) % str2_int(sz@),
-  decreases sy@.len(),
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

@@ -2,66 +2,102 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> (ret: bool) {
-    exists|i: int| 0 <= i < a.len() && a[i] == x
+spec fn spec_prime(p: int) -> (ret:bool) {
+    p > 1 && forall|k: int| 1 < k < p ==> #[trigger] (p % k) != 0
 }
+// pure-end
 
-fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
+fn prime(p: u32) -> (ret: bool)
     // post-conditions-start
     ensures
-        result == in_array(a@, x),
+        ret <==> spec_prime(p as int),
     // post-conditions-end
 {
-    for i in 0..a.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> a[j] != x,
-    {
-        if a[i] == x {
-            return true;
-        }
+    if p <= 1 {
+        return false;
     }
-    return false;
+    
+    let mut i = 2;
+    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+    while i < p
+        invariant
+            2 <= i <= p,
+            forall|k: int| 2 <= k < i ==> (p as int) % k != 0,
+        decreases p - i,
+    {
+        if p % i == 0 {
+            return false;
+        }
+        i += 1;
+    }
+    true
 }
 
-#[verifier::loop_isolation(false)]
-fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
+fn checked_mul_thrice(x: u32, y: u32, z: u32) -> (ret: Option<u32>)
+    // post-conditions-start
+    ensures
+        ret.is_some() ==> ret.unwrap() == x * y * z,
+        ret.is_none() ==> x * y * z > u32::MAX,
+    // post-conditions-end
+{
+    let temp = x.checked_mul(y);
+    if temp.is_none() {
+        return None;
+    }
+    let temp_val = temp.unwrap();
+    let result = temp_val.checked_mul(z);
+    if result.is_none() {
+        return None;
+    }
+    Some(result.unwrap())
+}
+
+fn is_multiply_prime(x: u32) -> (ans: bool)
     // pre-conditions-start
     requires
-        a.len() >= 1,
+        x > 1,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+        ans <==> exists|a: int, b: int, c: int|
+            spec_prime(a) && spec_prime(b) && spec_prime(c) && x == a * b * c,
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    
-    for i in 0..a.len()
+    let mut a = 2;
+    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+    while a <= x
         invariant
-            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+            2 <= a <= x + 1,
+            forall|i: int, j: int, k: int| 
+                2 <= i < a && spec_prime(i) && spec_prime(j) && spec_prime(k) 
+                ==> x != i * j * k,
+        decreases x + 1 - a,
     {
-        let mut found = false;
-        for j in 0..result.len()
-            invariant
-                forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-                forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-                found == exists|k: int| 0 <= k < j && result[k] == a[i as int],
-        {
-            if result[j] == a[i] {
-                found = true;
-                break;
+        if prime(a) {
+            let mut b = 2;
+            /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+            while b <= x / a
+                invariant
+                    2 <= b <= x / a + 1,
+                    spec_prime(a as int),
+                    forall|j: int, k: int| 
+                        2 <= j < b && spec_prime(j) && spec_prime(k) 
+                        ==> x != (a as int) * j * k,
+                decreases x / a + 1 - b,
+            {
+                if prime(b) && x % a == 0 && (x / a) % b == 0 {
+                    let c = x / a / b;
+                    if c >= 2 && prime(c) && a * b * c == x {
+                        return true;
+                    }
+                }
+                b += 1;
             }
         }
-        
-        if !found {
-            result.push(a[i]);
-        }
+        a += 1;
     }
-    
-    result
+    false
 }
 
-fn main() {}
 }
+fn main() {}

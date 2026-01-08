@@ -2,45 +2,97 @@ use vstd::prelude::*;
 
 verus! {
 
-fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: Vec<i32>)
+spec fn spec_sum(s: Seq<nat>) -> (ret: int) {
+    s.fold_left(0, |x: int, y| x + y)
+}
+// pure-end
+
+proof fn lemma_increasing_sum(s: Seq<nat>, i: int, j: int)
     // pre-conditions-start
     requires
-        first.len() > 0,
+        0 <= i <= j <= s.len(),
     // pre-conditions-end
     // post-conditions-start
     ensures
-        replaced_list@ == first@.subrange(0, first.len() - 1).add(second@),
+        spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
+    decreases j - i,
     // post-conditions-end
 {
-    let mut result = Vec::new();
+    // impl-start
+    if (i < j) {
+        assert(spec_sum(s.subrange(0, j - 1)) <= spec_sum(s.subrange(0, j))) by {
+            assert(s.subrange(0, j).drop_last() == s.subrange(0, j - 1));
+        }
+        lemma_increasing_sum(s, i, j - 1);
+    }
+    // impl-end
+}
+// pure-end
+
+spec fn total_str_len(strings: Seq<&str>) -> (ret: int) {
+    spec_sum(strings.map_values(|s: &str| s@.len()))
+}
+// pure-end
+
+fn checked_total_str_len(lst: &Vec<&str>) -> (ret: Option<usize>)
+    // post-conditions-start
+    ensures
+        ret.is_some() <==> total_str_len(lst@) <= usize::MAX,
+        ret.is_some() <==> ret.unwrap() == total_str_len(lst@),
+    // post-conditions-end
+{
+    let mut total: usize = 0;
+    let mut i = 0;
     
-    // Add all elements from first except the last one
-    /* code modified by LLM (iteration 1): fixed loop bounds and invariant to handle edge case when first.len() == 1 */
-    for i in 0..(first.len() - 1)
+    while i < lst.len()
         invariant
-            i <= first.len() - 1,
-            result@ == first@.subrange(0, i as int),
+            0 <= i <= lst.len(),
+            total == total_str_len(lst@.subrange(0, i as int)),
+            total <= usize::MAX,
     {
-        /* code modified by LLM (iteration 1): added bounds assertion for array access */
-        assert(i < first.len());
-        result.push(first[i]);
+        let str_len = lst[i].len();
+        
+        if total > usize::MAX - str_len {
+            return None;
+        }
+        
+        total = total + str_len;
+        i = i + 1;
     }
     
-    // Add all elements from second
-    /* code modified by LLM (iteration 1): fixed invariant to properly handle subrange bounds */
-    for i in 0..second.len()
-        invariant
-            i <= second.len(),
-            result@ == first@.subrange(0, (first.len() - 1) as int).add(second@.subrange(0, i as int)),
-    {
-        /* code modified by LLM (iteration 1): added bounds assertion for array access */
-        assert(i < second.len());
-        result.push(second[i]);
-    }
-    
-    result
+    Some(total)
 }
 
-} // verus!
+spec fn inner_expr_total_match<'a>(lst1: Vec<&'a str>, lst2: Vec<&'a str>, ret: Option<Vec<&'a str>>) -> (ret:bool) {
+    ret.is_some() ==> ret.unwrap() == if total_str_len(lst1@) <= total_str_len(lst2@) {
+        lst1
+    } else {
+        lst2
+    }
+}
+// pure-end
 
+fn total_match<'a>(lst1: Vec<&'a str>, lst2: Vec<&'a str>) -> (ret: Option<Vec<&'a str>>)
+    // post-conditions-start
+    ensures
+        ret.is_some() <== total_str_len(lst1@) <= usize::MAX && total_str_len(lst2@) <= usize::MAX,
+        inner_expr_total_match(lst1, lst2, ret),
+    // post-conditions-end
+{
+    let total1_opt = checked_total_str_len(&lst1);
+    let total2_opt = checked_total_str_len(&lst2);
+    
+    match (total1_opt, total2_opt) {
+        (Some(total1), Some(total2)) => {
+            if total1 <= total2 {
+                Some(lst1)
+            } else {
+                Some(lst2)
+            }
+        },
+        _ => None,
+    }
+}
+
+}
 fn main() {}

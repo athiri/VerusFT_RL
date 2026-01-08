@@ -1,71 +1,40 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn unnecessary_cards_count(sorted: Seq<int>, k: int) -> int
-  recommends
-    forall|i: int, j: int| 0 <= i < j < sorted.len() ==> sorted[i] >= sorted[j],
-    forall|i: int| 0 <= i < sorted.len() ==> sorted[i] >= 1,
-    k >= 1
-{
-  if sorted.len() == 0 {
-    0
-  } else {
-    unnecessary_cards_count_helper(sorted, k, 0, 0, 0)
-  }
-}
 
-spec fn unnecessary_cards_count_helper(sorted: Seq<int>, k: int, temp: int, ans: int, i: int) -> int
-  recommends
-    forall|x: int, y: int| 0 <= x < y < sorted.len() ==> sorted[x] >= sorted[y],
-    forall|x: int| 0 <= x < sorted.len() ==> sorted[x] >= 1,
-    k >= 1,
-    0 <= i <= sorted.len(),
-    temp >= 0,
-    ans >= 0
-  decreases sorted.len() - i
+spec fn sum_to(arr: Seq<i64>) -> int
+    decreases arr.len(),
 {
-  if i >= sorted.len() {
-    ans
-  } else {
-    let x = sorted[i];
-    if temp + x < k {
-      unnecessary_cards_count_helper(sorted, k, temp + x, ans + 1, i + 1)
+    if arr.len() == 0 {
+        0
     } else {
-      unnecessary_cards_count_helper(sorted, k, 0, 0, i + 1)
+        sum_to(arr.drop_last()) + arr.last()
     }
-  }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, a: Vec<i8>) -> (result: i8)
-  requires
-    n >= 1,
-    k >= 1,
-    a.len() == n as usize,
-    forall|i: int| 0 <= i < a.len() ==> a[i] as int >= 1
-  ensures
-    result >= 0,
-    result as int <= n as int,
-    exists|sorted: Seq<int>|
-      sorted.len() == a@.len() &&
-      sorted.to_multiset() == a@.map(|i: int, x: i8| x as int).to_multiset() &&
-      (forall|i: int, j: int| 0 <= i < j < sorted.len() ==> sorted[i] >= sorted[j]) &&
-      (forall|i: int| 0 <= i < sorted.len() ==> sorted[i] >= 1) &&
-      result as int == unnecessary_cards_count(sorted, k as int)
-// </vc-spec>
-// <vc-code>
+fn sum_range_list(arr: &Vec<i64>, start: usize, end: usize) -> (sum: i128)
+    requires
+        0 <= start <= end,
+        start <= end < arr.len(),
+    ensures
+        sum_to(arr@.subrange(start as int, end + 1 as int)) == sum,
 {
-  assume(false);
-  unreached()
+    let mut sum: i128 = 0;
+    let mut i = start;
+    
+    while i <= end
+        invariant
+            start <= i <= end + 1,
+            sum == sum_to(arr@.subrange(start as int, i as int)),
+    {
+        sum = sum + arr[i] as i128;
+        i = i + 1;
+    }
+    
+    sum
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

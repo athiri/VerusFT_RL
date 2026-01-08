@@ -1,37 +1,46 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() > 0 && forall|i: int| 0 <= i < s.len() ==> 'a' <= s[i] && s[i] <= 'z'
-}
-
-spec fn correct_plural(s: Seq<char>, result: Seq<char>) -> bool {
-    if s.len() > 0 && s[s.len() - 1] == 's' {
-        result == s + seq!['e', 's']
+spec fn count_boolean(seq: Seq<bool>) -> int
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
     } else {
-        result == s + seq!['s']
+        count_boolean(seq.drop_last()) + if (seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: &Vec<char>) -> (result: Vec<char>)
-    requires valid_input(s@)
-    ensures correct_plural(s@, result@)
-// </vc-spec>
-// <vc-code>
+fn count_true(arr: &Vec<bool>) -> (count: u64)
+    ensures
+        0 <= count <= arr.len(),
+        count_boolean(arr@) == count,
 {
-    assume(false);
-    unreached()
+    let mut count = 0u64;
+    let mut i = 0;
+    
+    while i < arr.len()
+        invariant
+            0 <= i <= arr.len(),
+            0 <= count <= i,
+            count_boolean(arr@.subrange(0, i as int)) == count,
+    {
+        if arr[i] {
+            count = count + 1;
+        }
+        i = i + 1;
+    }
+    
+    assert(arr@.subrange(0, arr.len() as int) =~= arr@);
+    count
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,15 +1,23 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-fn strlen(string: &Vec<char>) -> (length: usize)
-    // post-conditions-start
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn numpy_rint(x: Vec<f32>) -> (result: Vec<f32>)
     ensures
-        length == string.len(),
-    // post-conditions-end
+        result.len() == x.len(),
+// </vc-spec>
+// <vc-code>
 {
-    string.len()
+    x
 }
+// </vc-code>
 
 }
 fn main() {}

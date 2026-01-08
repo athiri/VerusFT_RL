@@ -1,15 +1,26 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(sum).len() == 1,
-		N < 1000,
-	ensures
-		sum[0] == 3 * N,
+
+verus! {
+
+fn reverse(a: &[i32]) -> (result: Vec<i32>)
+    ensures
+        result.len() == a.len(),
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
 {
-    sum.set(0, 3 * N);
+    let mut result = Vec::new();
+    let mut i = a.len();
+    
+    while i > 0
+        invariant
+            result.len() == a.len() - i,
+            forall|j: int| 0 <= j && j < result.len() ==> result[j] == a[a.len() - 1 - j],
+    {
+        i = i - 1;
+        result.push(a[i]);
+    }
+    
+    result
 }
+
+fn main() {}
 }

@@ -1,55 +1,59 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition: array must have at least one element
-spec fn min_array_precond(a: &Vec<i32>) -> bool {
-    a.len() > 0
+// <vc-helpers>
+/* helper modified by LLM (iteration 3): simple transitivity lemma for <= with empty body as SMT can discharge it */
+proof fn le_trans(a: int, b: int, c: int)
+    requires
+        a <= b,
+        b <= c
+    ensures
+        a <= c
+{
 }
 
-// Helper function for the iterative search
-fn find_min_loop(a: &Vec<i32>, i: usize, current_min: i32) -> (result: i32)
-    requires
-        a.len() > 0,
-        i <= a.len(),
-        exists|j: int| 0 <= j < a.len() && current_min == a[j as int],
-        forall|j: int| 0 <= j < i ==> current_min <= a[j as int],
+// </vc-helpers>
+
+// <vc-spec>
+fn find_smallest(s: &Vec<nat>) -> (result: Option<nat>)
     ensures
-        exists|k: int| 0 <= k < a.len() && result == a[k as int],
-        forall|j: int| 0 <= j < a.len() ==> result <= a[j as int],
-    decreases a.len() - i,
+        match result {
+            None => s.len() == 0,
+            Some(r) => s.len() > 0 && 
+                      (exists|i: int| 0 <= i < s.len() && s[i] == r) &&
+                      (forall|i: int| 0 <= i < s.len() ==> r <= s[i])
+        },
+// </vc-spec>
+// <vc-code>
 {
-    if i == a.len() {
-        current_min
-    } else {
-        let new_min = if a[i] < current_min {
-            a[i]
-        } else {
-            current_min
-        };
-        find_min_loop(a, i + 1, new_min)
+    /* code modified by LLM (iteration 3): linear scan using exec variables only; spec reasoning confined to invariants */
+    if s.len() == 0usize {
+        return None;
     }
+    let n: usize = s.len();
+    let mut i: usize = 1usize;
+    let mut min: nat = s[0usize];
+    while i < n
+        invariant
+            s.len() == n,
+            n >= 1usize,
+            1usize <= i && i <= n,
+            exists|j: int| 0 <= j && j < i as int && s[j] == min,
+            forall|k: int| 0 <= k && k < i as int ==> min <= s[k],
+        decreases (n - i) as int
+    {
+        let v: nat = s[i];
+        if v < min {
+            min = v;
+        }
+        i += 1usize;
+    }
+    Some(min)
 }
-
-// Main function to find minimum element in array
-fn min_array(a: &Vec<i32>) -> (result: i32)
-    requires
-        min_array_precond(a),
-    ensures
-        // Result is less than or equal to all elements
-        forall|i: int| 0 <= i < a.len() ==> result <= a[i as int],
-        // Result exists in the array
-        exists|i: int| 0 <= i < a.len() && result == a[i as int],
-{
-    find_min_loop(a, 1, a[0])
-}
-
-// Postcondition specification
-spec fn min_array_postcond(a: &Vec<i32>, result: i32) -> bool {
-    (forall|i: int| 0 <= i < a.len() ==> result <= a[i as int]) &&
-    (exists|i: int| 0 <= i < a.len() && result == a[i as int])
-}
+// </vc-code>
 
 }
-
 fn main() {}

@@ -2,33 +2,49 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn max_dafny_lsp(a: &[i32]) -> (x: usize)
-    requires
-        a.len() > 0,
-    ensures
-        0 <= x < a.len(),
-        forall|k: int| 0 <= k < a.len() ==> a[k] <= a[x as int],
+// Helper function to check if a number is odd
+spec fn is_odd(x: int) -> bool {
+    x % 2 != 0
+}
+
+// Precondition: array must be non-empty  
+spec fn find_first_odd_precond(a: &Vec<i32>) -> bool {
+    a.len() > 0
+}
+
+// Postcondition specification that matches the Lean version exactly
+spec fn find_first_odd_postcond(a: &Vec<i32>, result: Option<usize>) -> bool {
+    match result {
+        Some(idx) => {
+            &&& idx < a.len()
+            &&& is_odd(a[idx as int] as int)  
+            &&& forall|j: int| 0 <= j < idx ==> !is_odd(a[j] as int)
+        }
+        None => forall|i: int| 0 <= i < a.len() ==> !is_odd(a[i] as int)
+    }
+}
+
+// Implementation function that finds the first odd element
+fn find_first_odd(a: &Vec<i32>) -> (result: Option<usize>)
+    requires find_first_odd_precond(a)
+    ensures find_first_odd_postcond(a, result)
 {
-    let mut max_idx = 0;
-    let mut i = 1;
+    let mut i: usize = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
     while i < a.len()
-        invariant
-            0 <= max_idx < a.len(),
-            1 <= i <= a.len(),
-            forall|k: int| 0 <= k < i ==> a[k] <= a[max_idx as int],
-        decreases a.len() - i,
+        invariant 
+            i <= a.len(),
+            forall|j: int| 0 <= j < i ==> !is_odd(a[j] as int)
     {
-        if a[i] > a[max_idx] {
-            max_idx = i;
+        if is_odd(a[i] as int) {
+            return Some(i);
         }
         i += 1;
     }
     
-    max_idx
+    None
 }
 
 fn main() {}
-}
+
+} // verus!

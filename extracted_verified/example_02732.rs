@@ -2,27 +2,35 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn has_only_one_distinct_element(a: &[i32]) -> (result: bool)
+fn max_element(a: &Vec<i32>) -> (max: i32)
+    // pre-conditions-start
+    requires
+        a.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result ==> forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() ==> a[i] == a[j],
-        !result ==> exists|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() && a[i] != a[j],
+        forall|i: int| 0 <= i < a.len() ==> a@[i] <= max,
+        exists|i: int| 0 <= i < a.len() && a@[i] == max,
+    // post-conditions-end
 {
-    if a.len() == 0 {
-        return true;
+    let mut max = a[0];
+    let mut idx = 1;
+    
+    while idx < a.len()
+        invariant
+            1 <= idx <= a.len(),
+            forall|i: int| 0 <= i < idx ==> a@[i] <= max,
+            exists|i: int| 0 <= i < idx && a@[i] == max,
+    {
+        /* code modified by LLM (iteration 1): Fixed array indexing to use usize instead of casting to int */
+        if a[idx] > max {
+            max = a[idx];
+        }
+        idx += 1;
     }
     
-    let first = a[0];
-    for i in 1..a.len()
-        invariant
-            forall|k: int| 0 <= k < i ==> a[k] == first,
-    {
-        if a[i] != first {
-            return false;
-        }
-    }
-    true
+    max
 }
 
-fn main() {}
 }
+fn main() {}

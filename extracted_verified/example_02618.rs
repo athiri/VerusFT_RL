@@ -1,17 +1,63 @@
 use vstd::prelude::*;
-fn main() {}
-verus!{
-//IMPL myfun
-pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-	requires
-		N > 0,
-		old(a).len() == N,
-		old(b).len() == N,
-		old(c).len() == N,
-		old(sum).len() == 1,
-	ensures
-		sum[0] <= 3 * N,
-{
-    sum.set(0, 0);
+
+verus! {
+
+spec fn abs_spec(i: int) -> int {
+    if i < 0 { -i } else { i }
 }
+
+fn abs(i: i32) -> (res: i32)
+    requires
+        i != i32::MIN,
+    ensures
+        i < 0 ==> res == -i,
+        i >= 0 ==> res == i
+{
+    if i < 0 {
+        -i
+    } else {
+        i
+    }
+}
+
+#[verifier::loop_isolation(false)]
+fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+    requires
+        threshold > 0,
+        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+    ensures
+        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+{
+    /* code modified by LLM (iteration 1): added decreases clauses to both loops */
+    let mut i = 0usize;
+    while i < numbers.len()
+        invariant
+            0 <= i <= numbers.len(),
+            forall|ii: int, jj: int| 0 <= ii && ii < i && 0 <= jj && jj < numbers.len() && ii != jj ==> abs_spec(numbers[ii] - numbers[jj]) >= threshold
+        decreases numbers.len() - i
+    {
+        let mut j = 0usize;
+        while j < numbers.len()
+            invariant
+                0 <= i < numbers.len(),
+                0 <= j <= numbers.len(),
+                forall|ii: int, jj: int| 0 <= ii && ii < i && 0 <= jj && jj < numbers.len() && ii != jj ==> abs_spec(numbers[ii] - numbers[jj]) >= threshold,
+                forall|jj: int| 0 <= jj && jj < j && (i as int) != jj ==> abs_spec(numbers[i as int] - numbers[jj]) >= threshold
+            decreases numbers.len() - j
+        {
+            if i != j {
+                let diff = numbers[i] - numbers[j];
+                let abs_diff = abs(diff);
+                if abs_diff < threshold {
+                    return true;
+                }
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    false
+}
+
+fn main() {}
 }

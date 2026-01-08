@@ -1,31 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> bool {
-    (n % divisor) == 0
+spec fn in_array(a: Seq<i32>, x: i32) -> bool {
+    exists|i: int| 0 <= i < a.len() && a[i] == x
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_non_prime(n: u64) -> (result: bool)
-
-    requires
-        n >= 2,
-
+fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
     ensures
-        result == (exists|k: int| 2 <= k < n && is_divisible(n as int, k)),
-// </vc-spec>
-// <vc-code>
+        result == in_array(a@, x),
 {
-    assume(false);
-    unreached()
+    for i in 0..a.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> a[j as int] != x,
+    {
+        if a[i] == x {
+            return true;
+        }
+    }
+    false
 }
-// </vc-code>
 
+#[verifier::loop_isolation(false)]
+fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
+    requires
+        a.len() >= 1,
+    ensures
+        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
+        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+{
+    let mut result = Vec::new();
+    
+    for i in 0..a.len()
+        invariant
+            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+    {
+        if !in_array_exec(&result, a[i]) {
+            result.push(a[i]);
+        }
+    }
+    
+    result
 }
+
 fn main() {}
+}

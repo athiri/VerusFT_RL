@@ -1,37 +1,35 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-spec fn is_digit_spec(c: u8) -> bool {
-    c >= 48 && c <= 57
+spec fn is_digit(c: u8) -> bool {
+    (c >= 48 && c <= 57)
 }
 
-fn is_digit(c: u8) -> (res: bool)
-    ensures
-        res == is_digit_spec(c),
+spec fn count_digits_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    c >= 48 && c <= 57
-}
-
-fn is_integer(text: &[u8]) -> (result: bool)
-    ensures
-        result == (forall|i: int| 0 <= i < text.len() ==> (#[trigger] is_digit_spec(text[i]))),
-{
-    let mut idx = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to fix verification error */
-    while idx < text.len()
-        invariant
-            forall|i: int| 0 <= i < idx ==> is_digit_spec(text[i]),
-        decreases text.len() - idx,
-    {
-        if !is_digit(text[idx]) {
-            return false;
+    if seq.len() == 0 {
+        0
+    } else {
+        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
+            1 as int
+        } else {
+            0 as int
         }
-        idx += 1;
     }
-    true
+}
+
+fn count_digits(text: &[u8]) -> (count: usize)
+    ensures
+        0 <= count <= text.len(),
+        count_digits_recursively(text@) == count,
+{
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

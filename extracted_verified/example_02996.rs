@@ -1,65 +1,82 @@
 use vstd::prelude::*;
 
 verus! {
-
-spec fn is_lower_case(c: char) -> (result: bool) {
-    c >= 'a' && c <= 'z'
-}
-// pure-end
-
-/* code modified by LLM (iteration 2): Added executable version of is_lower_case for use in implementation */
-fn is_lower_case_exec(c: char) -> (result: bool)
-    ensures result == is_lower_case(c)
+spec fn fibo(n: int) -> (result:nat)
+    decreases n
 {
-    c >= 'a' && c <= 'z'
-}
-
-spec fn shift_minus_32_spec(c: char) -> (result: char) {
-    ((c as u8) - 32) as char
+    if n <= 0 { 0 } else if n == 1 { 1 }
+    else { fibo(n - 2) + fibo(n - 1) }
 }
 // pure-end
 
-spec fn inner_expr_to_uppercase(str1: &Vec<char>, i: int) -> (result:char) {
-    if is_lower_case(#[trigger] str1[i]) {
-        shift_minus_32_spec(str1[i])
-    } else {
-        str1[i]
-    }
+spec fn fibo_fits_i32(n: int) -> (result:bool) {
+    fibo(n) < 0x8000_0000
 }
+// pure-end
 
-fn to_uppercase(str1: &Vec<char>) -> (result: Vec<char>)
+proof fn fibo_is_monotonic(i: int, j: int)
+    // pre-conditions-start
+    requires
+        i <= j,
+    // pre-conditions-end
     // post-conditions-start
     ensures
-        str1@.len() == result@.len(),
-        forall|i: int|
-            0 <= i < str1.len() ==> (result[i] == (inner_expr_to_uppercase(str1, i))),
+        fibo(i) <= fibo(j),
+    decreases j - i
+    // post-conditions-end
+{
+    // impl-start
+    if i <= 0 {
+    }
+    else if  i < j {
+        fibo_is_monotonic(i, j-1);
+        assert(fibo(j) == fibo(j-1)+fibo(j-2));
+    }
+    // impl-end
+}
+// pure-end
+
+fn fibonacci(n: usize) -> (ret: Vec<i32>)
+    // pre-conditions-start
+    requires
+        fibo_fits_i32(n as int),
+        n >= 2,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        forall |i: int| 2 <= i < n ==> #[trigger] ret@[i] ==  fibo(i), 
+        ret@.len() == n,
     // post-conditions-end
 {
     let mut result = Vec::new();
-    let mut i = 0;
+    result.push(0);  // fibo(0) = 0
+    result.push(1);  // fibo(1) = 1
     
-    while i < str1.len()
+    let mut i = 2;
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < n
         invariant
-            i <= str1.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == inner_expr_to_uppercase(str1, j),
-        /* code modified by LLM (iteration 2): Added decreases clause to prove loop termination */
-        decreases str1.len() - i
+            result@.len() == i,
+            i >= 2,
+            i <= n,
+            forall |j: int| 0 <= j < i ==> result@[j] == fibo(j),
+        decreases n - i
     {
-        let c = str1[i];
-        /* code modified by LLM (iteration 1): Changed is_lower_case to is_lower_case_exec for executable code */
-        if is_lower_case_exec(c) {
-            let upper_c = ((c as u8) - 32) as char;
-            result.push(upper_c);
-        } else {
-            result.push(c);
+        let next_fib = result[i - 2] + result[i - 1];
+        result.push(next_fib);
+        
+        proof {
+            assert(result@[i as int] == result@[(i-2) as int] + result@[(i-1) as int]);
+            assert(result@[(i-2) as int] == fibo((i-2) as int));
+            assert(result@[(i-1) as int] == fibo((i-1) as int));
+            assert(fibo(i as int) == fibo((i-2) as int) + fibo((i-1) as int));
         }
+        
         i += 1;
     }
     
     result
 }
-
-} // verus!
+}
 
 fn main() {}

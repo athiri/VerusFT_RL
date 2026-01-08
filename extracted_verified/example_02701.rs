@@ -1,56 +1,69 @@
 use vstd::prelude::*;
 
 verus! {
+spec fn sum(numbers: Seq<u32>) -> (result:int) {
+    numbers.fold_left(0, |acc: int, x| acc + x)
+}
+// pure-end
 
-//IMPL index_wise_addition
-#[verifier::loop_isolation(false)]
-fn index_wise_addition(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> (c: Vec<Vec<i32>>)
-    requires
-        a.len() == b.len(),
-        forall|i: int| #![auto] 0 <= i < a.len() ==> a[i].len() == b[i].len(),
-        forall|i: int| #![trigger a[i], b[i]]
-            0 <= i < a.len()
-                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] <= i32::MAX,
-        forall|i: int| #![trigger a[i], b[i]]
-            0 <= i < a.len()
-                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] >= i32::MIN,
+spec fn product(numbers: Seq<u32>) -> (result:int) {
+    numbers.fold_left(1, |acc: int, x| acc * x)
+}
+// pure-end
+
+proof fn sum_bound(numbers: Seq<u32>)
+    // post-conditions-start
     ensures
-        c.len() == a.len(),
-        forall|i: int| #![auto] 0 <= i < c.len() ==> c[i].len() == a[i].len(),
-        forall|i: int| #![trigger a[i], b[i], c[i]]
-            0 <= i < c.len()
-                ==> forall|j: int| #![auto] 0 <= j < c[i].len() ==> c[i][j] == a[i][j] + b[i][j],
+        sum(numbers) <= numbers.len() * u32::MAX,
+    decreases numbers.len(),
+    // post-conditions-end
 {
-    /* code modified by LLM (iteration 1): Added explicit type annotation for Vec */
-    let mut result: Vec<Vec<i32>> = Vec::new();
+    // impl-start
+    if numbers.len() == 0 {
+    } else {
+        sum_bound(numbers.drop_last());
+    }
+    // impl-end
+}
+// pure-end
+
+fn sum_product(numbers: Vec<u32>) -> (result: (u64, Option<u32>))
+    // pre-conditions-start
+    requires
+        numbers.len() < u32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        result.0 == sum(numbers@),
+        result.1 matches Some(v) ==> v == product(numbers@),
+    // post-conditions-end
+{
+    let mut total_sum: u64 = 0;
+    let mut total_product: u64 = 1;
+    let mut i = 0;
     
-    for i in 0..a.len()
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < numbers.len()
         invariant
-            result.len() == i,
-            forall|k: int| 0 <= k < i ==> result[k].len() == a[k].len(),
-            /* code modified by LLM (iteration 2): Added explicit trigger annotations to fix trigger inference error */
-            forall|k: int| #![trigger result[k], a[k], b[k]] 0 <= k < i ==> 
-                forall|j: int| 0 <= j < result[k].len() ==> result[k][j] == a[k][j] + b[k][j],
+            i <= numbers.len(),
+            total_sum == sum(numbers@.subrange(0, i as int)),
+            total_product == product(numbers@.subrange(0, i as int)),
+        decreases numbers.len() - i
     {
-        /* code modified by LLM (iteration 1): Added explicit type annotation for Vec */
-        let mut row: Vec<i32> = Vec::new();
-        
-        for j in 0..a[i].len()
-            invariant
-                i < a.len(),
-                row.len() == j,
-                /* code modified by LLM (iteration 1): Fixed type mismatch by using int casting */
-                forall|l: int| 0 <= l < j ==> row[l] == a[i as int][l] + b[i as int][l],
-        {
-            let sum = a[i][j] + b[i][j];
-            row.push(sum);
-        }
-        
-        result.push(row);
+        let num = numbers[i];
+        total_sum = total_sum + num as u64;
+        total_product = total_product * num as u64;
+        i = i + 1;
     }
     
-    result
+    let product_result = if total_product <= u32::MAX as u64 {
+        Some(total_product as u32)
+    } else {
+        None
+    };
+    
+    (total_sum, product_result)
 }
 
-fn main() {}
 }
+fn main() {}

@@ -1,52 +1,94 @@
-/*
-Based on this Rust program.
-https://github.com/TheAlgorithms/Rust/blob/master/src/backtracking/permutations.rs
+use alloc::vec::Vec;
 
-Verus does not support "continue", "for", !vec, and clone.
-So, I refactored the original code accordingly.
+use super::*;
+use crate::vbox::*;
 
-Spec and loop invariants are added to prove no buffer overflow.
+verus! {
 
-No spec/invariant is needed to prove no arithmetic under/overflow.
-*/
-
-/*
-The permutations problem involves finding all possible permutations
-of a given collection of distinct integers. For instance, given [1, 2, 3],
-the goal is to generate permutations like
- [1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], and [3, 2, 1].
- This implementation uses a backtracking algorithm to generate all possible permutations.
-*/
-  
-use vstd::prelude::*;
-
- 
-verus!{
-
-    fn main() {
-    // TODO: Remove this comment and implement the function body
-    }
-
-    #[verifier::external_body]
-    fn myVecClone(v: &Vec<i32>) -> Vec<i32> {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-    }
-
-    pub fn permute(nums: Vec<i32>) -> Vec<Vec<i32>> {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-    }
-
-    fn backtrack(
-        nums: &Vec<i32>,
-        current_permutation: &mut Vec<i32>,
-        used: &mut Vec<bool>,
-        result: &mut Vec<Vec<i32>>,
-    ) 
-    requires
-        nums.len() == old(used).len(),
-    ensures
-        used.len() == old(used).len(),    
-    {
-    // TODO: Remove this comment and implement the function body
+impl<T: WellFormed> WellFormed for Vec<T> {
+    open spec fn wf(&self) -> bool {
+        &&& self@.wf()
     }
 }
+
+impl<T: IsConstant + WellFormed> IsConstant for Vec<T> {
+    open spec fn is_constant(&self) -> bool {
+        self@.is_constant()
+    }
+
+    open spec fn is_constant_to(&self, vmpl: nat) -> bool {
+        &&& self@.is_constant_to(vmpl)
+    }
+}
+
+impl<T: ToSecSeq> VTypeCast<SecSeqByte> for Vec<T> {
+    open spec fn vspec_cast_to(self) -> SecSeqByte {
+        self@.vspec_cast_to()
+    }
+}
+
+impl<T: SpecSize> SpecSize for Vec<T> {
+    open spec fn spec_size_def() -> nat;
+}
+
+pub struct PushParam<T> {
+    pub val: T,
+}
+
+impl<'a, T> MutFnTrait<'a, PushParam<T>, bool> for Vec<T> {
+    open spec fn spec_update_requires(&self, params: PushParam<T>) -> bool {
+        true
+    }
+
+    open spec fn spec_update(&self, prev: &Self, params: PushParam<T>, ret: bool) -> bool {
+        self@ === prev@.push(params.val)
+    }
+
+    fn box_update(&'a mut self, params: PushParam<T>) -> (ret: bool) {
+        self.push(params.val);
+        true
+    }
+}
+
+struct RemoveParam {
+    i: usize,
+}
+
+impl<'a, T> MutFnTrait<'a, RemoveParam, T> for Vec<T> {
+    closed spec fn spec_update_requires(&self, params: RemoveParam) -> bool {
+        0 <= params.i < self.len()
+    }
+
+    closed spec fn spec_update(&self, prev: &Self, params: RemoveParam, ret: T) -> bool {
+        let i = params.i as int;
+        &&& self@ === prev@.remove(i)
+        &&& ret == prev@[i]
+    }
+
+    fn box_update(&'a mut self, params: RemoveParam) -> (ret: T) {
+        self.remove(params.i)
+    }
+}
+
+impl<T> VBox<Vec<T>> {
+    pub fn remove(&mut self, i: usize) -> (ret: T)
+        requires
+            0 <= i < old(self)@.len(),
+        ensures
+            self.snp().is_vmpl0_private() ==> self@@ === old(self)@@.remove(i as int),
+            self.only_val_updated(*old(self)),
+            ret === old(self)@@[i as int],
+    {
+        self.box_update(RemoveParam { i })
+    }
+
+    pub fn push(&mut self, val: T)
+        ensures
+            self.snp().is_vmpl0_private() ==> self@@ === old(self)@@.push(val),
+            self.only_val_updated(*old(self)),
+    {
+        self.box_update(PushParam { val });
+    }
+}
+
+} // verus!

@@ -1,27 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
+
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn unique(s: Vec<i8>) -> (result: Vec<i8>)
+fn smallest_list_length(list: &Vec<Vec<i32>>) -> (min: usize)
+    requires
+        list.len() > 0,
     ensures
-        forall|i: int, j: int| 0 <= i < j < result@.len() ==> (result@[i] as int) < (result@[j] as int) &&
-        forall|x: i8| result@.contains(x) ==> s@.contains(x) &&
-        forall|x: i8| s@.contains(x) ==> result@.contains(x)
-// </vc-spec>
-// <vc-code>
+        min >= 0,
+        forall|i: int| 0 <= i < list.len() ==> min <= #[trigger] list[i].len(),
+        exists|i: int| 0 <= i < list.len() && min == #[trigger] list[i].len(),
 {
-    assume(false);
-    unreached()
+    let mut min = list[0].len();
+    let mut j = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while j < list.len()
+        invariant
+            1 <= j <= list.len(),
+            min >= 0,
+            forall|i: int| 0 <= i < j ==> min <= #[trigger] list[i].len(),
+            exists|i: int| 0 <= i < j && min == #[trigger] list[i].len(),
+        decreases list.len() - j,
+    {
+        if list[j].len() < min {
+            min = list[j].len();
+        }
+        j += 1;
+    }
+    
+    min
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

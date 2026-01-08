@@ -2,70 +2,35 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition - always true (matching original Lean)
-spec fn unique_sorted_precond(arr: Seq<int>) -> bool {
-    true
-}
+// <vc-helpers>
 
-// Postcondition - basic (matching original structure)  
-spec fn unique_sorted_postcond(arr: Seq<int>, result: Seq<int>) -> bool {
-    true  // Simplified postcondition
-}
+// </vc-helpers>
 
-// Insert function - basic implementation
-fn insert(x: int, sorted: Vec<int>) -> (result: Vec<int>) {
-    let mut result = Vec::new();
-    let mut inserted = false;
-    
-    for i in 0..sorted.len() {
-        if !inserted && x <= sorted[i] {
-            result.push(x);
-            inserted = true;
-        }
-        result.push(sorted[i]);
-    }
-    
-    if !inserted {
-        result.push(x);
-    }
-    
-    result
-}
-
-// Insertion sort  
-fn insertion_sort(xs: Vec<int>) -> (result: Vec<int>) {
-    let mut result = Vec::new();
-    
-    for i in 0..xs.len() {
-        result = insert(xs[i], result);
-    }
-    
-    result
-}
-
-// Remove duplicates - avoiding break statements
-fn remove_duplicates(arr: Vec<int>) -> (result: Vec<int>) {
-    let mut result = Vec::new();
-    
-    for i in 0..arr.len() {
-        if i == 0 || arr[i] != arr[i - 1] {
-            result.push(arr[i]);
-        }
-    }
-    
-    result
-}
-
-// Main function - matches original Lean algorithm
-fn unique_sorted(arr: Vec<int>) -> (result: Vec<int>)
-    requires unique_sorted_precond(arr@)
-    ensures unique_sorted_postcond(arr@, result@)
+// <vc-spec>
+fn array_split(a: Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
+    ensures
+        a@ == ret.0@ + ret.1@,
+        a.len() == ret.0.len() + ret.1.len(),
+        a.len() > 1 ==> a.len() > ret.0.len(),
+        a.len() > 1 ==> a.len() > ret.1.len(),
+// </vc-spec>
+// <vc-code>
 {
-    let sorted = insertion_sort(arr);
-    remove_duplicates(sorted)
+    let n = a.len();
+    let mut left = a;
+    let k_usize: usize = if n == 0 { 0usize } else { 1usize };
+    let mut right = left.split_off(k_usize);
+    if n > 1 {
+        assert(left.len() == 1);
+        assert(right.len() + left.len() == n);
+        assert(n > left.len());
+        assert(n > right.len());
+    }
+    (left, right)
 }
-
-} // verus!
+// </vc-code>
 
 fn main() {
+}
+
 }

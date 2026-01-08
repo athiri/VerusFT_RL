@@ -1,31 +1,43 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn abs_spec(i: int) -> int {
-    if i < 0 { -i } else { i }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-#[verifier::loop_isolation(false)]
-fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+//IMPL all_sequence_equal_length
+fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
+    // pre-conditions-start
     requires
-        threshold > 0,
-        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+        seq.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
-// </vc-spec>
-// <vc-code>
+        result == (forall|i: int, j: int|
+            (0 <= i < seq.len() && 0 <= j < seq.len()) ==> (#[trigger] seq[i].len()
+                == #[trigger] seq[j].len())),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let first_len = seq[0].len();
+    
+    for k in 1..seq.len()
+        /* code modified by LLM (iteration 3): enhanced invariant to establish relationship between all checked elements */
+        invariant
+            forall|i: int| (0 <= i < k) ==> seq[i].len() == first_len,
+            forall|i: int, j: int| (0 <= i < k && 0 <= j < k) ==> seq[i].len() == seq[j].len(),
+    {
+        if seq[k].len() != first_len {
+            /* code modified by LLM (iteration 3): fixed type mismatch by using int casting for assertion */
+            assert(seq[0].len() != seq[k as int].len());
+            assert(!(forall|i: int, j: int| (0 <= i < seq.len() && 0 <= j < seq.len()) ==> seq[i].len() == seq[j].len()));
+            return false;
+        }
+    }
+    
+    /* code modified by LLM (iteration 3): added assertion to help prove postcondition when returning true */
+    assert(forall|i: int| (0 <= i < seq.len()) ==> seq[i].len() == first_len);
+    assert(forall|i: int, j: int| (0 <= i < seq.len() && 0 <= j < seq.len()) ==> seq[i].len() == seq[j].len());
+    
+    true
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

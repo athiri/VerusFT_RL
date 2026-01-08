@@ -1,24 +1,15 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn min(x: int, y: int) -> (z: int)
-    ensures
-        x <= y ==> z == x,
-        x > y ==> z == y,
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn find(a: &[i32], key: i32) -> (index: i32)
+        requires a.len() < 0x8000_0000,
+        ensures
+            -1 <= index < a.len(),
+            index != -1 ==> 0 <= index < a.len() && a[index as int] == key && (forall|i: int| 0 <= i < index ==> a[i] != key),
+            index == -1 ==> (forall|i: int| 0 <= i < a.len() ==> a[i] != key)
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
 }
-// </vc-code>
 
-}
 fn main() {}

@@ -1,44 +1,40 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn spec_sum_to_n(n: nat) -> (ret:nat)
-    decreases n,
+// <vc-helpers>
+fn zero_f32() -> f32
 {
-    if (n == 0) {
-        0
-    } else {
-        n + spec_sum_to_n((n - 1) as nat)
-    }
+    0.0f32
 }
-// pure-end
 
-fn sum_to_n(n: u32) -> (sum: Option<u32>)
-    // post-conditions-start
-    ensures
-        sum.is_some() ==> sum.unwrap() == spec_sum_to_n(n as nat),
-    // post-conditions-end
+// </vc-helpers>
+
+// <vc-spec>
+fn log2(x: Vec<f32>) -> (result: Vec<f32>)
+    requires x.len() > 0,
+    ensures result.len() == x.len(),
+// </vc-spec>
+// <vc-code>
 {
-    let mut i: u32 = 0;
-    let mut total: u32 = 0;
-    
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    let n = x.len();
+    let mut res: Vec<f32> = Vec::new();
+    let mut i: usize = 0;
     while i < n
         invariant
             i <= n,
-            total == spec_sum_to_n(i as nat),
-            total <= u32::MAX,
-        decreases n - i,
+            res.len() == i,
+            n == x.len(),
+        decreases n - i
     {
-        if total > u32::MAX - (i + 1) {
-            return None;
-        }
-        i = i + 1;
-        total = total + i;
+        res.push(zero_f32());
+        i += 1;
     }
-    
-    Some(total)
+    res
 }
+// </vc-code>
 
 }
 fn main() {}

@@ -1,45 +1,98 @@
 use vstd::prelude::*;
 
 verus! {
-
-#[verifier::loop_isolation(false)]
-fn unique_better(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        forall|i: int, j: int|
-            #![trigger a[i], a[j]]
-            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
-    ensures
-        forall|i: int, j: int|
-            #![trigger result[i], result[j]]
-            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
+spec fn nesting_level(input: Seq<char>) -> (result:int)
+    decreases input.len(),
 {
-    let mut result = Vec::new();
-    
-    if a.len() == 0 {
-        return result;
-    }
-    
-    result.push(a[0]);
-    
-    let mut i = 1;
-    /* code modified by LLM (iteration 1): added trigger annotation for quantifier */
-    while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            result.len() > 0,
-            result[result.len() - 1] == a[i - 1] || (exists|k: int| 0 <= k < i - 1 && result[result.len() - 1] == a[k] && forall|j: int| k < j < i ==> a[j] == a[k]),
-            forall|x: int, y: int| 0 <= x < y < result.len() ==> result[x] < result[y],
-            forall|j: int| #![trigger result[j]] 0 <= j < result.len() ==> exists|k: int| 0 <= k < i && result[j] == a[k],
-        decreases a.len() - i
-    {
-        if a[i] > result[result.len() - 1] {
-            result.push(a[i]);
+    if input.len() == 0 {
+        0
+    } else {
+        let prev_nesting_level = nesting_level(input.drop_last());
+        let c = input.last();
+        if c == '(' {
+            prev_nesting_level + 1
+        } else if c == ')' {
+            prev_nesting_level - 1
+        } else {
+            prev_nesting_level
         }
-        i += 1;
     }
-    
-    result
+}
+// pure-end
+
+spec fn is_paren_char(c: char) -> (result:bool) {
+    c == '(' || c == ')'
+}
+// pure-end
+
+spec fn is_balanced_group(input: Seq<char>) -> (result:bool) {
+    &&& input.len() > 0
+    &&& nesting_level(input) == 0
+    &&& forall|i| 0 <= i < input.len() ==> is_paren_char(#[trigger] input[i])
+    &&& forall|i| 0 < i < input.len() ==> nesting_level(#[trigger] input.take(i)) > 0
+}
+// pure-end
+
+spec fn is_sequence_of_balanced_groups(input: Seq<char>) -> (result:bool) {
+    &&& nesting_level(input) == 0
+    &&& forall|i| 0 < i < input.len() ==> nesting_level(#[trigger] input.take(i)) >= 0
+}
+// pure-end
+
+spec fn vecs_to_seqs<T>(s: Seq<Vec<T>>) -> (result:Seq<Seq<T>>) {
+    s.map(|_i, ss: Vec<T>| ss@)
+}
+// pure-end
+
+spec fn remove_nonparens(s: Seq<char>) -> (result:Seq<char>) {
+    s.filter(|c| is_paren_char(c))
+}
+// pure-end
+
+proof fn lemma_remove_nonparens_maintained_by_push(s: Seq<char>, pos: int)
+    // pre-conditions-start
+    requires
+        0 <= pos < s.len(),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        ({
+            let s1 = remove_nonparens(s.take(pos as int));
+            let s2 = remove_nonparens(s.take((pos + 1) as int));
+            if is_paren_char(s[pos]) {
+                s2 == s1.push(s[pos])
+            } else {
+                s2 == s1
+            }
+        }),
+    decreases pos,
+    // post-conditions-end
+{
+    // impl-start
+    reveal(Seq::filter);
+    assert(s.take((pos + 1) as int).drop_last() =~= s.take(pos as int));
+    if pos != 0 {
+        lemma_remove_nonparens_maintained_by_push(s, pos - 1);
+    }
+    // impl-end
+}
+// pure-end
+
+fn separate_paren_groups(input: &Vec<char>) -> (groups: Vec<Vec<char>>)
+    // pre-conditions-start
+    requires
+        is_sequence_of_balanced_groups(input@),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        forall|i: int|
+            #![trigger groups[i]]
+            0 <= i < groups.len() ==> is_balanced_group(groups[i]@),
+        vecs_to_seqs(groups@).flatten() == remove_nonparens(input@),
+    // post-conditions-end
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
 }
+fn main() {}

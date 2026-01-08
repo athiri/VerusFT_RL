@@ -1,79 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn valid_input(y1: int, y2: int, y_w: int, x_b: int, y_b: int, r: int) -> bool {
-    y1 < y2 < y_w &&
-    y_b + r < y_w &&
-    2 * r < y2 - y1 &&
-    x_b > 0 && y_b > 0 && r > 0 &&
-    2 * (y_w - r) - y1 - y_b - r != 0
-}
-
-spec fn compute_w(y_w: int, r: int) -> int {
-    y_w - r
-}
-
-spec fn compute_new_y1(y_w: int, r: int, y1: int, y_b: int) -> int {
-    2 * (y_w - r) - y1 - y_b - r
-}
-
-spec fn compute_new_y2(y_w: int, r: int, y2: int, y_b: int) -> int {
-    2 * (y_w - r) - y2 - y_b
-}
-
-spec fn compute_left_side(x_b: int, new_y1: int, new_y2: int) -> int {
-    x_b * x_b * (new_y2 - new_y1) * (new_y2 - new_y1)
-}
-
-spec fn compute_right_side(x_b: int, new_y1: int, r: int) -> int {
-    (new_y1 * new_y1 + x_b * x_b) * r * r
-}
-
-spec fn is_impossible(y1: int, y2: int, y_w: int, x_b: int, y_b: int, r: int) -> bool
-    recommends valid_input(y1, y2, y_w, x_b, y_b, r)
+fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+    ensures
+        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
 {
-    let w = compute_w(y_w, r);
-    let new_y1 = compute_new_y1(y_w, r, y1, y_b);
-    let new_y2 = compute_new_y2(y_w, r, y2, y_b);
-    let left_side = compute_left_side(x_b, new_y1, new_y2);
-    let right_side = compute_right_side(x_b, new_y1, r);
-    left_side <= right_side
+    let mut i = 0;
+    while i < arr.len()
+        invariant
+            forall|j: int| 0 <= j < i ==> arr[j] != key,
+    {
+        if arr[i] == key {
+            return true;
+        }
+        i += 1;
+    }
+    false
 }
 
-spec fn compute_solution(y1: int, y2: int, y_w: int, x_b: int, y_b: int, r: int) -> int
-    recommends 
-        valid_input(y1, y2, y_w, x_b, y_b, r) &&
-        !is_impossible(y1, y2, y_w, x_b, y_b, r)
+fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    ensures
+        forall|i: int|
+            0 <= i < result.len() ==> (arr1@.contains(#[trigger] result[i]) && arr2@.contains(
+                #[trigger] result[i],
+            )),
+        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
 {
-    let w = compute_w(y_w, r);
-    let new_y1 = compute_new_y1(y_w, r, y1, y_b);
-    x_b * (new_y1 + y_b - w) / new_y1
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(y1: i8, y2: i8, y_w: i8, x_b: i8, y_b: i8, r: i8) -> (result: i8)
-    requires 
-        valid_input(y1 as int, y2 as int, y_w as int, x_b as int, y_b as int, r as int)
-    ensures 
-        is_impossible(y1 as int, y2 as int, y_w as int, x_b as int, y_b as int, r as int) ==> result == -1,
-        !is_impossible(y1 as int, y2 as int, y_w as int, x_b as int, y_b as int, r as int) ==> result as int == compute_solution(y1 as int, y2 as int, y_w as int, x_b as int, y_b as int, r as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            forall|k: int|
+                0 <= k < result.len() ==> (arr1@.contains(#[trigger] result[k]) && arr2@.contains(
+                    #[trigger] result[k],
+                )),
+            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+    {
+        let element = arr1[i];
+        
+        // Check if element is in arr2 and not already in result
+        if contains(arr2, element) && !contains(&result, element) {
+            result.push(element);
+        }
+        
+        i += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

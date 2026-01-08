@@ -1,32 +1,122 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
 verus! {
 
-fn has_only_one_distinct_element(arr: &Vec<i32>) -> (result: bool)
-    ensures
-        result == (forall|i: int| 1 <= i < arr@.len() ==> arr[0] == #[trigger] arr[i]),
+
+spec fn extract_first_digit_spec(n: int) -> (ret:int)
+    decreases n,
 {
-    if arr.len() <= 1 {
-        return true;
+    if n < 10 {
+        n
+    } else {
+        extract_first_digit_spec(n / 10)
+    }
+}
+// pure-end
+
+fn extract_first_digit(n: u32) -> (res: u32)
+    // post-conditions-start
+    ensures
+        res == extract_first_digit_spec(n as int),
+    // post-conditions-end
+    /* code modified by LLM (iteration 1): added decreases clause for recursive function */
+    decreases n,
+{
+    if n < 10 {
+        n
+    } else {
+        extract_first_digit(n / 10)
+    }
+}
+
+
+spec fn extract_last_digit_spec(n: int) -> (ret:int) {
+    n % 10
+}
+// pure-end
+
+fn extract_last_digit(n: u32) -> (res: u32)
+    // post-conditions-start
+    ensures
+        res == extract_last_digit_spec(n as int),
+    // post-conditions-end
+{
+    n % 10
+}
+
+spec fn is_odd(n: int) -> (ret:bool) {
+    (n % 2) != 0
+}
+// pure-end
+
+
+spec fn is_valid_element_spec(n: int) -> (ret:bool) {
+    &&& (n > 10)
+    &&& is_odd(extract_first_digit_spec(n))
+    &&& is_odd(extract_last_digit_spec(n))
+}
+// pure-end
+
+fn is_valid_element(n: i32) -> (res: bool)
+    // post-conditions-start
+    ensures
+        res == is_valid_element_spec(n as int),
+    // post-conditions-end
+{
+    if n <= 10 {
+        false
+    } else {
+        let abs_n = if n >= 0 { n as u32 } else { (-n) as u32 };
+        let first_digit = extract_first_digit(abs_n);
+        let last_digit = extract_last_digit(abs_n);
+        (first_digit % 2 != 0) && (last_digit % 2 != 0)
+    }
+}
+
+
+spec fn special_filter_spec(seq: Seq<i32>) -> (ret:int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        special_filter_spec(seq.drop_last()) + if (is_valid_element_spec(seq.last() as int)) {
+            1 as int
+        } else {
+            0 as int
+        }
+    }
+}
+// pure-end
+
+fn special_filter(numbers: &Vec<i32>) -> (count: usize)
+    // post-conditions-start
+    ensures
+        count == special_filter_spec(numbers@),
+    // post-conditions-end
+{
+    let mut count = 0;
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 2): added decreases clause for loop termination */
+    while i < numbers.len()
+        invariant
+            i <= numbers.len(),
+            count == special_filter_spec(numbers@.subrange(0, i as int)),
+        decreases numbers.len() - i,
+    {
+        if is_valid_element(numbers[i]) {
+            count = count + 1;
+        }
+        i = i + 1;
     }
     
-    let mut j = 1;
-    /* code modified by LLM (iteration 2): added trigger annotation to fix quantifier trigger inference error */
-    while j < arr.len()
-        invariant
-            1 <= j <= arr.len(),
-            forall|k: int| 1 <= k < j ==> arr[0] == #[trigger] arr[k],
-        decreases arr.len() - j
-    {
-        if arr[0] != arr[j] {
-            return false;
-        }
-        j += 1;
+    proof {
+        assert(numbers@.subrange(0, numbers@.len() as int) =~= numbers@);
     }
-    true
+    
+    count
 }
 
 } // verus!
+fn main() {}

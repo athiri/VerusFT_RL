@@ -1,34 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(n: int) -> bool {
-    n >= 1
-}
-
-spec fn max_sum(n: int) -> int
-    recommends n >= 1
-{
-    n * (n - 1) / 2
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-    requires valid_input(n as int)
-    ensures result as int == max_sum(n as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn find_first_odd(arr: &Vec<u32>) -> (index: Option<usize>)
+    ensures
+        if let Some(idx) = index {
+            idx < arr.len() && arr[idx] % 2 == 1 && forall|k: int| 0 <= k < idx ==> (arr[k] % 2 == 0)
+        } else {
+            forall|k: int| 0 <= k < arr.len() ==> (arr[k] % 2 == 0)
+        },
+{
+    let mut index = 0;
+    while index < arr.len()
+        invariant
+            0 <= index <= arr.len(),
+            forall|k: int| 0 <= k < index ==> (arr[k] % 2 == 0),
+    {
+        if arr[index] % 2 != 0 {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+} // verus!

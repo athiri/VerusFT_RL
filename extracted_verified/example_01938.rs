@@ -1,52 +1,36 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    let result = prime_num(7);
+    println!("7 is prime: {}", result);
+}
 
 verus! {
 
-spec fn product_of_digits(x: int) -> int
-  recommends x >= 0
-  decreases x
+spec fn is_divisible(n: int, divisor: int) -> bool {
+    (n % divisor) == 0
+}
+
+fn prime_num(n: u64) -> (result: bool)
+    requires
+        n >= 2,
+    ensures
+        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
 {
-  if x == 0 { 1 }
-  else if x < 10 { x }
-  else { (x % 10) * product_of_digits(x / 10) }
+    let mut i: u64 = 2;
+    
+    while i < n
+        invariant
+            2 <= i <= n,
+            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
+    {
+        if n % i == 0 {
+            return false;
+        }
+        i = i + 1;
+    }
+    
+    true
 }
 
-spec fn max_product_of_digits_in_range(n: int) -> int
-  recommends n >= 1
-  decreases n
-  when n >= 1
-{
-  if n == 1 { 1 }
-  else {
-    let current = product_of_digits(n);
-    let rest = max_product_of_digits_in_range(n - 1);
-    if current > rest { current } else { rest }
-  }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: i8)
-  requires 
-    n >= 1
-  ensures 
-    result as int == max_product_of_digits_in_range(n as int),
-    result >= 1,
-    forall|k: int| 1 <= k <= n as int ==> product_of_digits(k) <= result as int,
-    exists|k: int| 1 <= k <= n as int && product_of_digits(k) == result as int
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

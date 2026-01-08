@@ -1,42 +1,65 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn interleave(s1: &Vec<i32>, s2: &Vec<i32>, s3: &Vec<i32>) -> (res: Vec<i32>)
+spec fn is_vowel(c: char) -> (ret:bool) {
+    c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' || c == 'A' || c == 'E' || c == 'I'
+        || c == 'O' || c == 'U'
+}
+// pure-end
+
+spec fn vowels(s: Seq<char>) -> (ret:Seq<char>) {
+    s.filter(|c| is_vowel(c))
+}
+// pure-end
+
+spec fn inner_expr_vowels_count(s: &str, ret: u32) -> (ret:bool) {
+    ret == vowels(s@).len() + if (s@.len() > 0 && (s@.last() == 'y' || s@.last() == 'Y')) {
+        1int
+
+    } else {
+        0int
+    }
+}
+// pure-end
+
+fn vowels_count(s: &str) -> (ret: u32)
+    // pre-conditions-start
     requires
-        s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-        0 <= (s1@.len() * 3) <= i32::MAX,
+        s@.len() <= u32::MAX,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        res@.len() == s1@.len() * 3,
-        forall|i: int|
-            0 <= i < s1@.len() ==> (res[3 * i] == s1[i] && res[3 * i + 1] == s2[i] && res[3 * i + 2]
-                == s3[i]),
+        inner_expr_vowels_count(s, ret),
+    // post-conditions-end
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
+    let mut count: u32 = 0;
+    let mut i: usize = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
-    while idx < s1.len()
+    /* code modified by LLM (iteration 1): use s.len() instead of s@.len() in exec code and proper string indexing */
+    while i < s.len()
         invariant
-            0 <= idx <= s1.len(),
-            s1@.len() == s2@.len() && s2@.len() == s3@.len(),
-            result@.len() == idx * 3,
-            forall|i: int| 0 <= i < idx ==> (
-                result[3 * i] == s1[i] && 
-                result[3 * i + 1] == s2[i] && 
-                result[3 * i + 2] == s3[i]
-            ),
-        decreases s1.len() - idx
+            i <= s@.len(),
+            count == vowels(s@.subrange(0, i as int)).len(),
+            count <= u32::MAX,
     {
-        result.push(s1[idx]);
-        result.push(s2[idx]);
-        result.push(s3[idx]);
-        idx += 1;
+        let c = s.as_bytes()[i] as char;
+        if is_vowel(c) {
+            count = count + 1;
+        }
+        i = i + 1;
     }
     
-    result
+    /* code modified by LLM (iteration 1): use s.len() instead of s@.len() in exec code and proper last character access */
+    if s.len() > 0 {
+        let last_char = s.as_bytes()[s.len() - 1] as char;
+        if last_char == 'y' || last_char == 'Y' {
+            count = count + 1;
+        }
+    }
+    
+    count
 }
 
-} // verus!
+}
+fn main() {}

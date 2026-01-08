@@ -1,24 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn contains_consecutive_numbers(a: &[i32]) -> (result: bool)
-    requires a.len() > 0
-    ensures result <==> exists|i: int| #![trigger a.spec_index(i)] 
-        0 <= i < (a.len() as int) - 1 && a[i] + 1 == a[i + 1]
-// </vc-spec>
-// <vc-code>
+verus!{
+fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+    // pre-conditions-start
+    requires
+        N > 0,
+        old(a).len() == N,
+        old(sum).len() == 1,
+        N < 1000,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        sum[0] == 4 * N,
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    sum.set(0, 4 * N);
 }
-// </vc-code>
+}
 
-}
 fn main() {}

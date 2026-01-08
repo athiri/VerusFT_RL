@@ -1,49 +1,27 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+#[verifier::loop_isolation(false)]
+fn append_with_element(a: &Vec<i32>, b: i32) -> (result: Vec<i32>)
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        result.len() == a.len() + 1,
+        forall|i: int| #![auto] 0 <= i && i < result.len() ==> result[i] == (if i < a.len() { a[i] } else { b }),
 {
-    for i in 0..arr.len()
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    while i < a.len()
         invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == a[j],
     {
-        if arr[i] == key {
-            return true;
-        }
+        result.push(a[i]);
+        i = i + 1;
     }
-    false
-}
-
-fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
-    ensures
-        forall|i: int|
-            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
-                #[trigger] shared[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
-{
-    let mut result = Vec::new();
-    
-    for i in 0..list1.len()
-        invariant
-            forall|k: int|
-                0 <= k < result.len() ==> (list1@.contains(#[trigger] result[k]) && list2@.contains(
-                    #[trigger] result[k],
-                )),
-            forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] != result[l],
-    {
-        let element = list1[i];
-        if contains(list2, element) && !contains(&result, element) {
-            result.push(element);
-        }
-    }
-    
+    result.push(b);
     result
 }
 
-} // verus!
+fn main() {}
+}

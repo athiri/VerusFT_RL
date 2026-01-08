@@ -1,24 +1,39 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn fromstring(input: &str, sep: &str, n: u8) -> (result: Vec<f64>)
-    requires n > 0,
-    ensures 
-        result@.len() <= n as int,
-// </vc-spec>
-// <vc-code>
+spec fn seq_to_set_rec<A>(seq: Seq<A>) -> Set<A>
+    decreases seq.len()
 {
-    assume(false);
-    unreached()
+    if seq.len() == 0 {
+        Set::empty()
+    } else {
+        seq_to_set_rec(seq.drop_last()).insert(seq.last())
+    }
 }
-// </vc-code>
 
+
+fn remove_duplicates(nums: Vec<i32>) -> (res: Vec<i32>)
+ensures
+    res@.no_duplicates(),
+    nums@.to_set().ext_equal(res@.to_set())
+{
+    let mut res = Vec::new();
+    let mut seen = HashSet::new();
+    
+    for i in 0..nums.len()
+        invariant
+            res@.no_duplicates(),
+            res@.to_set().subset_of(nums@.to_set()),
+            forall |j: int| 0 <= j < i ==> (#[trigger] nums@[j]) in res@.to_set()
+    {
+        if !seen.contains(&nums[i]) {
+            res.push(nums[i]);
+            seen.insert(nums[i]);
+        }
+    }
+    
+    res
 }
-fn main() {}
+}

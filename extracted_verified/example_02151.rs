@@ -1,41 +1,39 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn last_occurrence_helper(cafes: Seq<int>, cafe: int, pos: int) -> int
-    decreases pos + 1
-{
-    if pos < 0 || pos >= cafes.len() { -1 }
-    else if cafes[pos] == cafe { pos }
-    else { last_occurrence_helper(cafes, cafe, pos - 1) }
+spec fn is_upper_case(c: u8) -> bool {
+    c >= 65 && c <= 90
 }
 
-spec fn last_occurrence_position(cafes: Seq<int>, cafe: int) -> int
-{
-    last_occurrence_helper(cafes, cafe, (cafes.len() - 1) as int)
+spec fn shift32_spec(c: u8) -> u8 {
+    (c + 32) as u8
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(cafes: Vec<i8>) -> (mini: i8)
-    requires
-        cafes.len() > 0,
+fn to_lowercase(str1: &[u8]) -> (result: Vec<u8>)
     ensures
-        cafes@.contains(mini),
-        forall|cafe: i8| #![auto] cafes@.contains(cafe) ==> last_occurrence_position(cafes@.map(|i, x: i8| x as int), mini as int) <= last_occurrence_position(cafes@.map(|i, x: i8| x as int), cafe as int),
-// </vc-spec>
-// <vc-code>
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if is_upper_case(#[trigger] str1[i]) {
+    return Vec::new();  // TODO: Remove this line and implement the function body
+            } else {
+                str1[i]
+            }),
 {
-    assume(false);
-    0
+    let mut lower_case: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len() {
+        if (str1[index] >= 65 && str1[index] <= 90) {
+            lower_case.push((str1[index] + 32) as u8);
+
+        } else {
+            lower_case.push(str1[index]);
+        }
+        index += 1;
+    }
+    lower_case
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

@@ -1,42 +1,45 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Precondition - always true (matching original Lean)
-spec fn unique_sorted_precond(arr: Seq<int>) -> bool {
-    true
+spec fn reversed(arr: Seq<char>, outarr: Seq<char>) -> bool {
+    arr.len() == outarr.len() &&
+    forall|k: int| 0 <= k < arr.len() ==> outarr[k] == arr[arr.len() - 1 - k]
 }
+// </vc-preamble>
 
-// Postcondition - basic (matching original structure)  
-spec fn unique_sorted_postcond(arr: Seq<int>, result: Seq<int>) -> bool {
-    true  // Simplified postcondition
-}
+// <vc-helpers>
+/* helper modified by LLM (iteration 2): removed lemma for set-based approach as it is unused by the new push-based implementation. */
+// </vc-helpers>
 
-// Insert function - basic implementation
-fn insert(x: int, sorted: Vec<int>) -> (result: Vec<int>) {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
-
-// Insertion sort  
-fn insertion_sort(xs: Vec<int>) -> (result: Vec<int>) {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
-
-// Remove duplicates - avoiding break statements
-fn remove_duplicates(arr: Vec<int>) -> (result: Vec<int>) {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
-
-// Main function - matches original Lean algorithm
-fn unique_sorted(arr: Vec<int>) -> (result: Vec<int>)
-    requires unique_sorted_precond(arr@)
-    ensures unique_sorted_postcond(arr@, result@)
+// <vc-spec>
+fn yarra(arr: &Vec<char>) -> (outarr: Vec<char>)
+    requires arr.len() > 0
+    ensures outarr.len() == arr.len() && reversed(arr@, outarr@)
+// </vc-spec>
+// <vc-code>
 {
-    return Vec::new();  // TODO: Remove this line and implement the function body
-}
+    /* code modified by LLM (iteration 2): fixed compilation error by using a push-based loop instead of Vec::from_elem */
+    let len = arr.len();
+    let mut outarr = Vec::new();
+    let mut i: usize = 0;
 
-} // verus!
+    while i < len
+        invariant
+            0 <= i <= len,
+            arr.len() == len,
+            outarr.len() == i,
+            forall|k: int| 0 <= k < (i as int) ==> outarr@[k] == arr@[(len as int) - 1 - k],
+        decreases len - i
+    {
+        outarr.push(arr[len - 1 - i]);
+        i = i + 1;
+    }
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
+    outarr
 }
+// </vc-code>
+
+}
+fn main() {}

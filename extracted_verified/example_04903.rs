@@ -3,31 +3,37 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
+fn smallest_missing_number(s: &[i32]) -> (v: i32)
     requires
-        lists.len() > 0,
+        forall|i: int, j: int| 0 <= i < j < s.len() ==> s[i] <= s[j],
+        forall|i: int| 0 <= i < s.len() ==> s[i] >= 0,
+        s.len() <= 100_000,
     ensures
-        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
-        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
+        0 <= v,
+        forall|i: int| 0 <= i < s.len() ==> s[i] != v,
+        forall|k: int| 0 <= k < v && s[k] != v ==> exists|j: int| 0 <= j < s.len() && s[j] == k,
 {
-    let mut min_length = lists[0].len();
-    let mut i = 1;
+    let mut expected = 0;
+    let mut i = 0;
     
-    while i < lists.len()
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i < s.len()
         invariant
-            1 <= i <= lists.len(),
-            exists|j: int| #![auto] 0 <= j < i && min_length == lists[j].len(),
-            forall|j: int| #![auto] 0 <= j < i ==> min_length <= lists[j].len(),
-        /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-        decreases lists.len() - i
+            0 <= i <= s.len(),
+            expected >= 0,
+            forall|k: int| 0 <= k < expected ==> exists|j: int| 0 <= j < s.len() && s[j] == k,
+            forall|j: int| 0 <= j < i ==> s[j] < expected,
+        decreases s.len() - i
     {
-        if lists[i].len() < min_length {
-            min_length = lists[i].len();
+        if s[i] == expected {
+            expected = expected + 1;
+        } else if s[i] > expected {
+            break;
         }
-        i += 1;
+        i = i + 1;
     }
     
-    min_length
+    expected
 }
 
 fn main() {}

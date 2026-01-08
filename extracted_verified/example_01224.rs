@@ -1,33 +1,18 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    fn update_elements(a: &mut Vec<i32>)
+        requires 
+            old(a).len() >= 8,
+            old(a)[4] + 3 <= i32::MAX,
+        ensures
+            old(a)[4] + 3 == a[4],
+            a[7] == 516,
+            forall|i: int| 0 <= i < a.len() && i != 7 && i != 4 ==> a[i] == old(a)[i],
+    {
+        a[4] = a[4] + 3;
+        a[7] = 516;
+    }
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn amax(a: Vec<i8>) -> (result: i8)
-    requires a.len() > 0,
-    ensures
-        (exists|max_idx: int| 0 <= max_idx < a.len() &&
-            result as int == a@[max_idx] as int &&
-            (forall|i: int| 0 <= i < a.len() ==> a@[i] as int <= result as int)) &&
-        (exists|first_max_idx: int| 0 <= first_max_idx < a.len() &&
-            result as int == a@[first_max_idx] as int &&
-            (forall|i: int| 0 <= i < a.len() && a@[i] as int == result as int ==> first_max_idx <= i) &&
-            (forall|i: int| 0 <= i < a.len() ==> a@[i] as int <= result as int)) &&
-        ((forall|i: int, j: int| 0 <= i < a.len() && 0 <= j < a.len() ==> a@[i] as int == a@[j] as int) ==> 
-            result as int == a@[0] as int) &&
-        (exists|witness: int| 0 <= witness < a.len() && result as int == a@[witness] as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
+    fn main() {}
 }
-// </vc-code>
-
-}
-fn main() {}

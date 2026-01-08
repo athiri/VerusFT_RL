@@ -2,70 +2,100 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition: array must have more than 1 element
-pub open spec fn secondSmallest_precond(s: &Vec<i32>) -> bool {
-    s.len() > 1
+// Helper function to compute GCD of two integers
+spec fn gcd_int(a: int, b: int) -> int 
+    decreases (if a >= 0 { a } else { -a }) + (if b >= 0 { b } else { -b })
+{
+    if a == 0 {
+        if b >= 0 { b } else { -b }
+    } else if b == 0 {
+        if a >= 0 { a } else { -a }
+    } else if a >= 0 && b >= 0 {
+        if a >= b {
+            gcd_int(a - b, b)
+        } else {
+            gcd_int(a, b - a)
+        }
+    } else if a >= 0 && b < 0 {
+        gcd_int(a, -b)
+    } else if a < 0 && b >= 0 {
+        gcd_int(-a, b)
+    } else {
+        gcd_int(-a, -b)
+    }
 }
 
-// Postcondition: result exists in array and is the second smallest  
-pub open spec fn secondSmallest_postcond(s: &Vec<i32>, result: i32) -> bool {
-    // Result exists in the array
-    (exists |i: int| 0 <= i < s.len() && s[i] == result) &&
-    // There exists a smaller element
-    (exists |j: int| 0 <= j < s.len() && s[j] < result &&
-        // All other elements are >= result
-        (forall |k: int| 0 <= k < s.len() && s[k] != s[j] ==> s[k] >= result))
+// Helper function to compute LCM of two integers (uninterpreted specification function)
+#[verifier::external_body]
+spec fn lcm_int(a: int, b: int) -> int {
+    if a == 0 || b == 0 {
+        0
+    } else {
+        let abs_a = if a >= 0 { a } else { -a };
+        let abs_b = if b >= 0 { b } else { -b };
+        (abs_a * abs_b) / gcd_int(abs_a, abs_b)
+    }
 }
 
-fn secondSmallestAux(s: &Vec<i32>, i: usize, minIdx: usize, secondIdx: usize) -> (result: i32)
+// Runtime GCD implementation
+fn gcd_runtime(mut a: i32, mut b: i32) -> (res: i32)
+    requires a >= 0 && b >= 0
+    ensures res >= 0
+    ensures res == gcd_int(a as int, b as int)
+{
+    while a != 0 && b != 0
+        invariant a >= 0 && b >= 0
+        invariant gcd_int(a as int, b as int) == gcd_int(old(a) as int, old(b) as int)
+    {
+        if a >= b {
+            a = a - b;
+        } else {
+            b = b - a;
+        }
+    }
+    if a == 0 { b } else { a }
+}
+
+// Runtime LCM implementation for two non-negative integers
+fn lcm_runtime(a: i32, b: i32) -> (res: i32)
+    requires a >= 0 && b >= 0
+    ensures res >= 0
+    ensures res == lcm_int(a as int, b as int)
+{
+    if a == 0 || b == 0 {
+        0
+    } else {
+        let g = gcd_runtime(a, b);
+        (a / g) * b
+    }
+}
+
+// Method specification (translation of the Dafny method)
+fn lcm(a: &[i32], b: &[i32]) -> (res: Vec<i32>)
     requires 
-        s.len() > 1,
-        i <= s.len(),
-        minIdx < s.len(),
-        secondIdx < s.len(),
-        minIdx != secondIdx,
-        minIdx < i, // minIdx is always from already processed elements
-        secondIdx < i, // secondIdx is always from already processed elements
-    ensures 
-        exists |j: int| 0 <= j < s.len() && s[j] == result,
-    decreases s.len() - i,
+        a.len() == b.len(),
+        forall|i: int| 0 <= i < a.len() ==> a[i] >= 0 && b[i] >= 0,
+    ensures
+        res.len() == a.len(),
+        forall|i: int| 0 <= i < a.len() ==> lcm_int(a[i] as int, b[i] as int) == res[i] as int,
 {
-    if i == s.len() {
-        return s[secondIdx];
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < a.len()
+        invariant 
+            idx <= a.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> lcm_int(a[i] as int, b[i] as int) == result[i] as int,
+    {
+        let lcm_val = lcm_runtime(a[idx], b[idx]);
+        result.push(lcm_val);
+        idx += 1;
     }
     
-    let current = s[i];
-    let min_val = s[minIdx];
-    let second_val = s[secondIdx];
-    
-    if current < min_val {
-        // New minimum found, old minimum becomes second
-        secondSmallestAux(s, i + 1, i, minIdx)
-    } else if current < second_val && current != min_val {
-        // New second minimum found
-        secondSmallestAux(s, i + 1, minIdx, i)
-    } else {
-        // No change
-        secondSmallestAux(s, i + 1, minIdx, secondIdx)
-    }
+    result
 }
 
-pub fn secondSmallest(s: &Vec<i32>) -> (result: i32)
-    requires secondSmallest_precond(s),
-    ensures 
-        // At minimum, the result exists in the array
-        exists |j: int| 0 <= j < s.len() && s[j] == result,
-{
-    // Initialize with first two elements
-    let (minIdx, secondIdx) = if s[0] <= s[1] {
-        (0, 1)
-    } else {
-        (1, 0)
-    };
-    
-    secondSmallestAux(s, 2, minIdx, secondIdx)
 }
-
-} // verus!
 
 fn main() {}

@@ -5,14 +5,14 @@ verus! {
 spec fn in_array(a: Seq<i32>, x: i32) -> bool {
     exists|i: int| 0 <= i < a.len() && a[i] == x
 }
-    
+
 fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool) 
     ensures 
         result == in_array(a@, x),
 {
     for i in 0..a.len()
         invariant
-            !exists|j: int| 0 <= j < i && a@[j] == x,
+            forall|j: int| 0 <= j < i ==> a@[j] != x,
     {
         if a[i] == x {
             return true;
@@ -22,26 +22,25 @@ fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
 }
 
 #[verifier::loop_isolation(false)]
-fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        a.len() >= 1,
+fn remove_elements(a: &Vec<i32>, b: &Vec<i32>) -> (c: Vec<i32>)
     ensures
-        forall|i: int| #![auto] 0 <= i < result.len() ==> in_array(a@, result[i]),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] != result[j],
+        forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+        forall|i: int, j: int| 0 <= i < j < c.len() ==> c[i] != c[j],
 {
-    let mut result = Vec::new();
+    let mut c = Vec::new();
     
     for i in 0..a.len()
         invariant
-            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
+            forall|k: int| #![auto] 0 <= k < c.len() ==> in_array(a@, c[k]) && !in_array(b@, c[k]),
+            forall|x: int, y: int| 0 <= x < y < c.len() ==> c[x] != c[y],
     {
-        if !in_array_exec(&result, a[i]) {
-            result.push(a[i]);
+        let element = a[i];
+        if !in_array_exec(b, element) && !in_array_exec(&c, element) {
+            c.push(element);
         }
     }
     
-    result
+    c
 }
 
 fn main() {}

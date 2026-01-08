@@ -2,33 +2,63 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn max_dafny_lsp(a: &[i32]) -> (x: usize)
-    requires
-        a.len() > 0,
-    ensures
-        0 <= x < a.len(),
-        forall|k: int| 0 <= k < a.len() ==> a[k] <= a[x as int],
-{
-    let mut max_idx = 0;
-    let mut i = 1;
-    
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while i < a.len()
-        invariant
-            0 <= max_idx < a.len(),
-            1 <= i <= a.len(),
-            forall|k: int| 0 <= k < i ==> a[k] <= a[max_idx as int],
-        decreases a.len() - i,
-    {
-        if a[i] > a[max_idx] {
-            max_idx = i;
-        }
-        i += 1;
-    }
-    
-    max_idx
+spec fn is_upper_case(c: char) -> (ret:bool) {
+    c >= 'A' && c <= 'Z'
 }
 
-fn main() {}
+/* code modified by LLM (iteration 1): Added executable version of is_upper_case */
+fn is_upper_case_exec(c: char) -> (ret: bool)
+    ensures ret == is_upper_case(c)
+{
+    c >= 'A' && c <= 'Z'
 }
+// pure-end
+
+spec fn count_uppercase_sum(seq: Seq<char>) -> (ret:int)
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        count_uppercase_sum(seq.drop_last()) + if is_upper_case(seq.last()) {
+            seq.last() as int
+        } else {
+            0 as int
+        }
+    }
+}
+// pure-end
+
+fn digit_sum(text: &[char]) -> (sum: u128)
+    // post-conditions-start
+    ensures
+        /* code modified by LLM (iteration 1): Fixed type mismatch by casting spec result to u128 */
+        count_uppercase_sum(text@) == sum as int,
+    // post-conditions-end
+{
+    let mut sum: u128 = 0;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            sum == count_uppercase_sum(text@.subrange(0, i as int)) as u128,
+        /* code modified by LLM (iteration 2): Added decreases clause for loop termination */
+        decreases text.len() - i
+    {
+        /* code modified by LLM (iteration 1): Use executable version of is_upper_case */
+        if is_upper_case_exec(text[i]) {
+            sum = sum + text[i] as u128;
+        }
+        i = i + 1;
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    sum
+}
+
+} // verus!
+fn main() {}

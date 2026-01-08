@@ -1,37 +1,35 @@
-// <vc-preamble>
 use vstd::prelude::*;
-use vstd::string::*;
 
 verus! {
-spec fn string_starts_with(s: Seq<char>, prefix: Seq<char>) -> bool {
-    prefix.len() <= s.len() && s.subrange(0, prefix.len() as int) == prefix
-}
-// </vc-preamble>
+    spec fn power(n: nat) -> nat
+        decreases n
+    {
+        if n == 0 { 1 } else { 2 * power((n - 1) as nat) }
+    }
 
-// <vc-helpers>
-// </vc-helpers>
+    fn calc_power(n: u32) -> (p: u32)
+        ensures p as nat == 2 * n
+    {
+        2 * n
+    }
 
-// <vc-spec>
-fn startswith(a: Vec<String>, prefixes: Vec<String>) -> (result: Vec<bool>)
-    requires a.len() == prefixes.len(),
-    ensures 
-        result.len() == a.len(),
-        forall|i: int| 0 <= i < a.len() ==> {
-            &&& (result[i] == string_starts_with(a[i]@, prefixes[i]@))
-            &&& (result[i] ==> prefixes[i]@.len() <= a[i]@.len())
-            &&& (result[i] ==> a[i]@.subrange(0, prefixes[i]@.len() as int) == prefixes[i]@)
-            &&& (!result[i] ==> (prefixes[i]@.len() > a[i]@.len() || a[i]@.subrange(0, prefixes[i]@.len() as int) != prefixes[i]@))
+    fn compute_power(n: u32) -> (p: u32)
+        ensures p as nat == power(n as nat)
+    {
+        let mut result: u32 = 1;
+        let mut i: u32 = 0;
+        
+        while i < n
+            invariant 
+                i <= n,
+                result as nat == power(i as nat)
+        {
+            result = result * 2;
+            i = i + 1;
         }
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+        
+        result
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

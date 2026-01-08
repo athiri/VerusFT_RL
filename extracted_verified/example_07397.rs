@@ -2,27 +2,38 @@ use vstd::prelude::*;
 
 verus! {
 
-fn reverse(a: &[i32]) -> (result: Vec<i32>)
-    ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
+spec fn cube_elements_precond(a: Seq<i32>) -> bool {
+    true
+}
+
+fn cube_elements(a: Vec<i32>) -> (result: Vec<i32>)
+    requires cube_elements_precond(a@),
+    ensures cube_elements_postcond(a@, result@),
 {
     let mut result = Vec::new();
-    let mut j = a.len();
+    let mut i = 0;
     
-    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
-    while j > 0
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < a.len()
         invariant
-            result.len() == a.len() - j,
-            forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
-        decreases j
+            i <= a.len(),
+            result.len() == i,
+            forall|j: int| #![auto] 0 <= j < i ==> result@[j] as int == (a@[j] as int) * (a@[j] as int) * (a@[j] as int)
+        decreases a.len() - i
     {
-        j = j - 1;
-        result.push(a[j]);
+        let cubed = a[i] * a[i] * a[i];
+        result.push(cubed);
+        i += 1;
     }
     
     result
 }
 
+spec fn cube_elements_postcond(a: Seq<i32>, result: Seq<i32>) -> bool {
+    &&& result.len() == a.len()
+    &&& forall|i: int| #![auto] 0 <= i < a.len() ==> result[i] as int == (a[i] as int) * (a[i] as int) * (a[i] as int)
+}
+
 fn main() {}
+
 }

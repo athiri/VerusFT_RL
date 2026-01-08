@@ -1,29 +1,38 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
 #[verifier::loop_isolation(false)]
-fn last_position(a: &[i32], elem: i32) -> (result: usize)
+fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
+    // pre-conditions-start
     requires
-        0 < a.len() < 100_000,
-        exists|i: int| 0 <= i < a.len() && a[i] == elem,
+        lists.len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        0 <= result < a.len(),
-        forall|i: int| result < i < a.len() ==> a[i] != elem,
-        a[result as int] == elem,
-// </vc-spec>
-// <vc-code>
+        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
+        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut min_length = lists[0].len();
+    let mut j = 1;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while j < lists.len()
+        invariant
+            0 < j <= lists.len(),
+            exists|i: int| #![auto] 0 <= i < j && min_length == lists[i].len(),
+            forall|i: int| #![auto] 0 <= i < j ==> min_length <= lists[i].len(),
+        decreases lists.len() - j
+    {
+        if lists[j].len() < min_length {
+            min_length = lists[j].len();
+        }
+        j += 1;
+    }
+    
+    min_length
 }
-// </vc-code>
 
-}
 fn main() {}
+}

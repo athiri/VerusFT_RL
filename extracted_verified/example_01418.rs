@@ -1,31 +1,39 @@
-// <vc-preamble>
+#[allow(unused_imports)]
 use vstd::prelude::*;
+fn main() {}
 
 verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn meshgrid(x: Vec<f32>, y: Vec<f32>) -> (result: (Vec<Vec<f32>>, Vec<Vec<f32>>))
-    requires 
-        x.len() > 0,
-        y.len() > 0,
-    ensures
-        result.0.len() == y.len(),
-        result.1.len() == y.len(),
-        forall|i: int| 0 <= i < y.len() ==> result.0[i].len() == x.len(),
-        forall|i: int| 0 <= i < y.len() ==> result.1[i].len() == x.len(),
-        forall|i: int, j: int| 0 <= i < y.len() && 0 <= j < x.len() ==> result.0[i][j] == x[j],
-        forall|i: int, j: int| 0 <= i < y.len() && 0 <= j < x.len() ==> result.1[i][j] == y[i],
-// </vc-spec>
-// <vc-code>
+spec fn seq_to_set_rec<A>(seq: Seq<A>) -> Set<A>
+    decreases seq.len()
 {
-    assume(false);
-    unreached()
+    if seq.len() == 0 {
+        Set::empty()
+    } else {
+        seq_to_set_rec(seq.drop_last()).insert(seq.last())
+    }
 }
-// </vc-code>
 
+
+fn remove_duplicates(nums: Vec<i32>) -> (res: Vec<i32>)
+ensures
+    res@.no_duplicates(),
+    nums@.to_set().ext_equal(res@.to_set())
+{
+    let mut res = Vec::new();
+    let mut seen = HashSet::new();
+    
+    for i in 0..nums.len()
+        invariant
+            res@.no_duplicates(),
+            res@.to_set().subset_of(nums@.to_set()),
+            forall |j: int| 0 <= j < i ==> (#[trigger] nums@[j]) in res@.to_set()
+    {
+        if !seen.contains(&nums[i]) {
+            res.push(nums[i]);
+            seen.insert(nums[i]);
+        }
+    }
+    
+    res
 }
-fn main() {}
+}

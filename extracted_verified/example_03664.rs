@@ -1,13 +1,15 @@
 use vstd::prelude::*;
-fn main() {}
 
-verus!{
-fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
-    requires    
-        exists |q:int| 0 <= q < v.len() && v[q] % 2 == 1
+verus! {
+
+fn strlen(string: &Vec<char>) -> (length: usize)
+    // post-conditions-start
     ensures
-        odd_index < v.len()
+        length == string.len(),
+    // post-conditions-end
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    string.len()
 }
+
 }
+fn main() {}

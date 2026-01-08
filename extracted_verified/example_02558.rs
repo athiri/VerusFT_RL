@@ -1,31 +1,27 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-fn is_smaller(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
-    requires
-        arr1.len() == arr2.len(),
+#[verifier::loop_isolation(false)]
+fn append_with_element(a: &Vec<i32>, b: i32) -> (result: Vec<i32>)
     ensures
-        result == (forall|i: int| 0 <= i < arr1.len() ==> arr1[i] > arr2[i]),
+        result.len() == a.len() + 1,
+        forall|i: int| #![auto] 0 <= i && i < result.len() ==> result[i] == (if i < a.len() { a[i] } else { b }),
 {
-    let mut index = 0;
-    /* code modified by LLM (iteration 2): added bounds checks and strengthened loop invariant */
-    while index < arr1.len()
+    let mut result: Vec<i32> = Vec::new();
+    let mut i = 0;
+    while i < a.len()
         invariant
-            0 <= index <= arr1.len(),
-            arr1.len() == arr2.len(),
-            forall|i: int| 0 <= i < index ==> arr1[i] > arr2[i],
-        decreases arr1.len() - index,
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == a[j],
     {
-        /* code modified by LLM (iteration 2): added explicit bounds check for arr2 access */
-        if index < arr2.len() && arr1[index] <= arr2[index] {
-            return false;
-        }
-        index += 1;
+        result.push(a[i]);
+        i = i + 1;
     }
-    true
+    result.push(b);
+    result
 }
 
-} // verus!
+fn main() {}
+}

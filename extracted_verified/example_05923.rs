@@ -2,63 +2,65 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn sum_of_fourth_power_of_odd_numbers_precond(n: nat) -> bool {
-    true
+spec fn is_lower_case(c: char) -> (result: bool) {
+    c >= 'a' && c <= 'z'
 }
+// pure-end
 
-spec fn sum_of_fourth_power_of_odd_numbers_postcond(n: nat, result: nat) -> bool {
-    15 * result == n * (2 * n + 1) * (7 + 24 * (n * n * n) - 12 * (n * n) - 14 * n)
+spec fn shift_minus_32_spec(c: char) -> (result: char) {
+    ((c as u8) - 32) as char
 }
+// pure-end
 
-spec fn sum_of_fourth_power_of_odd_numbers_spec(n: nat) -> nat
-    decreases n
-{
-    if n == 0 {
-        0nat
+spec fn inner_expr_to_uppercase(str1: &Vec<char>, i: int) -> (result:char) {
+    if is_lower_case(#[trigger] str1[i]) {
+        shift_minus_32_spec(str1[i])
     } else {
-        let prev = sum_of_fourth_power_of_odd_numbers_spec((n - 1) as nat);
-        let next_odd = (2 * (n - 1) + 1) as nat;
-        let next_odd_fourth = (next_odd * next_odd * next_odd * next_odd) as nat;
-        (prev + next_odd_fourth) as nat
+        str1[i]
     }
 }
 
-fn sum_of_fourth_power_of_odd_numbers(n: u32) -> (result: u32)
-    requires 
-        sum_of_fourth_power_of_odd_numbers_precond(n as nat),
-        n <= 1  // small bound to prevent overflow
-    ensures result as nat == sum_of_fourth_power_of_odd_numbers_spec(n as nat)
-    decreases n
+fn to_uppercase(str1: &Vec<char>) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> (result[i] == (inner_expr_to_uppercase(str1, i))),
+    // post-conditions-end
 {
-    if n == 0 {
-        0
-    } else {
-        let prev = sum_of_fourth_power_of_odd_numbers(n - 1);
-        let next_odd = 2 * (n - 1) + 1;
-        let next_odd_fourth = next_odd * next_odd * next_odd * next_odd;
-        prev + next_odd_fourth
+    let mut result = Vec::new();
+    let mut index = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while index < str1.len()
+        invariant
+            result@.len() == index,
+            forall|i: int| 0 <= i < index ==> result[i] == inner_expr_to_uppercase(str1, i),
+        decreases str1.len() - index
+    {
+        let c = str1[index];
+        /* code modified by LLM (iteration 1): replaced spec function call with executable condition */
+        if c >= 'a' && c <= 'z' {
+            let uppercase_c = ((c as u8) - 32) as char;
+            result.push(uppercase_c);
+            /* code modified by LLM (iteration 1): added proof block to establish postcondition */
+            proof {
+                assert(is_lower_case(c));
+                assert(uppercase_c == shift_minus_32_spec(c));
+                assert(result[index as int] == inner_expr_to_uppercase(str1, index as int));
+            }
+        } else {
+            result.push(c);
+            /* code modified by LLM (iteration 1): added proof block to establish postcondition */
+            proof {
+                assert(!is_lower_case(c));
+                assert(result[index as int] == inner_expr_to_uppercase(str1, index as int));
+            }
+        }
+        index += 1;
     }
-}
-
-// Theorem stating the specification is satisfied (proof omitted)
-proof fn sum_of_fourth_power_of_odd_numbers_spec_satisfied(n: nat)
-    requires sum_of_fourth_power_of_odd_numbers_precond(n)
-    ensures sum_of_fourth_power_of_odd_numbers_postcond(n, sum_of_fourth_power_of_odd_numbers_spec(n))
-    decreases n
-{
-    if n == 0 {
-        // Base case: when n = 0, spec returns 0
-        // Need to show: 15 * 0 == 0 * (2 * 0 + 1) * (7 + 24 * 0 - 12 * 0 - 14 * 0)
-        // LHS = 0, RHS = 0 * 1 * 7 = 0
-        assert(sum_of_fourth_power_of_odd_numbers_spec(0) == 0);
-        assert(15 * 0 == 0);
-        assert(0 * (2 * 0 + 1) * (7 + 24 * (0 * 0 * 0) - 12 * (0 * 0) - 14 * 0) == 0);
-    } else {
-        // Inductive case - this would require showing the closed form formula
-        // For the purposes of this implementation, we'll use the mathematical fact
-        // that the sum of fourth powers of first n odd numbers follows this formula
-        admit();
-    }
+    
+    result
 }
 
 } // verus!

@@ -1,33 +1,24 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Helper function to compute absolute difference for integers
-fn abs_diff(a: i32, b: i32) -> (result: i32) 
-    requires 
-        a >= -1000000 && a <= 1000000,
-        b >= -1000000 && b <= 1000000,
-    ensures result >= 0,
+// <vc-helpers>
+
+// </vc-helpers>
+
+// <vc-spec>
+fn capitalize(a: Vec<String>) -> (result: Vec<String>)
+    ensures
+        result.len() == a.len(),
+        forall|i: int| 0 <= i < a.len() ==> #[trigger] result[i]@.len() == a[i]@.len()
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    a
 }
+// </vc-code>
 
-// Precondition - threshold is non-negative and all numbers are within bounds
-spec fn has_close_elements_precond(numbers: Seq<i32>, threshold: i32) -> bool {
-    threshold >= 0 &&
-    forall|i: int| 0 <= i < numbers.len() ==> 
-        numbers[i] >= -1000000 && numbers[i] <= 1000000
 }
-
-// Main function implementation matching the Lean nested loop structure
-fn has_close_elements(numbers: Vec<i32>, threshold: i32) -> (result: bool)
-    requires has_close_elements_precond(numbers@, threshold),
-{
-    return false;  // TODO: Remove this line and implement the function body
-}
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
-
-} // verus!
+fn main() {}

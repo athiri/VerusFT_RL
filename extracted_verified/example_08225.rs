@@ -1,37 +1,76 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+spec fn valid_input(input: Seq<char>) -> bool {
+    input.len() == 3 && forall|i: int| 0 <= i < input.len() ==> input[i] == 'A' || input[i] == 'B'
+}
 
-fn monotonic(l: Vec<i32>) -> (ret: bool)
-    // post-conditions-start
-    ensures
-        ret <==> (forall|i: int, j: int| 0 <= i < j < l@.len() ==> l@.index(i) <= l@.index(j)) || (
-        forall|i: int, j: int| 0 <= i < j < l@.len() ==> l@.index(i) >= l@.index(j)),
-    // post-conditions-end
+spec fn bus_service_exists(input: Seq<char>) -> bool
+    recommends valid_input(input)
 {
-    if l.len() <= 1 {
-        return true;
-    }
-    
-    let mut is_non_decreasing = true;
-    let mut is_non_increasing = true;
-    
-    for i in 0..l.len() - 1
-        invariant
-            0 <= i <= l.len() - 1,
-            is_non_decreasing <==> (forall|k: int, m: int| 0 <= k < m < i + 1 ==> l@.index(k) <= l@.index(m)),
-            is_non_increasing <==> (forall|k: int, m: int| 0 <= k < m < i + 1 ==> l@.index(k) >= l@.index(m)),
-    {
-        if l[i] > l[i + 1] {
-            is_non_decreasing = false;
-        }
-        if l[i] < l[i + 1] {
-            is_non_increasing = false;
-        }
-    }
-    
-    is_non_decreasing || is_non_increasing
+    input[0] != input[1] || input[1] != input[2]
 }
+// </vc-preamble>
+
+// <vc-helpers>
+proof fn lemma_bus_spec_equiv(input: &Vec<char>)
+    requires
+        valid_input(input@),
+    ensures
+        bus_service_exists(input@) == ((input[0] != input[1]) || (input[1] != input[2])),
+{
+    assert(input@.len() == 3);
+    assert(input.len() == input@.len());
+    assert(0 <= 0 && 0 < input.len());
+    assert(0 <= 1 && 1 < input.len());
+    assert(0 <= 2 && 2 < input.len());
+    assert(input@[0] == input[0]);
+    assert(input@[1] == input[1]);
+    assert(input@[2] == input[2]);
+    assert(bus_service_exists(input@) == ((input[0] != input[1]) || (input[1] != input[2])));
+}
+// </vc-helpers>
+
+// <vc-spec>
+fn solve(input: Vec<char>) -> (result: Vec<char>)
+    requires
+        valid_input(input@),
+    ensures
+        result@ == seq!['Y', 'e', 's'] <==> bus_service_exists(input@),
+        result@ == seq!['Y', 'e', 's'] || result@ == seq!['N', 'o'],
+// </vc-spec>
+// <vc-code>
+{
+    proof {
+        assert(input@.len() == 3);
+        assert(input.len() == input@.len());
+    }
+    assert(0 < input.len());
+    assert(1 < input.len());
+    assert(2 < input.len());
+    let b = (input[0] != input[1]) || (input[1] != input[2]);
+    proof {
+        lemma_bus_spec_equiv(&input);
+        assert(bus_service_exists(input@) == ((input[0] != input[1]) || (input[1] != input[2])));
+        assert(b == ((input[0] != input[1]) || (input[1] != input[2])));
+    }
+    let mut res: Vec<char> = Vec::new();
+    if b {
+        res.push('Y');
+        res.push('e');
+        res.push('s');
+        proof { assert(res@ == seq!['Y', 'e', 's']); }
+    } else {
+        res.push('N');
+        res.push('o');
+        proof { assert(res@ == seq!['N', 'o']); }
+    }
+    res
+}
+// </vc-code>
+
 
 }
+
 fn main() {}

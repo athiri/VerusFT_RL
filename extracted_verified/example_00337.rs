@@ -1,25 +1,15 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn bubble_sort(a: &Vec<i32>) -> (result: Vec<i32>)
-    ensures
-        result.len() == a.len(),
-        forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] <= result[j],
-        a@.to_multiset() == result@.to_multiset(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+verus!{
+
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32) 
+	requires 
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N > 0,
+	ensures
+		sum[0] == 0,
+{
+    sum.set(0, 0);
+}
+}

@@ -1,25 +1,29 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-spec fn triple_precond(x: int) -> bool {
-    true
+// <vc-helpers>
+/* helper modified by LLM (iteration 3): removed ensures on spec fn to satisfy Verus rule */
+spec fn swap_pair(x: i32, y: i32) -> (i32, i32) {
+    (y, x)
 }
+// </vc-helpers>
 
-spec fn triple_postcond(x: int, result: int) -> bool {
-    result / 3 == x && result / 3 * 3 == result
-}
-
-fn triple(x: u32) -> (result: u32)
-    requires 
-        triple_precond(x as int),
-        x <= u32::MAX / 3
-    ensures 
-        triple_postcond(x as int, result as int)
+// <vc-spec>
+fn swap_simultaneous(x: i32, y: i32) -> (result: (i32, i32))
+    ensures
+        result.0 == y,
+        result.1 == x,
+        x != y ==> result.0 != x && result.1 != y,
+// </vc-spec>
+// <vc-code>
 {
-    x * 3
+    /* code modified by LLM (iteration 3): return swapped tuple directly to satisfy ensures */
+    (y, x)
 }
+// </vc-code>
 
-} // verus!
-
+}
 fn main() {}

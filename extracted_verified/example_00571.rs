@@ -1,35 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn contains(v: i32, a: Seq<i32>, n: int) -> bool {
-    exists|j: int| 0 <= j < n && a[j] == v
-}
-
-spec fn upper_bound(v: i32, a: Seq<i32>, n: int) -> bool {
-    forall|j: int| 0 <= j < n ==> a[j] <= v
-}
-
-spec fn is_max(m: i32, a: Seq<i32>, n: int) -> bool {
-    contains(m, a, n) && upper_bound(m, a, n)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn max(a: &[i32], n: usize) -> (result: i32)
-    requires 0 < n <= a.len(),
-    ensures is_max(result, a@, n as int)
-// </vc-spec>
-// <vc-code>
+fn bit_wise_xor(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    // pre-conditions-start
+    requires
+        arr1.len() == arr2.len(),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> result[i] == #[trigger] arr1[i] ^ #[trigger] arr2[i],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 1): fixed loop invariant bounds checking and added proper bounds assertions */
+    while idx < arr1.len()
+        invariant
+            idx <= arr1.len(),
+            arr1.len() == arr2.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> 0 <= i < arr1.len() && 0 <= i < arr2.len() && result[i] == arr1[i] ^ arr2[i],
+        decreases arr1.len() - idx,
+    {
+        /* code modified by LLM (iteration 1): added bounds assertion to ensure access is safe */
+        assert(idx < arr1.len());
+        assert(idx < arr2.len());
+        result.push(arr1[idx] ^ arr2[idx]);
+        idx += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

@@ -1,24 +1,21 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn longest_increasing_streak(nums: &Vec<i32>) -> (result: usize)
-    ensures
-        (nums.len() == 0 ==> result == 0),
-        result <= nums.len(),
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}
+
+verus! {
+
+fn all_elements_equals(arr: &Vec<i32>, element: i32) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> (arr[i] == element)),
+{
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> arr[j] == element
+    {
+        if arr[i] != element {
+            return false;
+        }
+    }
+    true
+}
+
+} // verus!

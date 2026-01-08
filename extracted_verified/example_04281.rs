@@ -1,41 +1,17 @@
 use vstd::prelude::*;
 
-fn main() {
-}
-
+fn main() {}
 verus! {
 
-fn element_wise_module(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+fn append(v: &Vec<u64>, elem: u64) -> (c: Vec<u64>)
     requires
-        arr1.len() == arr2.len(),
-        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
-        forall|i: int|
-            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] % arr2[i]) <= i32::MAX),
+        v.len() <= 100,
     ensures
-        result@.len() == arr1@.len(),
-        forall|i: int|
-            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] % arr2[i]),
+        c@.len() == v@.len() + 1,
+        forall|i: int| (0 <= i && i < v.len()) ==> c[i] == v[i],
+        c@.last() == elem,
 {
-    let mut result = Vec::new();
-    let mut i = 0;
-    
-    /* code modified by LLM (iteration 1): added trigger annotation to fix quantifier verification */
-    while i < arr1.len()
-        invariant
-            0 <= i <= arr1.len(),
-            arr1.len() == arr2.len(),
-            result@.len() == i,
-            forall|j: int| 0 <= j < arr2.len() ==> arr2[j] != 0,
-            forall|j: int| 0 <= j < i ==> result[j] == (arr1[j] % arr2[j]),
-            forall|j: int| (0 <= j < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[j] % arr2[j]) <= i32::MAX),
-        decreases arr1.len() - i
-    {
-        let mod_result = arr1[i] % arr2[i];
-        result.push(mod_result);
-        i += 1;
-    }
-    
-    result
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

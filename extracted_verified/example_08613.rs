@@ -1,82 +1,408 @@
-use vstd::prelude::*;
+#![feature(rustc_private)]
+#[macro_use]
+mod common;
+use common::*;
 
-verus! {
-
-// ATOM BN_11
-spec fn valid_bit_string(s: Seq<char>) -> bool {
-    forall|i: int| 0 <= i < s.len() ==> (s[i] == '0' || s[i] == '1')
-}
-
-// ATOM BN_31
-spec fn pow2(n: nat) -> nat 
-    decreases n
-{
-    if n == 0 { 1nat } else { 2nat * pow2((n - 1) as nat) }
-}
-
-// ATOM BN_40
-spec fn str2int(s: Seq<char>) -> nat
-    decreases s.len()
-{
-    if s.len() == 0 { 
-        0nat 
-    } else { 
-        2nat * str2int(s.subrange(0, s.len() - 1)) + (if s[s.len() - 1] == '1' { 1nat } else { 0nat })
-    }
-}
-
-// SPEC BN_5
-proof fn bound(s: Seq<char>)
-    requires valid_bit_string(s)
-    ensures pow2(s.len()) > str2int(s)
-    decreases s.len()
-{
-    if s.len() == 0 {
-        // Base case: pow2(0) = 1 > 0 = str2int(empty)
-        assert(pow2(0nat) == 1nat);
-        assert(str2int(s) == 0nat);
-    } else {
-        // Inductive case
-        let prefix = s.subrange(0, s.len() - 1);
-        
-        // The prefix is also a valid bit string
-        assert(valid_bit_string(prefix)) by {
-            assert(forall|i: int| 0 <= i < prefix.len() ==> prefix[i] == s[i]);
+const M1: &str = verus_code_str! {
+    mod M1 {
+        #[derive(PartialEq, Eq)]
+        pub struct Car {
+            pub four_doors: bool,
         }
-        
-        // Apply inductive hypothesis
-        bound(prefix);
-        assert(pow2(prefix.len()) > str2int(prefix));
-        
-        // Now analyze str2int(s)
-        let last_bit_value = if s[s.len() - 1] == '1' { 1nat } else { 0nat };
-        assert(str2int(s) == 2nat * str2int(prefix) + last_bit_value);
-        
-        // Since last_bit_value is at most 1
-        assert(last_bit_value <= 1nat);
-        
-        // So str2int(s) <= 2 * str2int(prefix) + 1
-        assert(str2int(s) <= 2nat * str2int(prefix) + 1nat);
-        
-        // From inductive hypothesis: str2int(prefix) < pow2(prefix.len())
-        // So: 2 * str2int(prefix) < 2 * pow2(prefix.len())
-        assert(2nat * str2int(prefix) < 2nat * pow2(prefix.len()));
-        
-        // Therefore: str2int(s) <= 2 * str2int(prefix) + 1 < 2 * pow2(prefix.len()) + 1
-        assert(str2int(s) < 2nat * pow2(prefix.len()) + 1nat);
-        
-        // But pow2(s.len()) = pow2(prefix.len() + 1) = 2 * pow2(prefix.len())
-        assert(s.len() == prefix.len() + 1);
-        assert(pow2(s.len()) == 2nat * pow2(prefix.len()));
-        
-        // So str2int(s) < 2 * pow2(prefix.len()) + 1 <= 2 * pow2(prefix.len()) = pow2(s.len())
-        // We need strict inequality, so we need to show the +1 doesn't matter
-        assert(str2int(s) < 2nat * pow2(prefix.len()));
-        assert(pow2(s.len()) == 2nat * pow2(prefix.len()));
-        assert(str2int(s) < pow2(s.len()));
+
+        pub open spec fn is_four_doors(c: Car) -> bool {
+            c.four_doors
+        }
+    }
+};
+
+test_verify_one_file! {
+    #[test] test_mod_adt_0 M1.to_string() + verus_code_str! {
+        mod M2 {
+            use crate::M1::Car;
+            use verus_builtin::*;
+
+            fn mod_adt_0() {
+                assert(!Car { four_doors: false }.four_doors);
+            }
+        }
+    } => Ok(())
+}
+
+test_verify_one_file! {
+    #[test] test_mod_adt_1 M1.to_string() + verus_code_str! {
+        mod M2 {
+            use crate::M1::{is_four_doors, Car};
+            use verus_builtin::*;
+
+            fn test() {
+                let c = Car { four_doors: true };
+                assert(is_four_doors(c));
+            }
+        }
+    } => Ok(())
+}
+
+const M1_OPAQUE: &str = verus_code_str! {
+    mod M1 {
+        #[derive(PartialEq, Eq)]
+        pub struct Car {
+            pub four_doors: bool,
+        }
+
+        #[verifier(opaque_outside_module)] /* vattr */
+        pub open spec fn is_four_doors(c: Car) -> bool {
+            c.four_doors
+        }
+    }
+};
+
+test_verify_one_file! {
+    #[test] test_mod_fn_publish_opaque_no_reveal M1_OPAQUE.to_string() + verus_code_str! {
+        mod M2 {
+            use crate::M1::{is_four_doors, Car};
+            use verus_builtin::*;
+
+            fn test() {
+                let c = Car { four_doors: true };
+                assert(is_four_doors(c)); // FAILS
+            }
+        }
+    } => Err(e) => assert_one_fails(e)
+}
+
+test_verify_one_file! {
+    #[test] test_mod_fn_publish_opaque_reveal M1_OPAQUE.to_string() + verus_code_str! {
+        mod M2 {
+            use crate::M1::{is_four_doors, Car};
+            use verus_builtin::*;
+
+            fn test() {
+                let c = Car { four_doors: true };
+                proof {
+                    reveal(is_four_doors);
+                }
+                assert(is_four_doors(c));
+            }
+        }
+    } => Ok(())
+}
+
+test_verify_one_file! {
+    #[test] test_mod_adt_no_verify verus_code! {
+        #[verifier(external_body)] /* vattr */
+        #[derive(PartialEq, Eq)]
+        pub struct Car {
+            pub four_doors: bool,
+        }
+
+        fn mod_adt_no_verify() {
+            assert(!Car { four_doors: false }.four_doors);
+        }
+    } => Err(err) => assert_vir_error_msg(err, "disallowed: field expression for an opaque datatype")
+}
+
+test_verify_one_file! {
+    #[test] test_mod_child_ok verus_code! {
+        spec fn f() -> bool {
+            true
+        }
+
+        mod M1 {
+            fn test()
+                ensures crate::f()
+            {
+            }
+        }
+    } => Ok(())
+}
+
+test_verify_one_file! {
+    #[test] test_mod_sibling_fail verus_code! {
+        mod M0 {
+            pub closed spec fn f() -> bool {
+                true
+            }
+        }
+
+        mod M1 {
+            fn test()
+                ensures crate::M0::f() // FAILS
+            {
+            }
+        }
+    } => Err(e) => assert_one_fails(e)
+}
+
+test_verify_one_file! {
+    #[test] test_requires_private verus_code! {
+        mod M1 {
+            spec fn f() -> bool { true }
+
+            pub fn g()
+                requires f()
+            {
+            }
+        }
+
+        mod M2 {
+            fn h() {
+                crate::M1::g();
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "in 'requires' clause of public function, cannot refer to private function")
+}
+
+test_verify_one_file! {
+    #[test] test_publish_but_not_marked_pub verus_code! {
+        open spec fn bar() -> u64 {
+            7
+        }
+    } => Err(err) => assert_vir_error_msg(err, "function is marked `open` but not marked `pub`")
+}
+
+test_verify_one_file! {
+    #[test] publish_proof_fail verus_code! {
+        pub open proof fn bar() {
+        }
+    } => Err(err) => assert_vir_error_msg(err, "only `spec` functions can be marked `open`, `closed`, or `uninterp`")
+}
+
+test_verify_one_file! {
+    #[test] publish_exec_fail verus_code! {
+        pub open fn bar() {
+        }
+    } => Err(err) => assert_vir_error_msg(err, "only `spec` functions can be marked `open`, `closed`, or `uninterp`")
+}
+
+test_verify_one_file! {
+    #[test] main_proof_fail verus_code! {
+        pub proof fn main() {
+        }
+    } => Err(err) => assert_vir_error_msg(err, "`main` function should be #[verifier::exec]")
+}
+
+test_verify_one_file! {
+    #[test] main_spec_fail verus_code! {
+        pub closed spec fn main() {
+            ()
+        }
+    } => Err(err) => assert_vir_error_msg(err, "`main` function should be #[verifier::exec]")
+}
+
+test_verify_one_file! {
+    #[test] open_fn_refers_to_private_const_fail verus_code! {
+        mod A {
+            spec const X: usize = 1;
+            pub open spec fn f() -> usize {
+                X
+            }
+        }
+
+        mod B {
+            use crate::A;
+            pub open spec fn g() -> bool {
+                A::f() == 1
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "in pub open spec function, cannot refer to private const")
+}
+
+test_verify_one_file! {
+    #[test] open_qualified_refers_to_private verus_code! {
+        mod m {
+            pub mod n {
+                use verus_builtin::*;
+
+                spec fn stuff() -> bool { true }
+
+                pub open(in crate::m) spec fn foo() -> bool {
+                    stuff()
+                }
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "in pub open spec function, cannot refer to private function")
+}
+
+test_verify_one_file! {
+    #[test] open_crate verus_code! {
+        mod m {
+            pub mod n {
+                use verus_builtin::*;
+
+                pub open(crate) spec fn foo() -> bool {
+                    true
+                }
+
+                proof fn test() {
+                    assert(foo() == true);
+                }
+            }
+
+            proof fn test2() {
+                assert(n::foo() == true);
+            }
+        }
+
+        proof fn test3() {
+            assert(m::n::foo() == true);
+        }
+    } => Ok(())
+}
+
+test_verify_one_file! {
+    #[test] open_super verus_code! {
+        mod m {
+            pub mod n {
+                use verus_builtin::*;
+
+                pub open(super) spec fn foo() -> bool {
+                    true
+                }
+
+                proof fn test() {
+                    assert(foo() == true);
+                }
+            }
+
+            proof fn test2() {
+                assert(n::foo() == true);
+            }
+        }
+
+        proof fn test3() {
+            assert(m::n::foo() == true); // FAILS
+        }
+    } => Err(err) => assert_one_fails(err)
+}
+
+test_verify_one_file! {
+    #[test] open_path verus_code! {
+        mod m {
+            pub mod n {
+                use verus_builtin::*;
+
+                pub open(in crate::m) spec fn foo() -> bool {
+                    true
+                }
+
+                proof fn test() {
+                    assert(foo() == true);
+                }
+            }
+
+            proof fn test2() {
+                assert(n::foo() == true);
+            }
+        }
+
+        proof fn test3() {
+            assert(m::n::foo() == true); // FAILS
+        }
+    } => Err(err) => assert_one_fails(err)
+}
+
+test_verify_one_file! {
+    #[test] open_more_public_than_function verus_code! {
+        mod m {
+            pub mod n {
+                use verus_builtin::*;
+
+                pub(in crate::m) open(crate) spec fn foo() -> bool {
+                    true
+                }
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "the function body is declared 'open' to a wider scope than the function itself")
+}
+
+test_verify_one_file! {
+    #[test] uninterp_exec_fail verus_code! {
+        pub uninterp fn bar() {
+        }
+    } => Err(err) => assert_vir_error_msg(err, "only `spec` functions can be marked `open`, `closed`, or `uninterp`")
+}
+
+test_verify_one_file! {
+    #[test] uninterp_spec_body_free_fail verus_code! {
+        pub uninterp spec fn bar() -> bool {
+            true
+        }
+    } => Err(err) => assert_vir_error_msg(err, "function is marked `uninterp` but it has a body")
+}
+
+test_verify_one_file! {
+    #[test] uninterp_spec_body_assoc_fail verus_code! {
+        struct G {
+            v: bool,
+        }
+
+        impl G {
+            pub uninterp spec fn bar(&self) -> bool {
+                self.v
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "function is marked `uninterp` but it has a body")
+}
+
+test_verify_one_file! {
+    #[test] uninterp_spec_body_trait_fail verus_code! {
+        trait T {
+            uninterp spec fn bar(&self) -> bool {
+                true
+            }
+        }
+    } => Err(err) => assert_vir_error_msg(err, "function is marked `uninterp` but it has a body")
+}
+
+test_verify_one_file! {
+    #[test] uninterp_spec_body_trait_impl_fail verus_code! {
+        trait T {
+            uninterp spec fn bar(&self) -> bool;
+
+            #[verifier::external_body]
+            proof fn a(&self)
+                ensures self.bar()
+            {
+            }
+        }
+
+        impl T for bool {
+            spec fn bar(&self) -> bool { // this should be rejected
+                *self
+            }
+        }
+
+        proof fn a() {
+            let t = false;
+            t.a();
+            assert(t.bar());
+        }
+    } => Err(err) => assert_vir_error_msg(err, "trait method implementation cannot be marked as `uninterp`")
+}
+
+test_verify_one_file! {
+    // TODO reject this code
+    #[ignore] #[test] closed_spec_trait_fail verus_code! {
+        trait T {
+            closed spec fn bar(&self) -> bool {
+                true
+            }
+        }
+    } => Err(_err) => todo!()
+}
+
+test_verify_one_file! {
+    #[ignore] #[test] uninterp_spec_fn_warning verus_code! {
+        spec fn bar(i: nat) -> bool;
+    } => Ok(err) => {
+        assert!(err.errors.is_empty());
+        assert!(err.warnings.iter().find(|w| w.message.contains("uninterpreted functions")).iter().next().is_some());
     }
 }
 
+test_verify_one_file! {
+    #[test] uninterp_open_fail verus_code! {
+        pub uninterp open fn bar();
+    } => Err(err) => assert_vir_error_msg(err, "expected `fn`")
 }
-
-fn main() {}

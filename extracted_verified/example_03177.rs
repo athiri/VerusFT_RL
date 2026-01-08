@@ -1,61 +1,55 @@
 use vstd::prelude::*;
 
 verus! {
-    // Selection sort implementation in Verus
-    fn selection_sort(a: &mut Vec<int>)
-        ensures 
-            a.len() == old(a).len(),
-            forall|i: int, j: int| 0 <= i < j < a.len() ==> a[i] <= a[j],
-            // Note: multiset preservation requires additional lemmas in Verus
-            // a@.to_multiset() == old(a)@.to_multiset(),
+
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    // pre-conditions-start
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
+    // post-conditions-end
+{
+    let mut new_list = Vec::new();
+    
+    // Copy elements before the k-th element
+    let mut i = 0;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while i < k - 1
+        invariant
+            0 <= i <= k - 1,
+            new_list@.len() == i,
+            new_list@ == list@.subrange(0, i as int),
+        decreases k - 1 - i
     {
-        let n = a.len();
-        let mut i = 0;
-        
-        /* code modified by LLM (iteration 1): Added decreases clause for termination */
-        while i < n
-            invariant
-                a.len() == n,
-                // Everything before position i is sorted
-                forall|p: int, q: int| 0 <= p < q < i ==> a[p] <= a[q],
-                // Everything before position i is <= everything after position i
-                forall|p: int, q: int| 0 <= p < i <= q < n ==> a[p] <= a[q],
-            decreases n - i
-        {
-            // Find the minimum element in the remaining unsorted portion
-            let mut min_idx = i;
-            let mut j = i + 1;
-            
-            while j < n
-                invariant
-                    a.len() == n,
-                    i <= min_idx < n,
-                    i < j <= n,
-                    /* code modified by LLM (iteration 1): Fixed invariant to use int casting for specification */
-                    forall|k: int| i as int <= k < j as int ==> a[min_idx as int] <= a[k],
-                    // Everything before position i is sorted
-                    forall|p: int, q: int| 0 <= p < q < i ==> a[p] <= a[q],
-                    // Everything before position i is <= everything after position i
-                    forall|p: int, q: int| 0 <= p < i <= q < n ==> a[p] <= a[q],
-                decreases n - j
-            {
-                /* code modified by LLM (iteration 1): Fixed array access to use usize indices directly */
-                if a[j] < a[min_idx] {
-                    min_idx = j;
-                }
-                j += 1;
-            }
-            
-            // Swap the minimum element with the element at position i
-            /* code modified by LLM (iteration 2): Fixed borrow checker issue by storing values before set calls */
-            let temp = a[i];
-            let min_val = a[min_idx];
-            a.set(i, min_val);
-            a.set(min_idx, temp);
-            
-            i += 1;
-        }
+        new_list.push(list[i]);
+        i += 1;
     }
+    
+    // Skip the k-th element and copy the rest
+    let mut j = k;
+    /* code modified by LLM (iteration 1): added decreases clause for termination */
+    while j < list.len()
+        invariant
+            k <= j <= list.len(),
+            new_list@.len() == (k - 1) + (j - k),
+            new_list@ == list@.subrange(0, k - 1 as int).add(
+                list@.subrange(k as int, j as int)
+            ),
+        decreases list.len() - j
+    {
+        new_list.push(list[j]);
+        j += 1;
+    }
+    
+    new_list
 }
+
+} // verus!
 
 fn main() {}

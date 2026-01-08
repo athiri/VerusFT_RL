@@ -1,57 +1,52 @@
+// <vc-preamble>
 use vstd::prelude::*;
-use std::collections::HashSet;
 
 verus! {
+// </vc-preamble>
 
-spec fn unique_product_precond(arr: &Vec<i32>) -> bool {
-    true
+// <vc-helpers>
+/* helper modified by LLM (iteration 2): fix int/i32 mismatch in elem_prop conditional */
+spec fn elem_prop(x: i32, k: i32, y: i32) -> bool {
+    if x > k { y == -1i32 } else { y == x }
 }
 
-// Helper function to remove duplicates from a sequence
-spec fn remove_duplicates(s: Seq<int>) -> Seq<int>
-    decreases s.len()
+/* helper modified by LLM (iteration 2): fix int/i32 mismatch in ensures expression */
+proof fn lemma_elem_prop(x: i32, k: i32)
+    ensures elem_prop(x, k, if x > k { -1i32 } else { x })
 {
-    if s.len() == 0 {
-        seq![]
-    } else {
-        let rest = remove_duplicates(s.subrange(1, s.len() as int));
-        if rest.contains(s[0]) {
-            rest
+}
+
+// </vc-helpers>
+
+// <vc-spec>
+fn replace(arr: &Vec<i32>, k: i32) -> (result: Vec<i32>)
+    ensures
+        result.len() == arr.len(),
+        forall|i: int| 0 <= i < arr.len() ==> (arr[i] > k ==> result[i] == -1),
+        forall|i: int| 0 <= i < arr.len() ==> (arr[i] <= k ==> result[i] == arr[i]),
+// </vc-spec>
+// <vc-code>
+{
+    /* code modified by LLM (iteration 2): implement replace with loop and invariants */
+    let mut res: Vec<i32> = Vec::new();
+    while res.len() < arr.len()
+        invariant
+            res.len() <= arr.len(),
+            forall|j: int| 0 <= j < res.len() ==> (arr[j] > k ==> res[j] == -1i32),
+            forall|j: int| 0 <= j < res.len() ==> (arr[j] <= k ==> res[j] == arr[j]),
+        decreases arr.len() - res.len()
+    {
+        let i = res.len();
+        let a = arr[i];
+        if a > k {
+            res.push(-1);
         } else {
-            seq![s[0]].add(rest)
+            res.push(a);
         }
     }
+    res
 }
+// </vc-code>
 
-// Helper function to compute product of a sequence  
-spec fn seq_product(s: Seq<int>) -> int
-    decreases s.len()
-{
-    if s.len() == 0 {
-        1
-    } else {
-        s[0] * seq_product(s.subrange(1, s.len() as int))
-    }
 }
-
-spec fn unique_product_postcond(arr: &Vec<i32>, result: i32) -> bool {
-    let arr_seq = arr@.map(|i: int, x: i32| x as int);
-    let unique_seq = remove_duplicates(arr_seq);
-    let expected = seq_product(unique_seq);
-    // Matching the Lean postcondition structure: both differences equal 0
-    (result as int - expected) == 0 && (expected - result as int) == 0
-}
-
-fn unique_product(arr: &Vec<i32>) -> (result: i32)
-    requires unique_product_precond(arr)
-    ensures 
-        // For now, just ensure we return a valid result
-        // The full postcondition verification would require more complex proof work
-        true
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
 fn main() {}
-
-} // verus!

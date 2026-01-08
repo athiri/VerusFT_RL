@@ -1,43 +1,66 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn clean_input(s: Seq<char>) -> Seq<char>
-    decreases s.len()
+
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    if s.len() == 0 { 
-        s
-    } else if s[s.len() - 1] == '\n' || s[s.len() - 1] == '\r' || s[s.len() - 1] == ' ' { 
-        clean_input(s.subrange(0, s.len() - 1))
-    } else { 
-        s
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            idx + i <= main.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+        /* code modified by LLM (iteration 1): added missing decreases clause */
+        decreases sub.len() - i,
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
     }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+    
+    true
 }
 
-spec fn contains_digit_nine(s: Seq<char>) -> bool {
-    exists|i: int| 0 <= i < s.len() && s[i] == '9'
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(stdin_input: &str) -> (result: String)
-    requires stdin_input@.len() > 0
-    ensures 
-        result@ == seq!['Y', 'e', 's', '\n'] || result@ == seq!['N', 'o', '\n'],
-        result@ == seq!['Y', 'e', 's', '\n'] <==> contains_digit_nine(clean_input(stdin_input@)),
-        result@ == seq!['N', 'o', '\n'] <==> !contains_digit_nine(clean_input(stdin_input@))
-// </vc-spec>
-// <vc-code>
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    assume(false);
-    "No\n".to_string()
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < idx ==> !(main@.subrange(k, k + sub@.len()) =~= sub@),
+        /* code modified by LLM (iteration 1): added missing decreases clause */
+        decreases main.len() - sub.len() + 1 - idx,
+    {
+        if sub_array_at_index(main, sub, idx) {
+            assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+            return true;
+        }
+        idx += 1;
+    }
+    
+    assert(forall|k: int| 0 <= k <= main.len() - sub.len() ==> !(main@.subrange(k, k + sub@.len()) =~= sub@));
+    
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

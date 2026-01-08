@@ -1,29 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-spec fn cube(n: nat) -> nat { n * n * n }
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn cube_root(n: u8) -> (r: u8)
-    ensures 
-        cube(r as nat) <= n as nat,
-        (n as nat) < cube((r as nat) + 1),
-        r as nat <= n as nat,
-// </vc-spec>
-// <vc-code>
+fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
 {
-    assume(false);
-    unreached()
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> number > arr[j]
+    {
+        if number <= arr[i] {
+            return false;
+        }
+    }
+    true
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

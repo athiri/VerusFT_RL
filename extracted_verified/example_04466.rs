@@ -1,22 +1,28 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+}
 
 verus! {
 
-fn contains_z(text: &[u8]) -> (result: bool)
+fn all_elements_equals(arr: &Vec<i32>, element: i32) -> (result: bool)
     ensures
-        result == (exists|i: int| 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),
+        result == (forall|i: int| 0 <= i < arr.len() ==> (arr[i] == element)),
 {
-    for i in 0..text.len()
+    let mut i = 0;
+    while i < arr.len()
         invariant
-            !(exists|j: int| 0 <= j < i && (text[j] == 90 || text[j] == 122)),
+            0 <= i <= arr.len(),
+            forall|j: int| 0 <= j < i ==> arr[j] == element,
+        /* code modified by LLM (iteration 1): added decreases clause to fix compilation error */
+        decreases arr.len() - i
     {
-        if text[i] == 90 || text[i] == 122 {
-            return true;
+        if arr[i] != element {
+            return false;
         }
+        i += 1;
     }
-    false
+    true
 }
 
 } // verus!

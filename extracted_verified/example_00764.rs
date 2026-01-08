@@ -1,30 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    fn triple(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        x * 3
+    }
 
-spec fn fib(n: nat) -> nat
-    decreases n
-{
-    if n == 0 { 0 }
-    else if n == 1 { 1 }
-    else { fib((n - 1) as nat) + fib((n - 2) as nat) }
+    fn triple_if(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        if x == 0 {
+            0
+        } else {
+            x + x + x
+        }
+    }
+
+    fn triple_over(x: u32) -> (r: u32)
+        requires x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        let doubled = x + x;
+        doubled + x
+    }
+
+    fn triple_conditions(x: u32) -> (r: u32)
+        requires x % 2 == 0 && x <= 0x55555555u32,
+        ensures r as int == 3 * (x as int)
+    {
+        x * 3
+    }
+
+    fn caller() {
+        let result1 = triple(10);
+        let result2 = triple_if(20);
+        let result3 = triple_over(30);
+        let result4 = triple_conditions(40);
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn ComputeFib(n: usize) -> (f: usize)
-    ensures f == fib(n as nat)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

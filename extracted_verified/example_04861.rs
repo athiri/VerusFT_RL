@@ -2,53 +2,60 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn index_wise_addition(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> (c: Vec<Vec<i32>>)
+spec fn abs_spec(i: int) -> int {
+    if i < 0 { -i } else { i }
+}
+
+fn abs(i: i32) -> (res: i32)
     requires
-        a.len() == b.len(),
-        forall|i: int| #![auto] 0 <= i < a.len() ==> a[i].len() == b[i].len(),
-        forall|i: int| #![trigger a[i], b[i]] 
-            0 <= i < a.len() 
-                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] <= i32::MAX,
-        forall|i: int| #![trigger a[i], b[i]] 
-            0 <= i < a.len() 
-                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] >= i32::MIN,
+        i != i32::MIN,
     ensures
-        c.len() == a.len(),
-        forall|i: int| #![auto] 0 <= i < c.len() ==> c[i].len() == a[i].len(),
-        forall|i: int| #![trigger a[i], b[i], c[i]] 
-            0 <= i < c.len() 
-                ==> forall|j: int| #![auto] 0 <= j < c[i].len() ==> c[i][j] == a[i][j] + b[i][j],
+        i < 0 ==> res == -i,
+        i >= 0 ==> res == i
 {
-    /* code modified by LLM (iteration 1): added explicit type annotation for Vec */
-    let mut c: Vec<Vec<i32>> = Vec::new();
-    
-    for i in 0..a.len()
-        invariant
-            c.len() == i,
-            forall|k: int| 0 <= k < i ==> c[k].len() == a[k].len(),
-            forall|k: int| #![trigger a[k], b[k], c[k]] 
-                0 <= k < i 
-                    ==> forall|j: int| #![auto] 0 <= j < c[k].len() ==> c[k][j] == a[k][j] + b[k][j],
-    {
-        /* code modified by LLM (iteration 1): added explicit type annotation for Vec */
-        let mut row: Vec<i32> = Vec::new();
-        
-        for j in 0..a[i].len()
-            invariant
-                i < a.len(),
-                row.len() == j,
-                /* code modified by LLM (iteration 1): fixed index types from usize to int */
-                forall|l: int| #![auto] 0 <= l < j ==> row[l] == a[i as int][l] + b[i as int][l],
-        {
-            let sum = a[i][j] + b[i][j];
-            row.push(sum);
-        }
-        
-        c.push(row);
+    if i < 0 {
+        -i
+    } else {
+        i
     }
-    
-    c
+}
+
+fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
+    requires
+        threshold > 0,
+        forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
+    ensures
+        flag == exists|i: int, j: int| 0 <= i && 0 <= j && i < numbers.len() && j < numbers.len() && i != j && abs_spec(numbers[i] - numbers[j]) < threshold
+{
+    let mut i = 0;
+    while i < numbers.len()
+        invariant
+            0 <= i && i <= numbers.len(),
+            forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers[x] - numbers[y]) >= threshold
+    {
+        let mut j = 0;
+        while j < numbers.len()
+            invariant
+                0 <= i && i < numbers.len(),
+                0 <= j && j <= numbers.len(),
+                forall|x: int, y: int| 0 <= x && x < i && 0 <= y && y < numbers.len() && x != y ==> abs_spec(numbers[x] - numbers[y]) >= threshold,
+                /* code modified by LLM (iteration 1): fixed type conversion from usize to int for array indexing in specification */
+                forall|y: int| 0 <= y && y < j && i as int != y ==> abs_spec(numbers[i as int] - numbers[y]) >= threshold
+        {
+            if i != j {
+                let diff = numbers[i] - numbers[j];
+                /* code modified by LLM (iteration 1): convert i32 diff to int for abs_spec function call */
+                let abs_diff = abs_spec(diff as int);
+                /* code modified by LLM (iteration 1): convert threshold to int for comparison with abs_diff */
+                if abs_diff < threshold as int {
+                    return true;
+                }
+            }
+            j += 1;
+        }
+        i += 1;
+    }
+    false
 }
 
 fn main() {}

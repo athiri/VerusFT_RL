@@ -1,29 +1,37 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
+verus!{
+// </vc-preamble>
 
-verus! {
+// <vc-helpers>
+spec fn triple(a: int) -> int { 3 * a }
 
-fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
-    // post-conditions-start
+proof fn triple_additive(a: int, b: int)
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == k)),
-    // post-conditions-end
+        triple(a + b) == triple(a) + triple(b)
 {
-    let mut idx = 0;
-    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-    while idx < arr.len()
-        invariant
-            forall|i: int| 0 <= i < idx ==> arr[i] != k,
-        decreases arr.len() - idx,
-    {
-        if arr[idx] == k {
-            return true;
-        }
-        idx += 1;
-    }
-    false
 }
+// </vc-helpers>
 
-} // verus!
+// <vc-spec>
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
 
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+
+	ensures
+		sum[0] == 3 * N,
+// </vc-spec>
+// <vc-code>
+{
+    let val: i32 = N * 3;
+    sum[0usize] = val;
+}
+// </vc-code>
+
+}
 fn main() {}

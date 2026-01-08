@@ -1,46 +1,35 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_query(k: int, n: int, a: int, b: int) -> bool {
-    k > 0 && n > 0 && a > 0 && b > 0 && b < a
-}
+fn main() {}
 
-spec fn max_action_a_turns(k: int, n: int, a: int, b: int) -> int {
-    if n * b > k { 
-        -1
-    } else { 
-        let max_possible = (k - n * b - 1) / (a - b);
-        if n <= max_possible { n } else { max_possible }
+verus! {
+
+pub open spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> int
+    decreases seq.len(),
+{
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
 
-spec fn valid_result(result: int, k: int, n: int, a: int, b: int) -> bool {
-    result == -1 || (0 <= result <= n)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(queries: Vec<(i8, i8, i8, i8)>) -> (results: Vec<i8>)
-    requires 
-        queries.len() > 0,
-        forall|i: int| 0 <= i < queries.len() ==> valid_query(#[trigger] queries[i as int].0 as int, queries[i as int].1 as int, queries[i as int].2 as int, queries[i as int].3 as int),
-    ensures 
-        results.len() == queries.len(),
-        forall|i: int| 0 <= i < queries.len() ==> results[i as int] as int == max_action_a_turns(#[trigger] queries[i as int].0 as int, queries[i as int].1 as int, queries[i as int].2 as int, queries[i as int].3 as int),
-        forall|i: int| 0 <= i < results.len() ==> valid_result(#[trigger] results[i as int] as int, queries[i as int].0 as int, queries[i as int].1 as int, queries[i as int].2 as int, queries[i as int].3 as int),
-// </vc-spec>
-// <vc-code>
+fn count_frequency(arr: &Vec<i32>, key: i32) -> (frequency: usize)
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
 {
-    assume(false);
-    Vec::new()
-}
-// </vc-code>
-
-
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {}
+fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
+    ensures
+        unique_arr@ == arr@.filter(|x: i32| count_frequency_rcr(arr@, x) == 1),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

@@ -2,36 +2,71 @@ use vstd::prelude::*;
 
 verus! {
 
-#[verifier::loop_isolation(false)]
-fn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (result:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '<' => (x + 1, b),
+                    '>' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
+}
+// pure-end
+
+spec fn spec_bracketing(brackets: Seq<char>) -> (result:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
+    // pre-conditions-start
     requires
-        0 <= pos < a.len(),
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        result.len() == a.len() - 1,
-        forall|i: int| 0 <= i < pos ==> result[i] == a[i],
-        forall|i: int| pos <= i < result.len() ==> result[i] == a[i + 1],
+        ret <==> spec_bracketing(brackets@),
+    // post-conditions-end
 {
-    let mut result = Vec::new();
+    let brackets_seq = brackets@;
+    let mut depth: i32 = 0;
+    let mut valid = true;
     
-    let mut i = 0;
-    while i < a.len()
+    /* code modified by LLM (iteration 1): cast nat to int for loop range and use @ for sequence indexing */
+    for i in 0..brackets_seq.len() as int
         invariant
-            0 <= i <= a.len(),
-            /* code modified by LLM (iteration 1): cast i to int to fix type compatibility in conditional expression */
-            result.len() == if i <= pos { i as int } else { (i as int) - 1 },
-            forall|j: int| 0 <= j < result.len() && j < pos ==> result[j] == a[j],
-            forall|j: int| pos <= j < result.len() ==> result[j] == a[j + 1],
-        /* code modified by LLM (iteration 2): added decreases clause to prove loop termination */
-        decreases a.len() - i
+            depth >= 0 ==> valid,
+            depth < 0 ==> !valid,
+            valid ==> depth >= 0,
+            spec_bracketing_helper(brackets_seq.subrange(0, i)) == (depth as int, valid),
     {
-        if i != pos {
-            result.push(a[i]);
+        /* code modified by LLM (iteration 1): use @ operator for sequence indexing */
+        let c = brackets_seq@[i];
+        match c {
+            '<' => {
+                depth = depth + 1;
+            },
+            '>' => {
+                depth = depth - 1;
+                if depth < 0 {
+                    valid = false;
+                }
+            },
+            _ => {
+                // do nothing for other characters
+            }
         }
-        i += 1;
     }
     
-    result
+    valid && depth == 0
 }
 
+} // verus!
 fn main() {}
-}

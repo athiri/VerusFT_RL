@@ -1,60 +1,34 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {}
 
 verus! {
 
-spec fn valid_input(input: Seq<char>) -> bool {
-    input.len() >= 2 && 
-    '0' <= input[0] <= '9' && 
-    '0' <= input[1] <= '9' &&
-    (input[input.len() - 1] == '\n' || (input[0] != '\n' && input[1] != '\n'))
-}
-
-spec fn good_digit_count(digit: char) -> int 
-    recommends '0' <= digit <= '9'
+fn element_wise_subtract(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] - arr2[i]) <= i32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] - arr2[i]),
 {
-    if digit == '0' { 2 }
-    else if digit == '1' { 7 }
-    else if digit == '2' { 2 }
-    else if digit == '3' { 3 }
-    else if digit == '4' { 3 }
-    else if digit == '5' { 4 }
-    else if digit == '6' { 2 }
-    else if digit == '7' { 5 }
-    else if digit == '8' { 1 }
-    else { 2 }
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < arr1.len()
+        invariant
+            i <= arr1.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] (arr1[j] - arr2[j]),
+    {
+        let diff = arr1[i] - arr2[i];
+        result.push(diff);
+        i += 1;
+    }
+    
+    result
 }
 
-spec fn compute_total_good_count(input: Seq<char>) -> int 
-    recommends valid_input(input)
-{
-    good_digit_count(input[0]) * good_digit_count(input[1])
-}
-
-spec fn valid_output(result: Seq<char>, expected_count: int) -> bool {
-    result.len() >= 2 && 
-    result[result.len() - 1] == '\n' &&
-    (forall|c: char| result.contains(c) ==> c == '\n' || ('0' <= c <= '9')) &&
-    expected_count >= 1 && expected_count <= 49
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(input: Vec<char>) -> (result: Vec<char>)
-    requires valid_input(input@)
-    ensures valid_output(result@, compute_total_good_count(input@))
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

@@ -1,25 +1,154 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-// </vc-preamble>
+verus!{
 
-// <vc-helpers>
-// </vc-helpers>
+    pub fn main () {
+        // Main function - can be empty as per specification
+    }
 
-// <vc-spec>
-fn hstack(a: Vec<f32>, b: Vec<f32>) -> (result: Vec<f32>)
+    pub fn readBoard(board: &Vec<char>, row: usize, col: usize, n: usize) -> char 
+    requires
+        board.len() == n * n,
+        row < n,
+        col < n,
+        n < 1000,
+    {
+        board[row * n + col]
+    }
+
+    pub fn setBoard(board: &mut Vec<char>, row: usize, col: usize, n: usize, c: char) 
+    requires
+        old(board).len() == n * n,
+        row < n,
+        col < n,
+        n < 1000,
     ensures
-        result.len() == a.len() + b.len(),
-        forall|i: int| 0 <= i < a.len() ==> result[i] == a[i],
-        forall|j: int| 0 <= j < b.len() ==> result[a.len() + j] == b[j]
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
+        board.len() == n * n,
+    {
+        board.set(row * n + col, c);
+    }
+
+    #[verifier::external_body]
+    fn myVecClone(v: &Vec<char>) -> Vec<char> {
+        v.clone()
+    }
+
+    pub fn init_board(board: &mut Vec<char>, n: usize)
+    requires
+        n < 1000,
+        old(board).len() == 0,
+    ensures
+        board.len() == n*n,
+    {
+        let mut i = 0;
+        while i < n * n
+            invariant
+                board.len() == i,
+                i <= n * n,
+        {
+            board.push('.');
+            i = i + 1;
+        }
+    }
+
+    pub fn n_queens_solver(n: usize) -> Vec<Vec<char>> 
+    requires
+        n < 1000,
+    {
+        let mut board = Vec::new();
+        init_board(&mut board, n);
+        let mut solutions = Vec::new();
+        solve(&mut board, 0, &mut solutions, n);
+        solutions
+    }
+    
+    fn is_safe(board: &Vec<char>, row: usize, col: usize, n: usize) -> bool 
+    requires
+        board.len() == n * n,
+        row < n,
+        col < n,
+        n < 1000, 
+    {
+        // Check column
+        let mut i = 0;
+        while i < row
+            invariant
+                i <= row,
+                row < n,
+                col < n,
+                board.len() == n * n,
+                n < 1000,
+        {
+            if readBoard(board, i, col, n) == 'Q' {
+                return false;
+            }
+            i = i + 1;
+        }
+        
+        // Check diagonal (upper left)
+        let mut i = 0;
+        while i < row && col >= i
+            invariant
+                i <= row,
+                row < n,
+                col < n,
+                board.len() == n * n,
+                n < 1000,
+        {
+            if col >= i && readBoard(board, row - i - 1, col - i, n) == 'Q' {
+                return false;
+            }
+            i = i + 1;
+        }
+        
+        // Check diagonal (upper right)
+        let mut i = 0;
+        while i < row && col + i < n
+            invariant
+                i <= row,
+                row < n,
+                col < n,
+                board.len() == n * n,
+                n < 1000,
+        {
+            if col + i < n && readBoard(board, row - i - 1, col + i, n) == 'Q' {
+                return false;
+            }
+            i = i + 1;
+        }
+        
+        true
+    }
+    
+    fn solve(board: &mut Vec<char>, row: usize, solutions: &mut Vec<Vec<char>>, n: usize) 
+    requires
+        n < 1000,
+        row <= n,
+        old(board).len() == n * n,
+    ensures
+        board.len() == n*n,
+    {
+        if row == n {
+            let solution = myVecClone(board);
+            solutions.push(solution);
+            return;
+        }
+        
+        let mut col = 0;
+        while col < n
+            invariant
+                board.len() == n * n,
+                row < n,
+                col <= n,
+                n < 1000,
+        {
+            if is_safe(board, row, col, n) {
+                setBoard(board, row, col, n, 'Q');
+                solve(board, row + 1, solutions, n);
+                setBoard(board, row, col, n, '.');
+            }
+            col = col + 1;
+        }
+    }
 
 }
-fn main() {}

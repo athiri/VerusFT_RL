@@ -1,28 +1,62 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
-
+//IMPL index_wise_addition
+#[verifier::loop_isolation(false)]
+fn index_wise_addition(a: &Vec<Vec<i32>>, b: &Vec<Vec<i32>>) -> (c: Vec<Vec<i32>>)
+    // pre-conditions-start
     requires
-        list@.len() > 0,
-        0 < n < list@.len(),
-
+        a.len() == b.len(),
+        forall|i: int| #![auto] 0 <= i < a.len() ==> a[i].len() == b[i].len(),
+        forall|i: int| #![trigger a[i], b[i]]
+            0 <= i < a.len()
+                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] <= i32::MAX,
+        forall|i: int| #![trigger a[i], b[i]]
+            0 <= i < a.len()
+                ==> forall|j: int| 0 <= j < a[i].len() ==> a[i][j] + b[i][j] >= i32::MIN,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
-// </vc-spec>
-// <vc-code>
+        c.len() == a.len(),
+        forall|i: int| #![auto] 0 <= i < c.len() ==> c[i].len() == a[i].len(),
+        forall|i: int| #![trigger a[i], b[i], c[i]]
+            0 <= i < c.len()
+                ==> forall|j: int| #![auto] 0 <= j < c[i].len() ==> c[i][j] == a[i][j] + b[i][j],
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut c: Vec<Vec<i32>> = Vec::new();
+    let mut i = 0;
+    
+    while i < a.len()
+        invariant
+            i <= a.len(),
+            c.len() == i,
+            forall|k: int| 0 <= k < i ==> c[k].len() == a[k].len(),
+            forall|k: int| 0 <= k < i ==> 
+                forall|j: int| 0 <= j < c[k].len() ==> c[k][j] == a[k][j] + b[k][j],
+    {
+        let mut row: Vec<i32> = Vec::new();
+        let mut j = 0;
+        
+        while j < a[i].len()
+            invariant
+                /* code modified by LLM (iteration 1): Fix type consistency by using proper int casting */
+                j <= a[i].len(),
+                row.len() == j,
+                /* code modified by LLM (iteration 1): Fix index type casting for ghost context */
+                forall|l: int| 0 <= l < j as int ==> row[l] == a[i as int][l] + b[i as int][l],
+        {
+            row.push(a[i][j] + b[i][j]);
+            j += 1;
+        }
+        
+        c.push(row);
+        i += 1;
+    }
+    
+    c
 }
-// </vc-code>
 
-}
 fn main() {}
+}

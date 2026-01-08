@@ -2,45 +2,68 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn is_divisible(n: int, divisor: int) -> (result: bool) {
-    (n % divisor) == 0
+spec fn spec_bracketing_helper(brackets: Seq<char>) -> (result:(int, bool)) {
+    brackets.fold_left(
+        (0, true),
+        |p: (int, bool), c|
+            {
+                let (x, b) = p;
+                match (c) {
+                    '<' => (x + 1, b),
+                    '>' => (x - 1, b && x - 1 >= 0),
+                    _ => (x, b),
+                }
+            },
+    )
 }
 // pure-end
 
-fn prime_num(n: u64) -> (result: bool)
+spec fn spec_bracketing(brackets: Seq<char>) -> (result:bool) {
+    let p = spec_bracketing_helper(brackets);
+    p.1 && p.0 == 0
+}
+// pure-end
+
+fn correct_bracketing(brackets: &str) -> (ret: bool)
     // pre-conditions-start
     requires
-        n >= 2,
+        brackets@.len() <= i32::MAX,
+        -brackets@.len() >= i32::MIN,
     // pre-conditions-end
     // post-conditions-start
     ensures
-        result == (forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)),
+        ret <==> spec_bracketing(brackets@),
     // post-conditions-end
 {
-    let mut i: u64 = 2;
+    let mut depth: i32 = 0;
+    let mut valid = true;
     
-    while i < n
+    for i in 0..brackets.len()
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> !is_divisible(n as int, k),
-        decreases n - i
+            depth >= 0 ==> valid,
+            depth < 0 ==> !valid,
+            valid ==> depth >= 0,
+            spec_bracketing_helper(brackets@.subrange(0, i as int)) == (depth as int, valid),
     {
-        if (n % i) == 0 {
-            /* code modified by LLM (iteration 1): added assertion to prove that finding a divisor makes the postcondition false */
-            assert(is_divisible(n as int, i as int));
-            assert(2 <= i < n);
-            assert(!(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k)));
-            return false;
+        let c = brackets.chars().nth(i).unwrap();
+        match c {
+            '<' => {
+                depth = depth + 1;
+            },
+            '>' => {
+                depth = depth - 1;
+                if depth < 0 {
+                    valid = false;
+                }
+            },
+            _ => {
+                // do nothing for other characters
+            }
         }
-        i = i + 1;
     }
     
-    /* code modified by LLM (iteration 1): added assertion to prove postcondition when no divisor is found */
-    assert(i == n);
-    assert(forall|k: int| 2 <= k < n ==> !is_divisible(n as int, k));
-    return true;
+    valid && depth == 0
 }
 
 } // verus!
-
 fn main() {}

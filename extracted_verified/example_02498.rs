@@ -1,48 +1,54 @@
 use vstd::prelude::*;
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
 
 verus! {
 
-//IMPL split_and_append
-fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
+#[verifier::external_body]
+fn swap(a: &mut Vec<bool>, i: usize, j: usize)
     requires
-        list@.len() > 0,
-        0 < n < list@.len(),
+        0 <= i < j < old(a).len(),
     ensures
-        new_list@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, n as int)),
+        a[i as int] == old(a)[j as int],
+        a[j as int] == old(a)[i as int],
+        forall|k: int| 0 <= k < a.len() && k != i && k != j ==> a[k] == old(a)[k],
+        a.len() == old(a).len(),
+        a@.to_multiset() =~~= old(a)@.to_multiset(),
 {
-    let mut result = Vec::new();
-    
-    // First, append elements from index n to the end
-    let mut i = n;
-    /* code modified by LLM (iteration 2): added decreases clause to prove loop termination */
-    while i < list.len()
-        invariant
-            n <= i <= list.len(),
-            result@ == list@.subrange(n as int, i as int),
-        decreases list.len() - i,
-    {
-        result.push(list[i]);
-        i += 1;
-    }
-    
-    // Then, append elements from the beginning to index n
-    let mut j = 0;
-    /* code modified by LLM (iteration 2): fixed loop invariant to handle bounds correctly and added precondition for array access */
-    while j < n
-        invariant
-            0 <= j <= n,
-            n < list.len(),
-            result@ == list@.subrange(n as int, list@.len() as int).add(list@.subrange(0, j as int)),
-        decreases n - j,
-    {
-        result.push(list[j]);
-        j += 1;
-    }
-    
-    result
+    let temp = a[i];
+    a.set(i, a[j]);
+    a.set(j, temp);
 }
 
-} // verus!
+#[verifier::loop_isolation(false)]
+fn two_way_sort(a: &mut Vec<bool>)
+    requires
+        old(a).len() <= 100_000,
+    ensures
+        a.len() == old(a).len(),
+        a@.to_multiset() == old(a)@.to_multiset(),
+        forall|i: int, j: int| 0 <= i < j < a.len() ==> !a[i] || a[j],
+{
+    let mut left: usize = 0;
+    let mut right: usize = a.len();
+    
+    while left < right
+        invariant
+            0 <= left <= right <= a.len(),
+            a.len() == old(a).len(),
+            a@.to_multiset() == old(a)@.to_multiset(),
+            forall|k: int| 0 <= k < left ==> !a[k],
+            forall|k: int| right <= k < a.len() ==> a[k],
+    {
+        if !a[left] {
+            left += 1;
+        } else if a[right - 1] {
+            right -= 1;
+        } else {
+            swap(a, left, right - 1);
+            left += 1;
+            right -= 1;
+        }
+    }
+}
+
+fn main() {}
+}

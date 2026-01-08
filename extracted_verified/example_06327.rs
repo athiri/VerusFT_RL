@@ -1,12 +1,20 @@
 use vstd::prelude::*;
-
-verus! {
-    fn compute_avg(a: u32, b: u32) -> (avg: u32)
-        requires a < 0x80000000 && b < 0x80000000  // prevent overflow
-        ensures avg == (a + b) / 2
-    {
-        (a + b) / 2
-    }
+fn main() {
+    // TODO: Remove this comment and implement the function body
 }
 
-fn main() {}
+verus! {
+
+fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
+    requires
+        list.len() > 0,
+        0 < k < list@.len(),
+    ensures
+        new_list@ == list@.subrange(0, k - 1 as int).add(
+            list@.subrange(k as int, list.len() as int),
+        ),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

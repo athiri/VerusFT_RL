@@ -1,35 +1,37 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
-verus! {
-spec fn valid_input(d: int, t: int, s: int) -> bool {
-    1 <= d <= 10000 && 1 <= t <= 10000 && 1 <= s <= 10000
-}
-
-spec fn can_travel(d: int, t: int, s: int) -> bool {
-    d <= t * s
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(d: i8, t: i8, s: i8) -> (result: &'static str)
-    requires 
-        valid_input(d as int, t as int, s as int),
-    ensures 
-        can_travel(d as int, t as int, s as int) ==> result == "Yes",
-        !can_travel(d as int, t as int, s as int) ==> result == "No",
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+
+verus! {
+
+fn element_wise_module(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] % arr2[i]) <= i32::MAX),
+    ensures
+        result@.len() == arr1@.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] % arr2[i]),
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): Added decreases clause to prove loop termination */
+    while i < arr1.len()
+        invariant
+            i <= arr1.len(),
+            result@.len() == i,
+            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == #[trigger] (arr1[j] % arr2[j]),
+        decreases arr1.len() - i
+    {
+        let mod_result = arr1[i] % arr2[i];
+        result.push(mod_result);
+        i += 1;
+    }
+    
+    result
+}
+
+} // verus!

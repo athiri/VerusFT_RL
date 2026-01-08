@@ -1,37 +1,41 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+    let arr1 = vec![10, 20, 30];
+    let arr2 = vec![2, 4, 5];
+    let result = element_wise_division(&arr1, &arr2);
+    println!("Result: {:?}", result);
+}
+
 verus! {
-spec fn valid_input(date_str: Seq<char>) -> bool {
-    date_str.len() == 10 && date_str.subrange(0, 4) == seq!['2', '0', '1', '7']
-}
 
-spec fn valid_output(input: Seq<char>, output: Seq<char>) -> bool 
-    recommends input.len() >= 4
+fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
+        forall|m: int|
+            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
+                <= u32::MAX),
+    ensures
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
 {
-    output == seq!['2', '0', '1', '8'].add(input.subrange(4, input.len() as int)) &&
-    output.len() == 10 &&
-    output.subrange(0, 4) == seq!['2', '0', '1', '8'] &&
-    output.subrange(4, output.len() as int) == input.subrange(4, input.len() as int)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(date_str: Vec<char>) -> (result: Vec<char>)
-    requires valid_input(date_str@)
-    ensures valid_output(date_str@, result@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < arr1.len()
+        invariant
+            0 <= idx <= arr1.len(),
+            result.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == arr1[i] / arr2[i],
+    {
+        let division_result = arr1[idx] / arr2[idx];
+        result.push(division_result);
+        idx += 1;
+    }
+    
+    result
 }
 
-fn main() {}
+} // verus!

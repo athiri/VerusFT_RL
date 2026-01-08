@@ -2,54 +2,71 @@ use vstd::prelude::*;
 
 verus! {
 
-// Precondition - trivially true in the original
-spec fn longest_increasing_streak_precond(nums: Seq<i32>) -> bool {
-    true
-}
+// <vc-helpers>
+// No additional helpers needed for this implementation
+// </vc-helpers>
 
-// Check if a subsequence at given start position with given length is strictly increasing
-spec fn is_strictly_increasing_streak(nums: Seq<i32>, start: nat, len: nat) -> bool 
-    recommends start + len <= nums.len()
-{
-    start + len <= nums.len() &&
-    (len <= 1 || forall|i: nat| i < len - 1 ==> #[trigger] nums[start + i as int] < nums[start + i as int + 1])
-}
-
-// Simplified postcondition - the result is bounded by the sequence length
-spec fn longest_increasing_streak_postcond(nums: Seq<i32>, result: nat) -> bool {
-    // Result is bounded by sequence length
-    result <= nums.len() &&
-    // Empty list means result = 0
-    (nums.len() == 0 ==> result == 0)
-    // Additional correctness properties would require more complex proof
-}
-
-fn longest_increasing_streak_aux(
-    nums: &Vec<i32>, 
-    idx: usize,
-    prev: Option<i32>, 
-    curr_len: usize, 
-    max_len: usize
-) -> (result: usize)
+// <vc-spec>
+fn copy(src: &[i32], s_start: usize, dest: &[i32], d_start: usize, len: usize) -> (r: Vec<i32>)
     requires 
-        idx <= nums.len(),
-        curr_len <= nums.len(),
-        max_len <= nums.len()
-    ensures result <= nums.len()
-    decreases nums.len() - idx
+        src.len() >= s_start + len,
+        dest.len() >= d_start + len,
+    ensures 
+        r.len() == dest.len(),
+        r@.subrange(0, d_start as int) =~= dest@.subrange(0, d_start as int),
+        r@.subrange((d_start + len) as int, dest.len() as int) =~= dest@.subrange((d_start + len) as int, dest.len() as int),
+        r@.subrange(d_start as int, (len + d_start) as int) =~= src@.subrange(s_start as int, (len + s_start) as int),
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    let mut result = Vec::new();
+    let mut i: usize = 0;
+    
+    // Copy all elements from dest, but replace the range [d_start, d_start + len) with src elements
+    while i < dest.len()
+        invariant
+            i <= dest.len(),
+            result.len() == i,
+            src.len() >= s_start + len,  // Add precondition to invariant
+            dest.len() >= d_start + len, // Add precondition to invariant
+            // Elements before d_start are copied from dest
+            forall|j: int| 0 <= j < i && j < d_start as int ==> #[trigger] result@[j] == dest@[j],
+            // Elements in the replacement range that have been processed
+            forall|j: int| d_start as int <= j < i && j < (d_start + len) as int ==> 
+                s_start as int + (j - d_start as int) < src.len() &&
+                #[trigger] result@[j] == src@[(s_start as int + (j - d_start as int))],
+            // Elements after the replacement range that have been processed
+            forall|j: int| (d_start + len) as int <= j < i ==> #[trigger] result@[j] == dest@[j],
+        decreases dest.len() - i,
+    {
+        if i >= d_start && i < d_start + len {
+            // We're in the range to copy from src
+            let offset = i - d_start;
+            assert(offset < len);
+            assert(s_start + offset <= s_start + len - 1);
+            assert(s_start + len <= src.len()); // From precondition
+            assert(s_start + offset < src.len());
+            let src_index = s_start + offset;
+            result.push(src[src_index]);
+        } else {
+            // Copy from dest
+            result.push(dest[i]);
+        }
+        i = i + 1;
+    }
+    
+    assert(result.len() == dest.len());
+    assert(result@.subrange(0, d_start as int) =~= dest@.subrange(0, d_start as int));
+    assert(result@.subrange((d_start + len) as int, dest.len() as int) =~= 
+           dest@.subrange((d_start + len) as int, dest.len() as int));
+    assert(result@.subrange(d_start as int, (d_start + len) as int) =~= 
+           src@.subrange(s_start as int, (s_start + len) as int));
+    
+    result
 }
-
-fn longest_increasing_streak(nums: Vec<i32>) -> (result: usize)
-    requires longest_increasing_streak_precond(nums@)
-    ensures longest_increasing_streak_postcond(nums@, result as nat)
-{
-    return 0;  // TODO: Remove this line and implement the function body
-}
-
-} // verus!
+// </vc-code>
 
 fn main() {
-    // TODO: Remove this comment and implement the function body
+}
+
 }

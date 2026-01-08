@@ -1,40 +1,68 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(a: int, b: int) -> bool {
-    1 <= a <= 16 && 1 <= b <= 16 && a + b <= 16
+
+spec fn is_upper_case(c: u8) -> bool {
+    c >= 65 && c <= 90
 }
 
-spec fn can_take_non_adjacent(pieces: int, total: int) -> bool {
-    pieces <= total / 2
+spec fn shift32_spec(c: u8) -> u8 {
+    (c + 32) as u8
 }
 
-spec fn both_can_take(a: int, b: int) -> bool {
-    can_take_non_adjacent(a, 16) && can_take_non_adjacent(b, 16)
+spec fn is_lower_case(c: u8) -> bool {
+    c >= 97 && c <= 122
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+spec fn shift_minus_32_spec(c: u8) -> u8 {
+    (c - 32) as u8
+}
 
-// <vc-spec>
-fn solve_cake_problem(a: i8, b: i8) -> (result: &'static str)
-    requires 
-        valid_input(a as int, b as int),
-    ensures 
-        both_can_take(a as int, b as int) <==> (result == "Yay!"),
-        (!both_can_take(a as int, b as int)) <==> (result == ":("),
-        (result == "Yay!") || (result == ":("),
-// </vc-spec>
-// <vc-code>
+spec fn to_toggle_case_spec(s: u8) -> u8 {
+    if is_lower_case(s) {
+        shift_minus_32_spec(s)
+    } else if is_upper_case(s) {
+        shift32_spec(s)
+    } else {
+        s
+    }
+}
+
+fn to_toggle_case(str1: &[u8]) -> (toggle_case: Vec<u8>)
+    ensures
+        str1@.len() == toggle_case@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> toggle_case[i] == to_toggle_case_spec(#[trigger] str1[i]),
 {
-    assume(false);
-    ""
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    while idx < str1.len()
+        invariant
+            idx <= str1.len(),
+            result@.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == to_toggle_case_spec(#[trigger] str1[i]),
+    {
+        let c = str1[idx];
+        let toggled = if c >= 97 && c <= 122 {
+            // lowercase to uppercase
+            c - 32
+        } else if c >= 65 && c <= 90 {
+            // uppercase to lowercase
+            c + 32
+        } else {
+            // unchanged
+            c
+        };
+        
+        result.push(toggled);
+        idx += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

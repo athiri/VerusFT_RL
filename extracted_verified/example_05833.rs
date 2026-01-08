@@ -2,33 +2,110 @@ use vstd::prelude::*;
 
 verus! {
 
-fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
+proof fn lemma_increasing_sum_params(s: Seq<u32>, i: int, j: int)
+    // pre-conditions-start
     requires
-        v.len() <= 100_000,
-        forall|i: int, j: int| 0 <= i < j < v.len() ==> v[i] <= v[j],
-        0 <= c <= f + 1 <= v.len(),
-        forall|k: int| 0 <= k < c ==> v[k] <= elem,
-        forall|k: int| f < k < v.len() ==> v[k] > elem,
+        0 <= i <= j <= s.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
-        -1 <= p < v.len(),
-        forall|u: int| 0 <= u <= p ==> v[u] <= elem,
-        forall|w: int| p < w < v.len() ==> v[w] > elem,
-    decreases f - c + 1
+        spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
+    decreases j - i,
+    // post-conditions-end
 {
-    if c > f {
-        // Search range is empty, return largest valid index before c
-        c - 1
+    if i == j {
+        // Base case: spec_sum(s.subrange(0, i)) == spec_sum(s.subrange(0, j))
     } else {
-        let mid = c + (f - c) / 2;
-        if v[mid as usize] <= elem {
-            // Element at mid is ≤ elem, search in upper half
-            binary_search_recursive(v, elem, mid + 1, f)
-        } else {
-            // Element at mid is > elem, search in lower half
-            binary_search_recursive(v, elem, c, mid - 1)
-        }
+        // Inductive case: we can show that adding elements increases the sum
+        lemma_increasing_sum_params(s, i, j - 1);
+        // Now we know spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j - 1))
+        // And spec_sum(s.subrange(0, j)) = spec_sum(s.subrange(0, j - 1)) + s[j - 1]
+        // Since s[j - 1] is u32 (non-negative), the sum can only increase or stay the same
     }
 }
+// pure-end
 
-fn main() {}
+proof fn lemma_increasing_sum(s: Seq<u32>)
+    // post-conditions-start
+    ensures
+        forall|i: int, j: int|
+            #![trigger spec_sum(s.subrange(0, i)), spec_sum(s.subrange(0, j))]
+            0 <= i <= j <= s.len() ==> spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
+    // post-conditions-end
+{
+    // We can prove this by using our parameterized lemma for all valid i, j pairs
+    assert forall|i: int, j: int| 0 <= i <= j <= s.len() implies spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)) by {
+        lemma_increasing_sum_params(s, i, j);
+    };
 }
+// pure-end
+
+spec fn spec_sum(s: Seq<u32>) -> (ret:int) {
+    s.fold_left(0, |x: int, y| x + y)
+}
+// pure-end
+
+fn sum_lesser_than_limit(qs: &Vec<u32>, w: u32) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> spec_sum(qs@) <= w,
+    // post-conditions-end
+{
+    let mut sum: u64 = 0;
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < qs.len()
+        invariant
+            0 <= i <= qs.len(),
+            sum == spec_sum(qs@.subrange(0, i as int)),
+            sum <= u64::MAX,
+        decreases qs.len() - i,
+    {
+        let old_sum = sum;
+        sum = sum + qs[i] as u64;
+        if sum > w as u64 {
+            return false;
+        }
+        i += 1;
+    }
+    
+    sum <= w as u64
+}
+
+fn palindrome(qs: &Vec<u32>) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> qs@ =~= qs@.reverse(),
+    // post-conditions-end
+{
+    let len = qs.len();
+    let mut i = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while i < len / 2
+        invariant
+            0 <= i <= len / 2,
+            forall|k: int| 0 <= k < i ==> qs@[k] == qs@[len - 1 - k],
+        decreases len / 2 - i,
+    {
+        if qs[i] != qs[len - 1 - i] {
+            return false;
+        }
+        i += 1;
+    }
+    
+    true
+}
+
+fn will_it_fly(qs: &Vec<u32>, w: u32) -> (ret: bool)
+    // post-conditions-start
+    ensures
+        ret <==> qs@ =~= qs@.reverse() && spec_sum(qs@) <= w,
+    // post-conditions-end
+{
+    palindrome(qs) && sum_lesser_than_limit(qs, w)
+}
+
+}
+fn main() {}

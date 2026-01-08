@@ -1,74 +1,46 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+// </vc-preamble>
 
-// Precondition: n >= 2  
-spec fn is_prime_precond(n: nat) -> bool {
-    n >= 2
-}
+// <vc-helpers>
 
-// Main primality testing function
-fn is_prime(n: u32) -> (result: bool)
-    requires 
-        is_prime_precond(n as nat),
-        n <= 0xFFFF, // Prevent overflow
-{
-    return false;  // TODO: Remove this line and implement the function body
-}
+// </vc-helpers>
 
-// Helper function that performs the actual checking
-fn is_prime_check(n: u32, i: u32, fuel: u32) -> (result: bool)
-    requires 
-        n >= 2,
-        n <= 0xFFFF,
-        i >= 2,  
-        fuel <= n,
-    decreases fuel,
-{
-    return false;  // TODO: Remove this line and implement the function body
-}
-
-// Helper specification: no divisors in range [2, up_to]
-spec fn no_divisors_in_range(n: nat, up_to: nat) -> bool
-    decreases up_to
-{
-    if up_to < 2 {
-        true
-    } else {
-        (n % up_to != 0) && no_divisors_in_range(n, (up_to - 1) as nat)
-    }
-}
-
-// Helper specification: has divisor in range [2, up_to]  
-spec fn has_divisor_in_range(n: nat, up_to: nat) -> bool
-    decreases up_to
-{
-    if up_to < 2 {
-        false
-    } else {
-        (n % up_to == 0) || has_divisor_in_range(n, (up_to - 1) as nat)
-    }
-}
-
-// Postcondition: result is true iff n has no divisors in range [2, n-1]
-spec fn is_prime_postcond(n: nat, result: bool) -> bool {
-    let range_end = if n >= 2 { (n - 1) as nat } else { 1nat };
-    (result ==> no_divisors_in_range(n, range_end)) &&
-    (!result ==> has_divisor_in_range(n, range_end))
-}
-
-// Theorem statement (proof omitted, corresponding to the sorry in Lean)
-proof fn is_prime_spec_satisfied(n: nat, result: bool)
-    requires 
-        is_prime_precond(n),
+// <vc-spec>
+fn argmax(a: Vec<i8>) -> (result: usize)
+    requires a.len() > 0,
     ensures 
-        is_prime_postcond(n, result) ==> is_prime_postcond(n, result),
+        result < a.len(),
+        forall|j: int| 0 <= j < a@.len() ==> a@[j] <= a@[result as int],
+        forall|j: int| 0 <= j < a@.len() && a@[j] == a@[result as int] ==> result <= j as usize,
+// </vc-spec>
+// <vc-code>
 {
-    assume(false);  // TODO: Remove this line and implement the proof
-}
+    let mut argmax_idx: usize = 0;
+    let mut max_val = a[0];
+    let mut i: usize = 1;
 
-fn main() {
-    // TODO: Remove this comment and implement the function body
+    while i < a.len()
+        invariant
+            1 <= i <= a.len(),
+            0 <= argmax_idx < i,
+            max_val == a@[argmax_idx as int],
+            forall|k: int| 0 <= k < i ==> a@[k] <= max_val,
+            forall|k: int| 0 <= k < i && a@[k] == max_val ==> argmax_idx <= k as usize,
+        decreases a.len() - i
+    {
+        if a[i] > max_val {
+            max_val = a[i];
+            argmax_idx = i;
+        }
+        i = i + 1;
+    }
+    
+    argmax_idx
 }
+// </vc-code>
 
-} // verus!
+}
+fn main() {}

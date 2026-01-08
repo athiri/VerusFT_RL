@@ -1,29 +1,17 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-
-spec fn sum_to(a: &[i32], n: int) -> int
-    recommends 0 <= n <= a.len()
-    decreases n
-{
-    if n <= 0 { 0 } else { sum_to(a, n - 1) + a[n - 1] }
+    fn main_method(n: i32, k: i32) -> (k_out: i32)
+        requires 
+            n > 0,
+            k > n,
+            n <= 100,    
+            k <= 200,
+        ensures 
+            k_out >= 0,
+    {
+        k
+    }
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn array_sum(a: &[i32]) -> (result: i32)
-    ensures result == sum_to(a, a.len() as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

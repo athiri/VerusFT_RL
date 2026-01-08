@@ -1,47 +1,62 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int) -> bool {
-    100 <= n <= 999
-}
 
-spec fn valid_output(n: int, result: Seq<char>) -> bool
-    recommends valid_input(n)
+fn sub_array_at_index(main: &Vec<i32>, sub: &Vec<i32>, idx: usize) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+        0 <= idx <= (main.len() - sub.len()),
+    ensures
+        result == (main@.subrange(idx as int, (idx + sub@.len())) =~= sub@),
 {
-    result.len() == 6 && result.subrange(0, 3) == seq!['A', 'B', 'C'] && result.subrange(3, result.len() as int) == int_to_string(n)
-}
-
-spec fn int_to_string(n: int) -> Seq<char>
-    recommends n >= 0
-    decreases n
-{
-    if n == 0 {
-        seq!['0']
-    } else if n < 10 {
-        seq![('0' as u8 + n as u8) as char]
-    } else {
-        int_to_string(n / 10).add(seq![('0' as u8 + (n % 10) as u8) as char])
+    let mut i = 0;
+    while i < sub.len()
+        invariant
+            0 <= i <= sub.len(),
+            idx + i <= main.len(),
+            forall|j: int| 0 <= j < i ==> main@[idx as int + j] == sub@[j],
+    {
+        if main[idx + i] != sub[i] {
+            return false;
+        }
+        i += 1;
     }
+    
+    assert(forall|j: int| 0 <= j < sub@.len() ==> main@[idx as int + j] == sub@[j]);
+    assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+    
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8) -> (result: Vec<char>)
-    requires valid_input(n as int)
-    ensures valid_output(n as int, result@)
-// </vc-spec>
-// <vc-code>
+fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
+    requires
+        sub.len() <= main.len(),
+    ensures
+        result == (exists|k: int, l: int|
+            0 <= k <= (main.len() - sub.len()) && l == k + sub.len() && (#[trigger] (main@.subrange(
+                k,
+                l,
+            ))) =~= sub@),
 {
-    assume(false);
-    unreached()
+    let mut idx = 0;
+    while idx <= main.len() - sub.len()
+        invariant
+            0 <= idx <= main.len() - sub.len() + 1,
+            forall|k: int| 0 <= k < idx ==> main@.subrange(k, k + sub@.len()) !=~= sub@,
+    {
+        if sub_array_at_index(main, sub, idx) {
+            assert(main@.subrange(idx as int, idx as int + sub@.len()) =~= sub@);
+            return true;
+        }
+        idx += 1;
+    }
+    
+    assert(forall|k: int| 0 <= k <= main.len() - sub.len() ==> main@.subrange(k, k + sub@.len()) !=~= sub@);
+    
+    false
 }
-// </vc-code>
 
-
-}
-
-fn main() {}
+} // verus!

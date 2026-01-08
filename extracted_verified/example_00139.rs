@@ -1,33 +1,45 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {}
 verus! {
 
-spec fn valid_input(n: int) -> bool {
-    n > 0
+spec fn is_ascii_digit_spec(c: char) -> bool {
+    c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7'
+        || c == '8' || c == '9'
 }
 
-spec fn can_be_sum_of_four_positive_evens(n: int) -> bool {
-    n % 2 == 0 && n >= 8
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn is_equal_to_sum_even(n: i8) -> (result: bool)
-    requires valid_input(n as int)
-    ensures result == can_be_sum_of_four_positive_evens(n as int)
-// </vc-spec>
-// <vc-code>
+fn is_ascii_digit(c: char) -> (r: bool)
+    ensures
+        r == is_ascii_digit_spec(c),
 {
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7'
+        || c == '8' || c == '9'
 }
 
-fn main() {}
+spec fn all_digits_spec(s: Seq<char>) -> bool {
+    forall|i: nat| #![auto] i < s.len() ==> is_ascii_digit_spec(s[i as int])
+}
+
+fn all_digits(s: String) -> (result: bool)
+    requires
+        s.is_ascii(),
+    ensures
+        all_digits_spec(s@) == result,
+{
+    /* code modified by LLM (iteration 1): Use s.len() instead of s@.len() to get usize type */
+    let mut i: usize = 0;
+    while i < s.len()
+        invariant
+            0 <= i <= s@.len(),
+            forall|j: nat| #![auto] j < i ==> is_ascii_digit_spec(s@[j as int]),
+    {
+        let c = s.get_char(i);
+        if !is_ascii_digit(c) {
+            return false;
+        }
+        i += 1;
+    }
+    true
+}
+
+} // verus!

@@ -1,30 +1,16 @@
-// <vc-preamble>
 use vstd::prelude::*;
-
-verus! {
-
-spec fn below_threshold(l: Seq<int>, t: int) -> bool {
-    forall|i: int| 0 <= i < l.len() ==> l[i] < t
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn check_below_threshold(l: Vec<i8>, t: i8) -> (result: bool)
-    ensures result == below_threshold(l@.map(|_i: int, x: i8| x as int), t as int)
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    false
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
 fn main() {}
+verus!{
+//IMPL myfun
+pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
+	requires
+		N > 0,
+		old(a).len() == N,
+		old(sum).len() == 1,
+		N < 1000,
+	ensures
+		sum[0] == 5 * N,
+{
+    sum.set(0, 5 * N);
+}
+}

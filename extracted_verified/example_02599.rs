@@ -1,40 +1,56 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
-//IMPL bit_wise_xor
-fn bit_wise_xor(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+#[verifier::external_body]
+fn swap(a: &mut Vec<bool>, i: usize, j: usize)
     requires
-        arr1.len() == arr2.len(),
+        0 <= i < j < old(a).len(),
     ensures
-        result.len() == arr1.len(),
-        forall|i: int|
-            0 <= i < result.len() ==> result[i] == #[trigger] arr1[i] ^ #[trigger] arr2[i],
+        a[i as int] == old(a)[j as int],
+        a[j as int] == old(a)[i as int],
+        forall|k: int| 0 <= k < a.len() && k != i && k != j ==> a[k] == old(a)[k],
+        a.len() == old(a).len(),
+        a@.to_multiset() =~~= old(a)@.to_multiset(),
 {
-    let mut result = Vec::new();
-    let mut idx = 0;
-    
-    /* code modified by LLM (iteration 1): strengthened invariant to include arr2 bounds and use usize type for better bounds reasoning */
-    while idx < arr1.len()
-        invariant
-            idx <= arr1.len(),
-            arr1.len() == arr2.len(),
-            result.len() == idx,
-            forall|i: int| 0 <= i < idx ==> result[i] == arr1[i] ^ arr2[i],
-        decreases arr1.len() - idx,
-    {
-        /* code modified by LLM (iteration 1): added assertion to help verifier establish bounds for arr2 access */
-        assert(idx < arr1.len());
-        assert(arr1.len() == arr2.len());
-        assert(idx < arr2.len());
-        
-        result.push(arr1[idx] ^ arr2[idx]);
-        idx += 1;
-    }
-    
-    result
+    let temp = a[i];
+    a.set(i, a[j]);
+    a.set(j, temp);
 }
 
-} // verus!
+#[verifier::loop_isolation(false)]
+fn two_way_sort(a: &mut Vec<bool>)
+    requires
+        old(a).len() <= 100_000,
+    ensures
+        a.len() == old(a).len(),
+        a@.to_multiset() == old(a)@.to_multiset(),
+        forall|i: int, j: int| 0 <= i < j < a.len() ==> !a[i] || a[j],
+{
+    let mut left: usize = 0;
+    let mut right: usize = a.len();
+    
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while left < right
+        invariant
+            0 <= left <= right <= a.len(),
+            a.len() == old(a).len(),
+            a@.to_multiset() == old(a)@.to_multiset(),
+            forall|k: int| 0 <= k < left ==> !a[k],
+            forall|k: int| right <= k < a.len() ==> a[k],
+        decreases right - left,
+    {
+        if !a[left] {
+            left += 1;
+        } else if a[right - 1] {
+            right -= 1;
+        } else {
+            swap(a, left, right - 1);
+            left += 1;
+            right -= 1;
+        }
+    }
+}
+
+fn main() {}
+}

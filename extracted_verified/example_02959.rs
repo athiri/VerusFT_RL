@@ -2,48 +2,70 @@ use vstd::prelude::*;
 
 verus! {
 
-fn element_wise_division(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)
-    // pre-conditions-start
-    requires
-        arr1.len() == arr2.len(),
-        forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,
-        forall|m: int|
-            0 <= m < arr1.len() ==> (u32::MIN <= #[trigger] arr1[m] / #[trigger] arr2[m]
-                <= u32::MAX),
-    // pre-conditions-end
+spec fn is_upper_case(c: char) -> (result:bool) {
+    c >= 'A' && c <= 'Z'
+}
+// pure-end
+
+spec fn is_lower_case(c: char) -> (result:bool) {
+    c >= 'a' && c <= 'z'
+}
+// pure-end
+
+spec fn shift_plus_32_spec(c: char) -> (result:char) {
+    ((c as u8) + 32) as char
+}
+// pure-end
+
+spec fn shift_minus_32_spec(c: char) -> (result:char) {
+    ((c as u8) - 32) as char
+}
+// pure-end
+
+spec fn flip_case_spec(c: char) -> (result:char) {
+    if is_lower_case(c) {
+        shift_minus_32_spec(c)
+    } else if is_upper_case(c) {
+        shift_plus_32_spec(c)
+    } else {
+        c
+    }
+}
+// pure-end
+
+fn flip_case(str: &[char]) -> (flipped_case: Vec<char>)
     // post-conditions-start
     ensures
-        result.len() == arr1.len(),
-        forall|i: int|
-            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] / arr2[i]),
+        str@.len() == flipped_case@.len(),
+        forall|i: int| 0 <= i < str.len() ==> flipped_case[i] == flip_case_spec(#[trigger] str[i]),
     // post-conditions-end
 {
     let mut result = Vec::new();
     let mut i = 0;
     
-    /* code modified by LLM (iteration 1): fixed loop invariant bounds and added proper bounds checking */
-    while i < arr1.len()
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while i < str.len()
         invariant
-            0 <= i <= arr1.len(),
-            arr1.len() == arr2.len(),
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> result[j] == arr1[j] / arr2[j],
-            forall|k: int| 0 <= k < arr2.len() ==> arr2[k] != 0,
-        decreases arr1.len() - i,
+            i <= str.len(),
+            result@.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == flip_case_spec(str[j]),
+        decreases str.len() - i
     {
-        /* code modified by LLM (iteration 2): fixed type mismatch by casting i to int in assertions */
-        assert(i < arr1.len());
-        assert(i < arr2.len());
-        assert(arr2[i as int] != 0);
+        let c = str[i];
+        let flipped_char = if c >= 'a' && c <= 'z' {
+            ((c as u8) - 32) as char
+        } else if c >= 'A' && c <= 'Z' {
+            ((c as u8) + 32) as char
+        } else {
+            c
+        };
         
-        let division_result = arr1[i] / arr2[i];
-        result.push(division_result);
-        i = i + 1;
+        result.push(flipped_char);
+        i += 1;
     }
     
     result
 }
 
 } // verus!
-
 fn main() {}

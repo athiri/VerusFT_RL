@@ -1,62 +1,36 @@
 use vstd::prelude::*;
 
 verus! {
-    // Author of question: Snorri Agnarsson
-    // Permalink of question: https://rise4fun.com/Dafny/0HRr
 
-    // Author of solution:    Alexander Guðmundsson
-    // Permalink of solution: https://rise4fun.com/Dafny/8pxWd
-
-    // Translated from Dafny to Verus
-
-    /// SearchRecursive translated from Dafny
-    /// Searches for element x in sequence a[i..j) using recursion
-    /// Returns index of rightmost occurrence of x, or -1 if not found
-    spec fn search_recursive(a: Seq<int>, i: int, j: int, x: int) -> int
-        decreases j - i
+fn extract_rear_chars(s: &Vec<Vec<char>>) -> (result: Vec<char>)
+    // pre-conditions-start
+    requires
+        forall|i: int| 0 <= i < s.len() ==> #[trigger] s[i].len() > 0,
+    // pre-conditions-end
+    // post-conditions-start
+    ensures
+        s.len() == result.len(),
+        forall|i: int| 0 <= i < s.len() ==> result[i] == #[trigger] s[i][s[i].len() - 1],
+    // post-conditions-end
+{
+    let mut result = Vec::new();
+    let mut i = 0;
+    
+    while i < s.len()
+        invariant
+            0 <= i <= s.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j < i ==> result[j] == s[j][s[j].len() - 1],
+            forall|k: int| 0 <= k < s.len() ==> s[k].len() > 0,
     {
-        if !(0 <= i && i <= j && j <= a.len()) {
-            -1  // precondition violation
-        } else if j == i {
-            -1
-        } else if a.index(j - 1) == x {
-            j - 1
-        } else {
-            search_recursive(a, i, j - 1, x)
-        }
+        let last_char = s[i][s[i].len() - 1];
+        result.push(last_char);
+        i += 1;
     }
-
-    /// Helper function for search_loop
-    /// Implements the while loop logic recursively for spec functions
-    spec fn search_loop_helper(a: Seq<int>, i: int, j: int, x: int, t: int) -> int
-        decreases t
-    {
-        if !(0 <= i && i <= j && j <= a.len() && i <= t && t <= j) {
-            -1  // precondition violation
-        } else if t > i {
-            if a.index(t - 1) == x {
-                t - 1
-            } else {
-                search_loop_helper(a, i, j, x, t - 1)
-            }
-        } else {
-            -1
-        }
-    }
-
-    /// SearchLoop translated from Dafny
-    /// Searches for element x in sequence a[i..j) using iteration (modeled recursively)
-    /// Returns index of rightmost occurrence of x, or -1 if not found
-    spec fn search_loop(a: Seq<int>, i: int, j: int, x: int) -> int
-    {
-        if !(0 <= i && i <= j && j <= a.len()) {
-            -1  // precondition violation
-        } else if i == j {
-            -1
-        } else {
-            search_loop_helper(a, i, j, x, j)
-        }
-    }
+    
+    result
 }
+
+} // verus!
 
 fn main() {}

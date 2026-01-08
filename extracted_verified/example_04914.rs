@@ -3,47 +3,30 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn last_position(a: &[i32], elem: i32) -> (result: usize)
+fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
     requires
-        0 < a.len() < 100_000,
-        exists|i: int| 0 <= i < a.len() && a[i] == elem,
+        lists.len() > 0,
     ensures
-        0 <= result < a.len(),
-        forall|i: int| result < i < a.len() ==> a[i] != elem,
-        a[result as int] == elem,
+        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
+        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
 {
-    /* code modified by LLM (iteration 1): Added decreases clause to first while loop */
-    let mut last_idx: usize = 0;
-    let mut i: usize = 0;
+    let mut min_len = lists[0].len();
+    let mut idx = 0;
     
-    // Find any initial occurrence to establish the invariant
-    while i < a.len() && a[i] != elem
+    while idx < lists.len()
         invariant
-            0 <= i <= a.len(),
-            forall|j: int| 0 <= j < i ==> a[j] != elem,
-        decreases a.len() - i,
+            0 <= idx <= lists.len(),
+            exists|i: int| #![auto] 0 <= i < idx ==> min_len == lists[i].len(),
+            forall|i: int| #![auto] 0 <= i < idx ==> min_len <= lists[i].len(),
+            min_len == lists[0].len() || exists|i: int| #![auto] 0 <= i < idx && min_len == lists[i].len(),
     {
-        i += 1;
-    }
-    
-    last_idx = i;
-    i += 1;
-    
-    while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            0 <= last_idx < a.len(),
-            a[last_idx as int] == elem,
-            forall|j: int| last_idx < j < i ==> a[j] != elem,
-        decreases a.len() - i,
-    {
-        if a[i] == elem {
-            last_idx = i;
+        if lists[idx].len() < min_len {
+            min_len = lists[idx].len();
         }
-        i += 1;
+        idx += 1;
     }
     
-    last_idx
+    min_len
 }
 
 fn main() {}

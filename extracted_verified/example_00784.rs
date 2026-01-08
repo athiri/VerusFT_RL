@@ -1,64 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    // Specification function for min
+    spec fn min(a: int, b: int) -> int {
+        if a < b { a } else { b }
+    }
 
-spec fn is_letter(c: char) -> bool {
-    (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-}
+    // Proof function to establish properties of min
+    proof fn min_properties(a: int, b: int)
+        ensures 
+            min(a, b) <= a && min(a, b) <= b,
+            min(a, b) == a || min(a, b) == b,
+    {
+        // The properties follow from the definition
+    }
 
-spec fn no_letters(s: Seq<char>, n: nat) -> bool
-    recommends n <= s.len()
-{
-    forall|i: int| 0 <= i < n ==> !is_letter(s[i])
-}
+    // Executable method for min with concrete types
+    fn minMethod(a: i32, b: i32) -> (c: i32)
+        ensures 
+            c <= a && c <= b,
+            c == a || c == b,
+            c == min(a as int, b as int),
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
 
-spec fn toggle_case(c: char) -> char {
-    if c >= 'a' && c <= 'z' {
-        ((c as u8 - 'a' as u8 + 'A' as u8) as char)
-    } else if c >= 'A' && c <= 'Z' {
-        ((c as u8 - 'A' as u8 + 'a' as u8) as char)
-    } else {
-        c
+    // Ghost function (spec function in Verus)
+    spec fn minFunction(a: int, b: int) -> int {
+        if a < b { a } else { b }
+    }
+
+    // Proof function to establish properties of minFunction
+    proof fn minFunction_properties(a: int, b: int)
+        ensures 
+            minFunction(a, b) <= a && minFunction(a, b) <= b,
+            minFunction(a, b) == a || minFunction(a, b) == b,
+    {
+        // The properties follow from the definition
+    }
+
+    // Method to find minimum in array
+    fn minArray(a: &[i32]) -> (m: i32)
+        requires a.len() > 0
+        ensures 
+            forall|k: int| 0 <= k < a.len() ==> m <= a[k],
+            exists|k: int| 0 <= k < a.len() && m == a[k],
+    {
+    return 0;  // TODO: Remove this line and implement the function body
+    }
+
+    fn main() {
+    // TODO: Remove this comment and implement the function body
     }
 }
-
-spec fn is_reverse(s: Seq<char>, s_prime: Seq<char>) -> bool {
-    (s.len() == s_prime.len()) &&
-    (forall|si: int| 0 <= si < s.len()/2 ==> s_prime[s.len() - si - 1] == s[si])
-}
-
-fn reverse(original: Vec<char>) -> (reversed: Vec<char>)
-    ensures 
-        reversed@.len() == original@.len(),
-        forall|i: int| 0 <= i < original@.len() ==> reversed@[i] == original@[original@.len() - 1 - i]
-{
-    assume(false);
-    vec![]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: Vec<char>)
-    ensures 
-        result@.len() == s@.len(),
-        !no_letters(s@, s@.len() as nat) ==> 
-            forall|i: int| 0 <= i < s@.len() && is_letter(s@[i]) ==> 
-                result@[i] == toggle_case(s@[i]),
-        !no_letters(s@, s@.len() as nat) ==> 
-            forall|i: int| 0 <= i < s@.len() && !is_letter(s@[i]) ==> 
-                result@[i] == s@[i],
-        no_letters(s@, s@.len() as nat) ==> is_reverse(result@, s@)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
-fn main() {}

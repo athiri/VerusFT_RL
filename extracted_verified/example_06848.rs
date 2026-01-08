@@ -1,28 +1,52 @@
 use vstd::prelude::*;
-fn main() {
-    // Main function can remain empty or contain tests
-}
 
 verus! {
 
-spec fn is_even(n: u32) -> bool {
-    (n % 2) == 0
+// Precondition: both arrays must be non-empty
+spec fn has_common_element_precond(a: Seq<i32>, b: Seq<i32>) -> bool {
+    a.len() > 0 && b.len() > 0
 }
 
-fn is_product_even(arr: &Vec<u32>) -> (result: bool)
+// Postcondition: result is true iff there exist indices where elements are equal
+spec fn has_common_element_postcond(a: Seq<i32>, b: Seq<i32>, result: bool) -> bool {
+    (exists|i: int, j: int| 0 <= i < a.len() && 0 <= j < b.len() && a[i] == b[j]) <==> result
+}
+
+// Implementation function
+fn has_common_element(a: &Vec<i32>, b: &Vec<i32>) -> (result: bool)
+    requires
+        has_common_element_precond(a@, b@),
     ensures
-        result <==> (exists|k: int| 0 <= k < arr.len() && is_even(#[trigger] arr[k])),
+        has_common_element_postcond(a@, b@, result),
 {
-    for i in 0..arr.len()
+    let mut i = 0;
+    while i < a.len()
         invariant
-            forall|k: int| 0 <= k < i ==> !is_even(arr[k]),
+            0 <= i <= a.len(),
+            forall|ii: int, j: int| 0 <= ii < i && 0 <= j < b@.len() ==> a@[ii] != b@[j],
+        /* code modified by LLM (iteration 1): added decreases clause for outer loop */
+        decreases a.len() - i
     {
-        /* code modified by LLM (iteration 1): replaced spec function call with exec implementation */
-        if arr[i] % 2 == 0 {
-            return true;
+        let mut j = 0;
+        while j < b.len()
+            invariant
+                0 <= i < a.len(),
+                0 <= j <= b.len(),
+                forall|jj: int| 0 <= jj < j ==> a@[i as int] != b@[jj],
+                forall|ii: int, jj: int| 0 <= ii < i && 0 <= jj < b@.len() ==> a@[ii] != b@[jj],
+            /* code modified by LLM (iteration 1): added decreases clause for inner loop */
+            decreases b.len() - j
+        {
+            if a[i] == b[j] {
+                return true;
+            }
+            j += 1;
         }
+        i += 1;
     }
     false
 }
 
-} // verus!
+}
+
+fn main() {}

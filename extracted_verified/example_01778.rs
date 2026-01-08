@@ -1,43 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(n: int, k: int, l: Seq<int>) -> bool {
-    n >= 1 && k >= 1 && l.len() == n && k <= n * (n + 1) / 2
+
+// ASCII --> space=32, comma=44 , dot=46 , colon=58
+spec fn is_space_comma_dot_spec(c: u8) -> bool {
+    (c == 32) || (c == 44) || (c == 46)
 }
 
-spec fn total_identifiers_after_robot(i: int) -> int 
-    recommends i >= 0
+fn replace_with_colon(str1: &[u8]) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|k: int|
+            0 <= k < result.len() ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+                58  // ASCII -> colon=58
+            } else {
+                str1[k]
+            }),
 {
-    i * (i + 1) / 2
+    let mut result: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    /* code modified by LLM (iteration 1): added decreases clause */
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            result@.len() == index,
+            forall|k: int|
+                0 <= k < index ==> #[trigger] result[k] == (if is_space_comma_dot_spec(str1[k]) {
+                    58  //ASCII -> colon=58
+                } else {
+                    str1[k]
+                }),
+        decreases str1.len() - index
+    {
+        if ((str1[index] == 32) || (str1[index] == 44) || (str1[index] == 46)) {
+            result.push(58);  //ASCII -> colon=58
+        } else {
+            result.push(str1[index]);
+        }
+        index += 1;
+    }
+    result
 }
 
-spec fn correct_result(n: int, k: int, l: Seq<int>, result: int) -> bool
-    recommends valid_input(n, k, l)
-{
-    exists|i: int| #[trigger] total_identifiers_after_robot(i) > 0 &&
-      1 <= i <= n && 
-      total_identifiers_after_robot(i - 1) < k <= total_identifiers_after_robot(i) &&
-      result == l[k - total_identifiers_after_robot(i - 1) - 1]
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(n: i8, k: i8, l: Vec<i8>) -> (result: i8)
-    requires valid_input(n as int, k as int, l@.map(|i: int, x: i8| x as int))
-    ensures correct_result(n as int, k as int, l@.map(|i: int, x: i8| x as int), result as int)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

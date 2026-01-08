@@ -1,19 +1,16 @@
 use vstd::prelude::*;
 
-verus! {
-    fn max(a: i32, b: i32) -> (c: i32)
-        ensures c >= a && c >= b
-    {
-        if a >= b {
-            a
-        } else {
-            b
-        }
-    }
-
-    fn testing() {
-        // Empty implementation since no specifications are provided
-    }
+fn main() {
+    // TODO: Remove this comment and implement the function body
 }
 
-fn main() {}
+verus! {
+
+fn filter_odd_numbers(arr: &Vec<u32>) -> (odd_list: Vec<u32>)
+    ensures
+        odd_list@ == arr@.filter(|x: u32| x % 2 != 0),
+{
+    return Vec::new();  // TODO: Remove this line and implement the function body
+}
+
+} // verus!

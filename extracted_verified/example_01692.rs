@@ -1,97 +1,62 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+    // Simple test or empty main
+}
 
 verus! {
 
-spec fn count_newlines(s: Seq<char>, idx: int) -> int
-    decreases s.len() - idx
+spec fn is_upper_case(c: u8) -> bool {
+    c >= 65 && c <= 90
+}
+
+spec fn shift32_spec(c: u8) -> u8 {
+    (c + 32) as u8
+}
+
+fn to_lowercase(str1: &[u8]) -> (result: Vec<u8>)
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == (if is_upper_case(#[trigger] str1[i]) {
+                shift32_spec(str1[i])
+            } else {
+                str1[i]
+            }),
 {
-    if idx >= s.len() {
-        0
-    } else if s[idx] == '\n' {
-        1 + count_newlines(s, idx + 1)
-    } else {
-        count_newlines(s, idx + 1)
+    let mut lower_case: Vec<u8> = Vec::with_capacity(str1.len());
+    let mut index = 0;
+    while index < str1.len()
+        invariant
+            0 <= index <= str1.len(),
+            lower_case.len() == index,
+            forall|i: int|
+                0 <= i < index ==> lower_case[i] == (if is_upper_case(#[trigger] str1[i]) {
+                    shift32_spec(str1[i])
+                } else {
+                    str1[i]
+                }),
+    {
+        if (str1[index] >= 65 && str1[index] <= 90) {
+            lower_case.push((str1[index] + 32) as u8);
+
+        } else {
+            lower_case.push(str1[index]);
+        }
+        assert(lower_case[index as int] == (if is_upper_case(str1[index as int]) {
+            shift32_spec(str1[index as int])
+        } else {
+            str1[index as int]
+        }));
+        index += 1;
     }
+    assert(forall|i: int|
+        0 <= i < str1.len() ==> lower_case[i] == (if is_upper_case(#[trigger] str1[i]) {
+            shift32_spec(str1[i])
+        } else {
+            str1[i]
+        }));
+    lower_case
 }
 
-spec fn valid_input_string(s: Seq<char>) -> bool {
-    s.len() >= 7 &&
-    contains_four_lines(s) &&
-    all_lines_have_four_valid_integers(s)
-}
-
-spec fn contains_four_lines(s: Seq<char>) -> bool {
-    count_newlines(s, 0) >= 3
-}
-
-spec fn all_lines_have_four_valid_integers(s: Seq<char>) -> bool {
-    forall|i: int| 0 <= i < s.len() ==> (s[i] == '0' || s[i] == '1' || s[i] == ' ' || s[i] == '\n')
-}
-
-spec fn parse_input(s: Seq<char>, input_lines: Seq<Seq<int>>) -> bool {
-    input_lines.len() == 4 &&
-    (forall|i: int| 0 <= i < 4 ==> #[trigger] input_lines[i].len() == 4) &&
-    (forall|i: int, j: int| 0 <= i < 4 && 0 <= j < 4 ==> 
-        (#[trigger] input_lines[i][j] >= 0 && #[trigger] input_lines[i][j] <= 1)) &&
-    string_contains_four_lines_of_four_integers(s, input_lines)
-}
-
-spec fn string_contains_four_lines_of_four_integers(s: Seq<char>, input_lines: Seq<Seq<int>>) -> bool {
-    input_lines.len() == 4 &&
-    (forall|i: int| 0 <= i < 4 ==> #[trigger] input_lines[i].len() == 4) &&
-    valid_input_string(s)
-}
-
-spec fn accident_possible(lanes: Seq<Seq<int>>) -> bool
-    recommends 
-        lanes.len() == 4,
-        forall|i: int| 0 <= i < 4 ==> #[trigger] lanes[i].len() == 4,
-        forall|i: int, j: int| 0 <= i < 4 && 0 <= j < 4 ==> 
-            (#[trigger] lanes[i][j] == 0 || #[trigger] lanes[i][j] == 1)
-{
-    exists|i: int| 0 <= i < 4 && accident_at_lane(i, lanes)
-}
-
-spec fn accident_at_lane(i: int, lanes: Seq<Seq<int>>) -> bool
-    recommends 
-        0 <= i < 4,
-        lanes.len() == 4,
-        forall|j: int| 0 <= j < 4 ==> #[trigger] lanes[j].len() == 4
-{
-    (lanes[i][3] == 1 && (lanes[i][0] == 1 || lanes[i][1] == 1 || lanes[i][2] == 1)) ||
-    (lanes[i][0] == 1 && lanes[(i + 3) % 4][3] == 1) ||
-    (lanes[i][1] == 1 && lanes[(i + 2) % 4][3] == 1) ||
-    (lanes[i][2] == 1 && lanes[(i + 1) % 4][3] == 1)
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: Vec<char>) -> (result: Vec<char>)
-    requires 
-        s.len() > 0,
-        forall|i: int| 0 <= i < s.len() ==> (#[trigger] s@[i] as int >= 0 && #[trigger] s@[i] as int <= 127),
-        valid_input_string(s@)
-    ensures 
-        result@ == "YES\n"@ || result@ == "NO\n"@,
-        exists|input_lines: Seq<Seq<int>>| 
-            parse_input(s@, input_lines) && 
-            (result@ == "YES\n"@ <==> accident_possible(input_lines)),
-        result.len() >= 3
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

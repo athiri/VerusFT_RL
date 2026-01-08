@@ -1,39 +1,44 @@
-// <vc-preamble>
 use vstd::prelude::*;
+
+fn main() {
+}
 
 verus! {
 
-spec fn number_to_name(n: int) -> &'static str
+//IMPL is_smaller
+fn is_smaller(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
+    requires
+        arr1.len() == arr2.len(),
+    ensures
+        result == (forall|i: int| 0 <= i < arr1.len() ==> arr1[i] > arr2[i]),
 {
-    if n == 1 { "One" }
-    else if n == 2 { "Two" }
-    else if n == 3 { "Three" }
-    else if n == 4 { "Four" }
-    else if n == 5 { "Five" }
-    else if n == 6 { "Six" }
-    else if n == 7 { "Seven" }
-    else if n == 8 { "Eight" }
-    else { "Nine" }
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn reverse(s: Vec<i8>) -> (rev: Vec<i8>)
-    ensures 
-        rev.len() == s.len(),
-        forall|k: int| 0 <= k < s.len() ==> rev[k] as int == s@[s.len() - 1 - k] as int
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 2): Fixed type conversion from usize to int for array indexing */
+    while idx < arr1.len()
+        invariant
+            0 <= idx <= arr1.len(),
+            arr1.len() == arr2.len(),
+            forall|i: int| 0 <= i < idx ==> arr1[i as int] > arr2[i as int],
+        decreases arr1.len() - idx,
+    {
+        /* code modified by LLM (iteration 2): Fixed type conversion and assertions */
+        assert(idx < arr1.len());
+        assert(arr1.len() == arr2.len());
+        assert(idx < arr2.len());
+        
+        if arr1[idx] <= arr2[idx] {
+            /* code modified by LLM (iteration 2): Fixed assertion with proper type conversion */
+            assert(!(arr1[idx as int] > arr2[idx as int]));
+            assert(exists|i: int| 0 <= i < arr1.len() && !(arr1[i] > arr2[i]));
+            return false;
+        }
+        idx += 1;
+    }
+    
+    /* code modified by LLM (iteration 2): Fixed assertion with proper type conversion */
+    assert(forall|i: int| 0 <= i < arr1.len() ==> arr1[i] > arr2[i]);
+    true
 }
 
-fn main() {}
+} // verus!

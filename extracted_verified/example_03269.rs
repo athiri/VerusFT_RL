@@ -1,24 +1,18 @@
 use vstd::prelude::*;
 
 verus! {
-    fn append(a: &[int], b: int) -> (c: Vec<int>)
-        requires a.len() < usize::MAX
-        ensures c@ == a@ + seq![b]
+    fn update_elements(a: &mut Vec<i32>)
+        requires 
+            old(a).len() >= 8,
+            old(a)[4] + 3 <= i32::MAX,
+        ensures
+            old(a)[4] + 3 == a[4],
+            a[7] == 516,
+            forall|i: int| 0 <= i < a.len() && i != 7 && i != 4 ==> a[i] == old(a)[i],
     {
-        let mut result = Vec::new();
-        
-        // Copy all elements from a
-        for i in 0..a.len()
-            invariant result@ == a@.subrange(0, i as int)
-        {
-            result.push(a[i]);
-        }
-        
-        // Add b at the end
-        result.push(b);
-        
-        result
+        a[4] = a[4] + 3;
+        a[7] = 516;
     }
-}
 
-fn main() {}
+    fn main() {}
+}

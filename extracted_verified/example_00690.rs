@@ -1,38 +1,48 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn vowels() -> Set<char> {
-    set!['a', 'e', 'i', 'o', 'u']
-}
-
-spec fn filter_vowels(xs: Seq<char>) -> Seq<char>
-    decreases xs.len()
-{
-    if xs.len() == 0 {
-        seq![]
-    } else if vowels().contains(xs[xs.len() - 1]) {
-        filter_vowels(xs.subrange(0, xs.len() - 1)).add(seq![xs[xs.len() - 1]])
+spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
+    /* code modified by LLM (iteration 1): changed numeric comparison 32 to char comparison ' ' */
+    if str1[i] == ' ' {
+        ch
     } else {
-        filter_vowels(xs.subrange(0, xs.len() - 1))
+        str1[i]
     }
 }
-// </vc-preamble>
+// pure-end
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn filter_vowels_array(xs: &[char]) -> (ys: Vec<char>)
-    ensures filter_vowels(xs@) == ys@
-// </vc-spec>
-// <vc-code>
+fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
+    // post-conditions-start
+    ensures
+        str1@.len() == result@.len(),
+        forall|i: int|
+            0 <= i < str1.len() ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+    // post-conditions-end
 {
-    assume(false);
-    unreached()
+    let mut result = Vec::new();
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 2): added decreases clause for loop termination */
+    while idx < str1.len()
+        invariant
+            0 <= idx <= str1.len(),
+            result@.len() == idx,
+            forall|i: int| 0 <= i < idx ==> result[i] == inner_expr_replace_blanks_with_chars(str1, ch, i),
+        decreases str1.len() - idx,
+    {
+        /* code modified by LLM (iteration 1): changed numeric comparison 32 to char comparison ' ' */
+        if str1[idx] == ' ' {
+            result.push(ch);
+        } else {
+            result.push(str1[idx]);
+        }
+        idx += 1;
+    }
+    
+    result
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

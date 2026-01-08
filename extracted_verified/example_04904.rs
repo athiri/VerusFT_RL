@@ -3,26 +3,30 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn is_non_prime(n: u32) -> (result: bool)
+fn smallest_list_length(lists: Vec<Vec<i32>>) -> (result: usize)
     requires
-        n >= 2,
+        lists.len() > 0,
     ensures
-        result == exists|k: int| 2 <= k < n && #[trigger] (n as int % k) == 0,
+        exists|i: int| #![auto] 0 <= i < lists.len() && result == lists[i].len(),
+        forall|i: int| #![auto] 0 <= i < lists.len() ==> result <= lists[i].len(),
 {
-    let mut i: u32 = 2;
-    while i < n
+    let mut min_len = lists[0].len();
+    let mut idx = 0;
+    
+    while idx < lists.len()
         invariant
-            2 <= i <= n,
-            forall|k: int| 2 <= k < i ==> #[trigger] (n as int % k) != 0,
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases n - i
+            0 <= idx <= lists.len(),
+            exists|i: int| #![auto] 0 <= i < idx ==> min_len == lists[i].len(),
+            forall|i: int| #![auto] 0 <= i < idx ==> min_len <= lists[i].len(),
+            min_len == lists[0].len() || exists|i: int| #![auto] 0 <= i < idx && min_len == lists[i].len(),
     {
-        if n % i == 0 {
-            return true;
+        if lists[idx].len() < min_len {
+            min_len = lists[idx].len();
         }
-        i = i + 1;
+        idx += 1;
     }
-    false
+    
+    min_len
 }
 
 fn main() {}

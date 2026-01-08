@@ -1,15 +1,22 @@
-use vstd::prelude::*;
+// Copyright 2018-2024 VMware, Inc., Microsoft Inc., Carnegie Mellon University, ETH Zurich, University of Washington
+// SPDX-License-Identifier: BSD-2-Clause
 
-verus! {
+#![allow(unused_imports)]
+use builtin::*;
 
-fn add(x: i32, y: i32) -> (res: Option<i32>)
-    // post-conditions-start
-    ensures
-        res.is_some() ==> res.unwrap() == x + y,
-    // post-conditions-end
-{
-    return None;  // TODO: Remove this line and implement the function body
+use builtin_macros::*;
+use state_machines_macros::state_machine;
+use vstd::{map::*, seq::*, bytes::*};
+
+use crate::spec::MapSpec_t::{ID};
+
+verus!{
+
+    pub trait AppIODriver {
+        spec fn hello() -> bool;
+        
+        // must be able to translate some arbitrary system label into 
+    }
+
+
 }
-
-}
-fn main() {}

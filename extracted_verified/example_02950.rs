@@ -1,21 +1,35 @@
 use vstd::prelude::*;
 
-verus!{
-fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
-    // pre-conditions-start
-    requires
-        N > 0,
-        old(a).len() == N,
-        old(sum).len() == 1,
-        N < 1000,
-    // pre-conditions-end
+verus! {
+
+fn is_palindrome(text: &str) -> (result: bool)
     // post-conditions-start
     ensures
-        sum[0] == 4 * N,
+        result == forall|i: int|
+            0 <= i < text@.len() ==> #[trigger] text@[i] == text@[text@.len() - 1 - i],
     // post-conditions-end
 {
-    sum.set(0, 4 * N);
-}
+    let len = text.unicode_len();
+    
+    if len == 0 {
+        return true;
+    }
+    
+    let mut j = 0;
+    
+    while j < len / 2
+        invariant
+            0 <= j <= len / 2,
+            forall|k: int| 0 <= k < j ==> #[trigger] text@[k] == text@[len - 1 - k],
+    {
+        if text.get_char(j) != text.get_char(len - 1 - j) {
+            return false;
+        }
+        j += 1;
+    }
+    
+    true
 }
 
+}
 fn main() {}

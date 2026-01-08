@@ -2,23 +2,33 @@ use vstd::prelude::*;
 
 verus! {
 
-fn reverse(a: &[i32]) -> (result: Vec<i32>)
+#[verifier::external_body]
+fn add(a: i32, b: i32) -> (result: i32)
     ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
+        result == a + b,
+{
+    a + b
+}
+
+#[verifier::loop_isolation(false)]
+fn cubes(len: usize) -> (result: Vec<i32>) by (nonlinear_arith)
+    ensures
+        result.len() == len,
+        forall|i: int| 0 <= i && i < len ==> result[i] == i * i * i
 {
     let mut result = Vec::new();
-    let mut i = a.len();
+    let mut idx = 0;
     
-    while i > 0
+    /* code modified by LLM (iteration 1): added decreases clause for loop termination */
+    while idx < len
         invariant
-            result.len() == a.len() - i,
-            forall|j: int| 0 <= j && j < result.len() ==> result[j] == a[a.len() - 1 - j],
-        /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
-        decreases i
+            result.len() == idx,
+            forall|i: int| 0 <= i && i < idx ==> result[i] == i * i * i
+        decreases len - idx
     {
-        i = i - 1;
-        result.push(a[i]);
+        let cube = (idx as i32) * (idx as i32) * (idx as i32);
+        result.push(cube);
+        idx += 1;
     }
     
     result

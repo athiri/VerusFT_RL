@@ -1,24 +1,29 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn reverse(a: &[i32]) -> (result: Vec<i32>)
+fn is_even_at_even_index(arr: &Vec<usize>) -> (result: bool)
     ensures
-        result.len() == a.len(),
-        forall|i: int| 0 <= i && i < result.len() ==> result[i] == a[a.len() - 1 - i],
-// </vc-spec>
-// <vc-code>
+        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
 {
-    assume(false);
-    unreached()
+    let mut idx = 0;
+    
+    /* code modified by LLM (iteration 1): added decreases clause to prove loop termination */
+    while idx < arr.len()
+        invariant
+            0 <= idx <= arr.len(),
+            forall|i: int| 0 <= i < idx ==> ((i % 2) == (arr[i] % 2)),
+        decreases arr.len() - idx,
+    {
+        if (idx % 2) != (arr[idx] % 2) {
+            return false;
+        }
+        idx += 1;
+    }
+    
+    true
 }
-// </vc-code>
 
-}
+} // verus!
+
 fn main() {}

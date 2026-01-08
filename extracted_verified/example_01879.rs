@@ -1,73 +1,57 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
+fn main() {
+}
+
 verus! {
-spec fn valid_input(s: Seq<char>) -> bool {
-    s.len() >= 2 &&
-    (s.last() == '\n' || (s.len() >= 2 && s.subrange(s.len() - 2, s.len() as int) == seq!['\n']))
+
+spec fn is_digit(c: u8) -> bool {
+    (c >= 48 && c <= 57)
 }
 
-spec fn valid_output(result: Seq<char>) -> bool {
-    result.len() >= 0 &&
-    (result.len() == 0 || result.last() == '\n')
-}
-
-spec fn transform_string(input_str: Seq<char>, n: int, k: int) -> Seq<char>
-    recommends 1 <= k <= n && input_str.len() == n
+spec fn count_digits_recursively(seq: Seq<u8>) -> int
+    decreases seq.len(),
 {
-    let i = k - 1;
-    if (n - i) % 2 == 0 {
-        input_str.subrange(i, n as int) + input_str.subrange(0, i)
+    if seq.len() == 0 {
+        0
     } else {
-        input_str.subrange(i, n as int) + reverse_string(input_str.subrange(0, i))
+        count_digits_recursively(seq.drop_last()) + if is_digit(seq.last()) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
 }
 
-spec fn is_lexicographically_optimal(result_str: Seq<char>, input_str: Seq<char>, n: int, k: int) -> bool
-    recommends input_str.len() == n
+fn count_digits(text: &[u8]) -> (count: usize)
+    ensures
+        0 <= count <= text.len(),
+        count_digits_recursively(text@) == count,
 {
-    1 <= k <= n &&
-    result_str == transform_string(input_str, n, k) &&
-    true /* Simplified to avoid trigger issues */
+    let mut count = 0;
+    let mut i = 0;
+    
+    while i < text.len()
+        invariant
+            0 <= i <= text.len(),
+            0 <= count <= i,
+            count_digits_recursively(text@.subrange(0, i as int)) == count,
+    {
+        if is_digit(text[i]) {
+            count = count + 1;
+        }
+        i = i + 1;
+        
+        proof {
+            assert(text@.subrange(0, i as int) == text@.subrange(0, (i - 1) as int).push(text@[i as int - 1]));
+        }
+    }
+    
+    proof {
+        assert(text@.subrange(0, text.len() as int) == text@);
+    }
+    
+    count
 }
 
-spec fn split_lines(s: Seq<char>) -> Seq<Seq<char>> {
-    seq![] /* TODO: Define line splitting logic */
-}
-
-spec fn parse_int(line: Seq<char>) -> int {
-    0 /* TODO: Define integer parsing logic */
-}
-
-spec fn is_lowercase_letter(c: char) -> bool {
-    'a' <= c && c <= 'z'
-}
-
-spec fn reverse_string(s: Seq<char>) -> Seq<char> {
-    s /* TODO: Define string reversal logic */
-}
-
-spec fn lexicographically_le(s1: Seq<char>, s2: Seq<char>) -> bool {
-    true /* TODO: Define lexicographic comparison */
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn solve(s: &str) -> (result: String)
-  requires valid_input(s@)
-  ensures valid_output(result@)
-// </vc-spec>
-// <vc-code>
-{
-  assume(false);
-  unreached()
-}
-// </vc-code>
-
-
-}
-
-fn main() {}
+} // verus!

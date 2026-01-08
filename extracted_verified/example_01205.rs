@@ -1,72 +1,55 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
+    spec fn Average(a: int, b: int) -> int {
+        (a + b) / 2
+    }
 
-/* Datetime unit enumeration representing the time scales used in datetime operations */
-#[derive(PartialEq, Eq, Structural)]
-pub enum DatetimeUnit {
-    /* Years */
-    Y,
-    /* Months */
-    M,
-    /* Weeks */
-    W,
-    /* Days */
-    D,
-    /* Hours */
-    H,
-    /* Minutes */
-    Min,
-    /* Seconds */
-    S,
-    /* Milliseconds */
-    Ms,
-    /* Microseconds */
-    Us,
-    /* Nanoseconds */
-    Ns,
+    proof fn Triple(x: int) -> (r: int)
+        ensures r == 3 * x
+    {
+        let r = Average(2 * x, 4 * x);
+        assert((2 * x + 4 * x) / 2 == 6 * x / 2);
+        assert(6 * x / 2 == 3 * x);
+        r
+    }
+
+    fn Triple1(x: i32) -> (r: i32)
+        requires -715827882 <= x <= 715827882  // Prevent overflow
+        ensures r == 3 * x
+    {
+        3 * x
+    }
+
+    proof fn DoubleQuadruple(x: int) -> (res: (int, int))
+        ensures res.0 == 2 * x && res.1 == 4 * x
+    {
+        let a = 2 * x;
+        let b = 2 * a;
+        (a, b)
+    }
+
+    fn F() -> (r: i32)
+        ensures r == 29
+    {
+        29
+    }
+
+    fn M() -> (r: i32)
+        ensures r == 29
+    {
+        29
+    }
+
+    fn Caller() {
+    }
+
+    fn MyMethod(x: i32) -> (y: i32)
+        requires 10 <= x <= 1000  // Prevent overflow and ensure postcondition
+        ensures 25 <= y
+    {
+        x + 15
+    }
 }
 
-/* Structure containing datetime type information including unit and count */
-#[derive(PartialEq, Eq, Structural)]
-pub struct DatetimeTypeInfo {
-    /* The time unit (seconds, minutes, hours, etc.) */
-    pub unit: DatetimeUnit,
-    /* The count of base units in a step (e.g., 25 for "25 seconds") */
-    pub count: nat,
-}
-
-/* Datetime dtype representing either datetime64 or timedelta64 types */
-#[derive(PartialEq, Eq, Structural)]
-pub enum DatetimeDtype {
-    /* A datetime64 type with specified unit and count */
-    Datetime64(DatetimeTypeInfo),
-    /* A timedelta64 type with specified unit and count */
-    Timedelta64(DatetimeTypeInfo),
-}
-// </vc-preamble>
-
-// <vc-helpers>
-// </vc-helpers>
-
-// <vc-spec>
-fn datetime_data(dtype: DatetimeDtype) -> (result: (DatetimeUnit, u8))
-    ensures
-        match dtype {
-            DatetimeDtype::Datetime64(info) => result == (info.unit, info.count as u8) && info.count > 0,
-            DatetimeDtype::Timedelta64(info) => result == (info.unit, info.count as u8) && info.count > 0,
-        }
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
-}
-// </vc-code>
-
-
-}
 fn main() {}

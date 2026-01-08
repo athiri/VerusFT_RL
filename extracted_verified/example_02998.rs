@@ -1,50 +1,55 @@
 use vstd::prelude::*;
 
 verus! {
+spec fn fibo(n: int) -> (result:nat)
+    decreases n
+{
+    if n <= 0 { 0 } else if n == 1 { 1 }
+    else { fibo(n - 2) + fibo(n - 1) }
+}
+// pure-end
 
-fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
+spec fn fibo_fits_i32(n: int) -> (result:bool) {
+    fibo(n) < 0x8000_0000
+}
+// pure-end
+
+proof fn fibo_is_monotonic(i: int, j: int)
+    // pre-conditions-start
+    requires
+        i <= j,
+    // pre-conditions-end
     // post-conditions-start
     ensures
-        result == (exists|i: int| 0 <= i < arr.len() && (arr[i] == key)),
+        fibo(i) <= fibo(j),
+    decreases j - i
     // post-conditions-end
 {
-    for i in 0..arr.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> arr[j] != key,
-    {
-        if arr[i] == key {
-            return true;
-        }
+    // impl-start
+    if i <= 0 {
     }
-    false
+    else if  i < j {
+        fibo_is_monotonic(i, j-1);
+        assert(fibo(j) == fibo(j-1)+fibo(j-2));
+    }
+    // impl-end
 }
+// pure-end
 
-fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
+fn fibonacci(n: usize) -> (ret: Vec<i32>)
+    // pre-conditions-start
+    requires
+        fibo_fits_i32(n as int),
+        n >= 2,
+    // pre-conditions-end
     // post-conditions-start
     ensures
-        forall|i: int|
-            0 <= i < shared.len() ==> (list1@.contains(#[trigger] shared[i]) && list2@.contains(
-                #[trigger] shared[i],
-            )),
-        forall|i: int, j: int| 0 <= i < j < shared.len() ==> shared[i] != shared[j],
+        forall |i: int| 2 <= i < n ==> #[trigger] ret@[i] ==  fibo(i), 
+        ret@.len() == n,
     // post-conditions-end
 {
-    let mut result = Vec::new();
-    
-    for i in 0..list1.len()
-        invariant
-            forall|k: int| 0 <= k < result.len() ==> (list1@.contains(result[k]) && list2@.contains(result[k])),
-            forall|k1: int, k2: int| 0 <= k1 < k2 < result.len() ==> result[k1] != result[k2],
-    {
-        let elem = list1[i];
-        if contains(list2, elem) && !contains(&result, elem) {
-            result.push(elem);
-        }
-    }
-    
-    result
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
-
-} // verus!
+}
 
 fn main() {}

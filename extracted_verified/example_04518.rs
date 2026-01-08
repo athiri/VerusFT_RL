@@ -1,22 +1,22 @@
 use vstd::prelude::*;
 
-fn main() {}
+fn main() {
+    // TODO: Remove this comment and implement the function body
+}
 
 verus! {
 
-fn is_even_at_even_index(arr: &Vec<usize>) -> (result: bool)
+fn element_wise_subtract(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
+    requires
+        arr1.len() == arr2.len(),
+        forall|i: int|
+            (0 <= i < arr1.len()) ==> (i32::MIN <= #[trigger] (arr1[i] - arr2[i]) <= i32::MAX),
     ensures
-        result == forall|i: int| 0 <= i < arr.len() ==> ((i % 2) == (arr[i] % 2)),
+        result.len() == arr1.len(),
+        forall|i: int|
+            0 <= i < result.len() ==> #[trigger] result[i] == #[trigger] (arr1[i] - arr2[i]),
 {
-    for i in 0..arr.len()
-        invariant
-            forall|j: int| 0 <= j < i ==> ((j % 2) == (arr[j] % 2)),
-    {
-        if (i % 2) != (arr[i] % 2) {
-            return false;
-        }
-    }
-    true
+    return Vec::new();  // TODO: Remove this line and implement the function body
 }
 
 } // verus!

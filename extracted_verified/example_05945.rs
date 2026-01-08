@@ -2,46 +2,52 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn triple_precond(x: int) -> bool {
-    true
-}
-
-spec fn triple_postcond(x: int, result: int) -> bool {
-    result / 3 == x && (result / 3) * 3 == result
-}
-
-proof fn lemma_div_mul_cancel(n: int)
-    requires n % 3 == 0
-    ensures n / 3 * 3 == n
+spec fn count_frequency_rcr(seq: Seq<char>, key: char) -> (result: int)
+    decreases seq.len(),
 {
-    // This is a fundamental property of division and multiplication
-    // When n is divisible by 3, (n / 3) * 3 == n
-}
-
-proof fn lemma_three_times_div(x: int)
-    ensures 
-        (3 * x) / 3 == x,
-        ((3 * x) / 3) * 3 == 3 * x
-{
-    // (3 * x) / 3 == x by definition of division
-    // ((3 * x) / 3) * 3 == x * 3 == 3 * x
-}
-
-fn triple(x: i32) -> (result: i32)
-    requires 
-        triple_precond(x as int),
-        -1000000 <= x <= 1000000
-    ensures triple_postcond(x as int, result as int)
-{
-    proof {
-        lemma_three_times_div(x as int);
+    if seq.len() == 0 {
+        0
+    } else {
+        count_frequency_rcr(seq.drop_last(), key) + if (seq.last() == key) {
+            1 as int
+        } else {
+            0 as int
+        }
     }
-    3 * x
+}
+// pure-end
+
+fn count_frequency(arr: &Vec<char>, key: char) -> (frequency: usize)
+    // post-conditions-start
+    ensures
+        count_frequency_rcr(arr@, key) == frequency,
+    // post-conditions-end
+{
+    return 0;  // TODO: Remove this line and implement the function body
 }
 
-fn main() {
-    let result = triple(5);
-    assert(result == 15);
+spec fn check_first_repeated_char(str1: &Vec<char>, repeated_char: Option<(usize, char)>) -> (res: bool) {
+    if let Some((idx, rp_char)) = repeated_char {
+        &&& str1@.take(idx as int) =~= str1@.take(idx as int).filter(
+            |x: char| count_frequency_rcr(str1@, x) <= 1,
+        )
+        &&& count_frequency_rcr(str1@, rp_char) > 1
+    } else {
+        forall|k: int|
+            0 <= k < str1.len() ==> count_frequency_rcr(str1@, #[trigger] str1[k]) <= 1
+    }
+}
+// pure-end
+
+fn first_repeated_char(str1: &Vec<char>) -> (repeated_char: Option<(usize, char)>)
+    // post-conditions-start
+    ensures
+        check_first_repeated_char(str1, repeated_char),
+    // post-conditions-end
+{
+    return None;  // TODO: Remove this line and implement the function body
 }
 
-}
+} // verus!
+
+fn main() {}

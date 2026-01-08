@@ -1,28 +1,24 @@
 use vstd::prelude::*;
 
-fn main() {
-    // Example usage of all_elements_equals
-    let vec1 = vec![5, 5, 5, 5];
-    let vec2 = vec![1, 2, 3, 4];
-    
-    println!("All elements in vec1 equal 5: {}", all_elements_equals(&vec1, 5));
-    println!("All elements in vec2 equal 1: {}", all_elements_equals(&vec2, 1));
-}
-
 verus! {
 
-fn all_elements_equals(arr: &Vec<i32>, element: i32) -> (result: bool)
-    ensures
-        result == (forall|i: int| 0 <= i < arr.len() ==> (arr[i] == element)),
+#[verifier::loop_isolation(false)]
+        forall|i: int| 0 <= i && i < result.len() ==> result[i] == (if a[i] == b[i] { '0' } else { '1' })
 {
-    for i in 0..arr.len()
-        invariant forall|j: int| 0 <= j < i ==> arr[j] == element
+    let mut result: Vec<char> = Vec::new();
+    let mut i = 0;
+    while i < a.len()
+        invariant
+            0 <= i && i <= a.len(),
+            result.len() == i,
+            forall|j: int| 0 <= j && j < i ==> result[j] == (if a[j] == b[j] { '0' } else { '1' })
     {
-        if arr[i] != element {
-            return false;
-        }
+        let bit = if a[i] == b[i] { '0' } else { '1' };
+        result.push(bit);
+        i += 1;
     }
-    true
+    result
 }
 
-} // verus!
+fn main() {}
+}

@@ -1,39 +1,46 @@
-#[allow(unused_imports)]
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
-//IMPL linear_search
-fn linear_search(nums: Vec<i32>, target: i32) -> (ret: i32)
-requires
-    nums@.len() < 0x8000_0000,
-ensures
-    ret < nums@.len(),
-    ret >=0 ==> nums@[ret as int] == target,
-    ret >=0 ==> forall |i: int| 0 <= i < ret as int ==> #[trigger]nums@[i]!= target,
-    ret < 0 ==> forall |i: int| 0 <= i < nums@.len() as int ==> #[trigger]nums@[i] != target,
+
+#[verifier::loop_isolation(false)]
+fn last_position(a: &[i32], elem: i32) -> (result: usize)
+    requires
+        a.len() > 0,
+        exists|k: int| 0 <= k < a.len() && a[k] == elem,
+    ensures
+        0 <= result < a.len(),
+        forall|i: int| result < i < a.len() ==> a[i] != elem,
+        a[result as int] == elem,
 {
-    let mut i: usize = 0;
-    while i < nums.len()
+    let mut i = a.len() - 1;
+    
+    loop
         invariant
-            i <= nums@.len(),
-            forall |j: int| 0 <= j < i as int ==> #[trigger]nums@[j] != target,
-            /* code modified by LLM (iteration 2): added invariant to preserve precondition through loop iterations */
-            nums@.len() < 0x8000_0000,
-        decreases nums@.len() - i
+            0 <= i < a.len(),
+            forall|j: int| i < j < a.len() ==> a[j] != elem,
+        decreases i
     {
-        if nums[i] == target {
-            /* code modified by LLM (iteration 2): simplified assertions using loop invariant */
-            assert(i < nums@.len());
-            assert(i < 0x8000_0000);
-            return i as i32;
+        if a[i] == elem {
+            return i;
         }
-        i = i + 1;
+        if i == 0 {
+            break;
+        }
+        i -= 1;
     }
-    /* code modified by LLM (iteration 2): added assertion to prove that all elements were checked when returning -1 */
-    assert(i == nums@.len());
-    assert(forall |j: int| 0 <= j < nums@.len() as int ==> #[trigger]nums@[j] != target);
-    return -1;
+    
+    /* code modified by LLM (iteration 1): Added proof block to establish contradiction and return 0 as unreachable fallback */
+    proof {
+        // At this point, we've checked all elements and found none equal to elem
+        // But the precondition guarantees that elem exists in the array
+        // This creates a contradiction, so this code is unreachable
+        assert(forall|j: int| 0 <= j < a.len() ==> a[j] != elem);
+        assert(exists|k: int| 0 <= k < a.len() && a[k] == elem);
+        assert(false); // contradiction
+    }
+    
+    0 // This line is unreachable due to the contradiction above
 }
+
+fn main() {}
 }

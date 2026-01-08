@@ -1,48 +1,104 @@
+// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-// Precondition for lengthOfLIS  
-spec fn length_of_lis_precond(nums: Vec<i32>) -> bool {
-    true
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum DateTime64 {
+    Valid(i64),
+    Nat,
+}
+// </vc-preamble>
+
+// <vc-helpers>
+/* helper modified by LLM (iteration 2): added spec function for Nat check */
+pub open spec fn is_nat_dt(d: DateTime64) -> bool {
+    match d {
+        DateTime64::Nat => true,
+        DateTime64::Valid(_) => false,
+    }
 }
 
-// Check if a sequence is strictly increasing
-spec fn is_strictly_increasing(seq: Vec<i32>) -> bool {
-    forall |i: int, j: int| 0 <= i < j < seq.len() ==> seq[i] < seq[j]
-}
-
-// Generate all subsequences (abstracted function)
-spec fn all_subsequences(nums: Vec<i32>) -> Set<Vec<i32>>
+/* helper modified by LLM (iteration 2): lemma connecting non-Nat with existence of a Valid witness */
+pub proof fn lemma_not_nat_iff_exists_valid(d: DateTime64)
+    ensures
+        (d != DateTime64::Nat) <==> (exists|v: i64| d == DateTime64::Valid(v)),
 {
-    arbitrary()
+    match d {
+        DateTime64::Nat => {
+            assert(!(exists|v: i64| d == DateTime64::Valid(v)));
+        }
+        DateTime64::Valid(v) => {
+            assert(d != DateTime64::Nat);
+            assert(exists|v2: i64| d == DateTime64::Valid(v2)) by {
+                assert(d == DateTime64::Valid(v));
+            }
+        }
+    }
 }
+// </vc-helpers>
 
-// Postcondition for lengthOfLIS matching the original Lean specification
-spec fn length_of_lis_postcond(nums: Vec<i32>, result: usize) -> bool {
-    let all_subseq = all_subsequences(nums);
-    let increasing_subseqs = all_subseq.filter(|seq: Vec<i32>| is_strictly_increasing(seq));
-    let increasing_lens = increasing_subseqs.map(|seq: Vec<i32>| seq.len());
-    
-    increasing_lens.contains(result) && 
-    (forall |len: usize| increasing_lens.contains(len) ==> len <= result)
-}
-
-// Helper function to find maximum in array, similar to Lean's maxInArray
-fn max_in_array(arr: Vec<usize>) -> (result: usize)
+// <vc-spec>
+fn isnat(x: Vec<DateTime64>) -> (result: Vec<bool>)
+    ensures
+        result.len() == x.len(),
+        forall|i: int| 0 <= i < x.len() ==> 
+            (result@.index(i) == true <==> x@.index(i) == DateTime64::Nat),
+        forall|i: int| 0 <= i < x.len() ==> 
+            (result@.index(i) == false <==> exists|val: i64| x@.index(i) == DateTime64::Valid(val)),
+// </vc-spec>
+// <vc-code>
 {
-    return 0;  // TODO: Remove this line and implement the function body
+    /* code modified by LLM (iteration 2): strengthen loop proof to establish both equivalences for the newly appended index */
+    let mut res: Vec<bool> = Vec::new();
+    let mut i: usize = 0;
+    while i < x.len()
+        invariant
+            i <= x.len(),
+            res.len() == i,
+            forall|j: int| 0 <= j && j < i as int ==>
+                (res@.index(j) == true <==> x@.index(j) == DateTime64::Nat),
+            forall|j: int| 0 <= j && j < i as int ==>
+                (res@.index(j) == false <==> exists|val: i64| x@.index(j) == DateTime64::Valid(val)),
+        decreases x.len() - i
+    {
+        let xi = x[i];
+        let b = match xi {
+            DateTime64::Nat => true,
+            DateTime64::Valid(_) => false,
+        };
+        res.push(b);
+        proof {
+            let j: int = i as int; // index of the newly appended element
+            assert(0 <= j && j < res.len() as int);
+            assert(res@.index(j) == b);
+            assert(x@.index(j) == xi);
+            match xi {
+                DateTime64::Nat => {
+                    assert(b == true);
+                    // First invariant for j: both sides true
+                    assert(res@.index(j) == true);
+                    assert(x@.index(j) == DateTime64::Nat);
+                    // Second invariant for j: both sides false
+                    assert(!(exists|val: i64| x@.index(j) == DateTime64::Valid(val)));
+                }
+                DateTime64::Valid(v) => {
+                    assert(b == false);
+                    // First invariant for j: both sides false
+                    assert(res@.index(j) == false);
+                    assert(x@.index(j) != DateTime64::Nat);
+                    // Second invariant for j: both sides true
+                    assert(exists|val: i64| x@.index(j) == DateTime64::Valid(val)) by {
+                        assert(x@.index(j) == DateTime64::Valid(v));
+                    };
+                }
+            }
+        }
+        i = i + 1;
+    }
+    res
 }
+// </vc-code>
 
-// Main function implementation matching the original Lean algorithm
-fn length_of_lis(nums: Vec<i32>) -> (result: usize)
-    requires length_of_lis_precond(nums),
-{
-    return 0;  // TODO: Remove this line and implement the function body
 }
-
-} // verus!
-
-fn main() {
-    // TODO: Remove this comment and implement the function body
-}
+fn main() {}

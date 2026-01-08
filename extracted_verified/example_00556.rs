@@ -1,36 +1,23 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
 
-spec fn count(hi: nat, s: Seq<int>) -> int
-    recommends 0 <= hi <= s.len()
-    decreases hi
+fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
+    // post-conditions-start
+    ensures
+        result == (forall|i: int| 0 <= i < arr.len() ==> number > arr[i]),
+    // post-conditions-end
 {
-    if hi == 0 {
-        0
-    } else if s[hi-1] % 2 == 0 {
-        1 + count((hi-1) as nat, s)
-    } else {
-        count((hi-1) as nat, s)
+    for i in 0..arr.len()
+        invariant forall|j: int| 0 <= j < i ==> number > arr[j]
+    {
+        if number <= arr[i] {
+            return false;
+        }
     }
+    true
 }
-// </vc-preamble>
 
-// <vc-helpers>
-// </vc-helpers>
+} // verus!
 
-// <vc-spec>
-fn compute_count(count_index: usize, a: Seq<int>, b: &mut Vec<int>) -> (p: usize)
-    requires count_index == 0 || (a.len() == old(b).len() && 1 <= count_index <= a.len())
-    ensures p == count(count_index as nat, a)
-// </vc-spec>
-// <vc-code>
-{
-    assume(false);
-    unreached()
-}
-// </vc-code>
-
-}
 fn main() {}

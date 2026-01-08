@@ -1,30 +1,77 @@
-// <vc-preamble>
 use vstd::prelude::*;
 
 verus! {
-// </vc-preamble>
+    fn up_while_less(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
+    {
+        let mut i = 0;
+        while i < N
+            invariant 0 <= i <= N,
+        {
+            i = i + 1;
+        }
+        i
+    }
 
-// <vc-helpers>
-// </vc-helpers>
+    fn up_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == N,
+    {
+        let mut i = 0;
+        while i != N
+            invariant 0 <= i <= N,
+        {
+            i = i + 1;
+        }
+        i
+    }
 
-// <vc-spec>
-fn log1p(x: Vec<i8>) -> (result: Vec<i8>)
-    requires 
-        x.len() > 0,
-        forall|i: int| 0 <= i < x.len() ==> x[i] as int > -1,
-    ensures 
-        result.len() == x.len(),
-        forall|i: int| 0 <= i < x.len() && x[i] as int == 0 ==> result[i] as int == 0,
-// </vc-spec>
-// <vc-code>
-{
-    // impl-start
-    assume(false);
-    unreached()
-    // impl-end
+    fn down_while_not_equal(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+        let mut i = N;
+        while i != 0
+            invariant 0 <= i <= N,
+        {
+            i = i - 1;
+        }
+        i
+    }
+
+    fn down_while_greater(N: i32) -> (i: i32)
+        requires 0 <= N,
+        ensures i == 0,
+    {
+        let mut i = N;
+        while i > 0
+            invariant 0 <= i <= N,
+        {
+            i = i - 1;
+        }
+        i
+    }
+
+    fn quotient()
+    {
+        let x = 10;
+        let y = 3;
+        let q = x / y;
+        let r = x % y;
+        assert(x == q * y + r);
+        assert(0 <= r < y);
+    }
+
+    fn quotient1()
+    {
+        let x = 15;
+        let y = 4;
+        let q = x / y;
+        let r = x % y;
+        assert(x == q * y + r);
+        assert(0 <= r < y);
+    }
 }
-// </vc-code>
 
-
-}
 fn main() {}

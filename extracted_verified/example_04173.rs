@@ -1,45 +1,33 @@
+// The function is supposed to find an index of an odd number in the vector. The precondition guarantees that such an odd number exists, but the loop invariant needs to be strengthened to ensure that if we haven't returned yet, there's still an odd number in the remaining portion of the vector.
+
 use vstd::prelude::*;
+fn main() {}
 
-fn main() {
-}
-
-verus! {
-
-fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: Vec<i32>)
-    requires
-        first.len() > 0,
+verus!{
+fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
+    requires    
+        exists |q:int| 0 <= q < v.len() && v[q] % 2 == 1
     ensures
-        replaced_list@ == first@.subrange(0, first.len() - 1).add(second@),
+        odd_index < v.len(),
+        v[odd_index as int] % 2 == 1
 {
-    let mut result = Vec::new();
-    
-    // Add all elements from first except the last one
-    let mut i = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for first while loop */
-    while i < first.len() - 1
+    let mut i: usize = 0;
+    while i < v.len()
         invariant
-            0 <= i <= first.len() - 1,
-            result@ == first@.subrange(0, i as int),
-        decreases first.len() - 1 - i
+            i <= v.len(),
+            exists |q:int| i <= q < v.len() && v[q] % 2 == 1
     {
-        result.push(first[i]);
+        if v[i] % 2 == 1 {
+            return i;
+        }
         i += 1;
     }
-    
-    // Add all elements from second
-    let mut j = 0;
-    /* code modified by LLM (iteration 1): added decreases clause for second while loop */
-    while j < second.len()
-        invariant
-            0 <= j <= second.len(),
-            result@ == first@.subrange(0, first.len() - 1).add(second@.subrange(0, j as int)),
-        decreases second.len() - j
-    {
-        result.push(second[j]);
-        j += 1;
+    /* code modified by LLM (iteration 1): replaced unreachable code with proof block showing contradiction */
+    proof {
+        assert(i == v.len());
+        assert(exists |q:int| i <= q < v.len() && v[q] % 2 == 1);
+        assert(false);
     }
-    
-    result
+    0
 }
-
-} // verus!
+}
