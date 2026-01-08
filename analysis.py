@@ -280,6 +280,11 @@ def analyze_file(filepath: Path) -> FileAnalysis:
     elif not has_spec:
         is_candidate = False
         rejection_reason = "no_spec_keywords"
+    elif is_stub:
+        # CRITICAL: Files with assume(false) or unreached() are NOT suitable for SFT
+        # They trivially verify without real implementation - see lines 46-50
+        is_candidate = False
+        rejection_reason = "stub_file: contains assume(false) or unreached()"
     elif not is_allowed:
         is_candidate = False
         rejection_reason = f"external_dependencies: {external_deps}"

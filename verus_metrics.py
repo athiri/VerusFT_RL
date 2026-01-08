@@ -17,6 +17,7 @@ import json
 import re
 import hashlib
 import argparse
+import shutil
 from pathlib import Path
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional
@@ -33,10 +34,38 @@ except ImportError:
     STUB_PATTERNS = {"assume(false)", "unreached()"}
     analyze_file = None
 
-VERUS_PATH = "/Users/athiri/Desktop/verus/source/target-verus/release/verus"
+# Default Verus path - can be overridden via --verus-path or VERUS_PATH env var
+DEFAULT_VERUS_PATH = "/Users/athiri/Desktop/verus/source/target-verus/release/verus"
+VERUS_PATH = None  # Set in main() from CLI args or environment
 EXAMPLES_DIR = Path("minimized_examples")
 CACHE_FILE = Path(".verus_metrics_cache.json")
 MAX_WORKERS = os.cpu_count() or 4  # Parallel verification workers
+
+
+def get_verus_path() -> str:
+    """
+    Get Verus executable path with fallback chain:
+    1. Global VERUS_PATH (set from CLI --verus-path)
+    2. VERUS_PATH environment variable
+    3. 'verus' in PATH (via shutil.which)
+    4. Default hardcoded path
+    """
+    global VERUS_PATH
+    if VERUS_PATH:
+        return VERUS_PATH
+    
+    # Try environment variable
+    env_path = os.environ.get("VERUS_PATH")
+    if env_path and Path(env_path).exists():
+        return env_path
+    
+    # Try finding verus in PATH
+    which_path = shutil.which("verus")
+    if which_path:
+        return which_path
+    
+    # Fall back to default
+    return DEFAULT_VERUS_PATH
 
 
 @dataclass
@@ -200,9 +229,10 @@ def verify_file(filepath: Path) -> VerusResult:
     semantic_quality = check_semantic_quality(content, features, filepath)
     is_stub = has_stub_patterns(content)
     
+    verus_path = get_verus_path()
     try:
         result = subprocess.run(
-            [VERUS_PATH, "--crate-type=lib", str(filepath)],
+            [verus_path, "--crate-type=lib", str(filepath)],
             capture_output=True,
             text=True,
             timeout=60
@@ -309,10 +339,25 @@ def verify_and_cache(filepath: Path) -> tuple:
 
 def main():
     """Run metrics on all examples"""
+    global VERUS_PATH
+    
     parser = argparse.ArgumentParser(description="Verus Dataset Metrics")
     parser.add_argument("--no-cache", action="store_true", help="Ignore cache and re-verify all files")
     parser.add_argument("--workers", type=int, default=MAX_WORKERS, help=f"Number of parallel workers (default: {MAX_WORKERS})")
+    parser.add_argument("--verus-path", type=str, default=None, 
+                        help="Path to Verus executable (default: VERUS_PATH env var, or 'verus' in PATH)")
     args = parser.parse_args()
+    
+    # Set global VERUS_PATH from CLI if provided
+    if args.verus_path:
+        VERUS_PATH = args.verus_path
+    
+    # Verify verus is accessible
+    verus_path = get_verus_path()
+    if not Path(verus_path).exists() and not shutil.which(verus_path):
+        print(f"Error: Verus not found at '{verus_path}'")
+        print("Please specify --verus-path or set VERUS_PATH environment variable")
+        return
     
     print("Verus Dataset Metrics")
     print("=" * 60)
