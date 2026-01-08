@@ -150,7 +150,8 @@ def has_dafny_syntax(content: str) -> bool:
     """
     import re
     for pattern in DAFNY_PATTERNS:
-        if re.search(pattern, content):
+        # Use MULTILINE flag for patterns with ^ and $ anchors
+        if re.search(pattern, content, re.MULTILINE):
             return True
     return False
 
