@@ -13,5 +13,3 @@ pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)
     sum.set(0, 4 * N);
 }
 }
-
-The key fix is removing the explanatory text that was outside the `verus!{}` block, which was causing compilation errors. The implementation directly sets `sum[0]` to `4 * N` to satisfy the postcondition `sum[0] == 4 * N`.

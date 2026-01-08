@@ -142,14 +142,4 @@ fn sum_min_max(arr: &Vec<i32>) -> (sum: i32)
     max_val + min_val
 }
 
-} // verus!
-
-The key changes made:
-
-   - `subrange(0, i+1).last() == seq[i]`
-   - `subrange(0, i+1).drop_last() =~= subrange(0, i)`
-   - The recursive definition applies correctly
-
-
-
-The lemmas now properly establish that extending a subrange by one element follows the expected recursive pattern, which allows the loop invariants to be maintained correctly.
+}

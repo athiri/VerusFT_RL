@@ -49,6 +49,17 @@ STUB_PATTERNS = {
     "unreached()",
 }
 
+# Dafny syntax patterns - indicates LLM generated wrong language
+DAFNY_PATTERNS = [
+    r'\bvar\s+\w+\s*:=',           # var x :=
+    r'\bset<\w+>',                  # set<int>
+    r'\bseq<\w+>',                  # seq<int>  
+    r'\blemma\s+\w+\s*\(',          # lemma name(
+    r'\bfunction\s+\w+\s*\([^)]*\)\s*:\s*\w+',  # function name(...): type
+    r':=\s*\w+\s*[\+\-]\s*\d+\s*;', # := x + 1;
+    r'\ba\s*:\|\s*a\s+in\b',        # a :| a in (Dafny choice)
+]
+
 
 @dataclass
 class FileAnalysis:
@@ -107,6 +118,38 @@ def has_stub_patterns(content: str) -> bool:
     return any(pattern in content for pattern in STUB_PATTERNS)
 
 
+def has_dafny_syntax(content: str) -> bool:
+    """
+    Check if content contains Dafny-specific syntax.
+    This indicates the LLM generated code in the wrong verification language.
+    NOT suitable for Verus verification.
+    """
+    import re
+    for pattern in DAFNY_PATTERNS:
+        if re.search(pattern, content):
+            return True
+    return False
+
+
+def has_llm_explanation_text(content: str) -> bool:
+    """
+    Check if content contains LLM explanation text that would cause syntax errors.
+    """
+    import re
+    explanation_patterns = [
+        r'^The (key|main) (changes|fix|issue)',
+        r'^Key (changes|fixes)',
+        r'^Main (changes|fixes)',
+        r'^I (made|added|fixed|changed)',
+        r'^However,?\s',
+        r'^If you (can|want|need)',
+    ]
+    for pattern in explanation_patterns:
+        if re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
+            return True
+    return False
+
+
 def has_spec_keywords(content: str) -> bool:
     """Check if content has spec keywords"""
     content_lower = content.lower()
@@ -117,6 +160,11 @@ def strip_comments_and_strings(content: str) -> str:
     """
     Remove comments and string literals to avoid false positives.
     Only count keywords in actual code.
+    
+    Properly handles:
+    - Line comments (//)
+    - Block comments (/* */)
+    - String literals with escaped quotes (\") and escaped backslashes (\\)
     """
     result = []
     i = 0
@@ -147,9 +195,20 @@ def strip_comments_and_strings(content: str) -> str:
                 string_char = content[i]
                 i += 1
                 continue
-            elif content[i] == string_char and (i == 0 or content[i-1] != '\\'):
-                in_string = False
-                string_char = None
+            elif content[i] == string_char:
+                # Count consecutive backslashes before the quote
+                # An even number means the quote is NOT escaped (e.g., "test\\" ends here)
+                # An odd number means the quote IS escaped (e.g., "test\"" continues)
+                num_backslashes = 0
+                j = i - 1
+                while j >= 0 and content[j] == '\\':
+                    num_backslashes += 1
+                    j -= 1
+                
+                if num_backslashes % 2 == 0:
+                    # Even backslashes (including 0) - quote terminates string
+                    in_string = False
+                    string_char = None
                 i += 1
                 continue
         
@@ -215,20 +274,53 @@ def has_external_types(content: str) -> bool:
     return False
 
 
+def extract_function_body(content: str, start_pos: int) -> str:
+    """
+    Extract just the function body using brace matching.
+    
+    Args:
+        content: The full file content
+        start_pos: Position right after the opening brace of the function
+        
+    Returns:
+        The content of the function body (between { and })
+    """
+    depth = 1
+    i = start_pos
+    body_start = start_pos
+    
+    while i < len(content) and depth > 0:
+        char = content[i]
+        if char == '{':
+            depth += 1
+        elif char == '}':
+            depth -= 1
+        i += 1
+    
+    # Return content between braces (excluding the final })
+    return content[body_start:i-1] if depth == 0 else ""
+
+
 def has_recursive_spec_without_decreases(content: str) -> bool:
-    """Check for recursive spec functions without decreases clause"""
+    """
+    Check for recursive spec functions without decreases clause.
+    
+    Uses brace matching to extract only the function body,
+    avoiding false positives from functions defined later in the file.
+    """
     # Look for spec fn that calls itself
     spec_fn_pattern = r'spec\s+fn\s+(\w+)\s*\([^)]*\)\s*->[^{]*\{'
     
     for match in re.finditer(spec_fn_pattern, content):
         fn_name = match.group(1)
         fn_body_start = match.end()
-        # Find the function body (simplified - look for matching braces)
-        fn_body = content[fn_body_start:]
         
-        # Check if function calls itself
+        # Extract just this function's body using brace matching
+        fn_body = extract_function_body(content, fn_body_start)
+        
+        # Check if function calls itself within its own body
         if f"{fn_name}(" in fn_body:
-            # Check if decreases clause exists
+            # Check if decreases clause exists in the function declaration
             fn_decl = content[match.start():fn_body_start]
             if "decreases" not in fn_decl:
                 return True
@@ -270,6 +362,12 @@ def analyze_file(filepath: Path) -> FileAnalysis:
     external_types = has_external_types(content)
     recursive_issue = has_recursive_spec_without_decreases(content)
     
+    # Check for Dafny syntax (wrong language)
+    is_dafny = has_dafny_syntax(content)
+    
+    # Check for LLM explanation text
+    has_llm_text = has_llm_explanation_text(content)
+    
     # Determine if candidate
     is_candidate = True
     rejection_reason = None
@@ -277,6 +375,14 @@ def analyze_file(filepath: Path) -> FileAnalysis:
     if not has_block:
         is_candidate = False
         rejection_reason = "no_verus_block"
+    elif is_dafny:
+        # CRITICAL: Dafny code will not compile as Verus/Rust
+        is_candidate = False
+        rejection_reason = "dafny_syntax: contains Dafny code instead of Verus/Rust"
+    elif has_llm_text:
+        # CRITICAL: LLM explanations cause syntax errors
+        is_candidate = False
+        rejection_reason = "llm_explanation_text: contains prose that causes syntax errors"
     elif not has_spec:
         is_candidate = False
         rejection_reason = "no_spec_keywords"

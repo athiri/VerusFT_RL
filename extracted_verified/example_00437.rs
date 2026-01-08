@@ -46,6 +46,3 @@ fn all_prefixes(s: &Vec<u8>) -> (prefixes: Vec<Vec<u8>>)
 }
 
 }
-fn main() {}
-
-The key changes I made to fix the compilation errors:

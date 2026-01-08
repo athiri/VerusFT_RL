@@ -142,10 +142,3 @@ fn is_multiply_prime(x: u32) -> (ans: bool)
 }
 
 }
-fn main() {}
-
-The key change I made is in line 111 where the compilation error occurred:
-- Changed `if a as int * b as int * c as int == x as int && prime(c) {` 
-- To `if a * b * c == x && prime(c) {`
-
-This removes the problematic `as int` casts from executable code. The multiplication `a * b * c` is performed using the native `u32` arithmetic, and the comparison with `x` (also `u32`) works correctly. The `as int` casts are only kept in the assertions and ghost code where they are allowed.

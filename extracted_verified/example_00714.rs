@@ -91,13 +91,3 @@ verus! {
         assert(x * x < y * y);
     }
 }
-
-fn main() {}
-
-The key changes I made:
-
-
-
-
-
-The main issue is that the `sqrt` function's postcondition requires exact equality (`r * r == x`), which means it can only work correctly for perfect squares. For non-perfect squares, there's no integer `r` such that `r * r == x`.

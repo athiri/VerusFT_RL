@@ -1,7 +1,3 @@
-The problem is that after the first loop, `result.len()` equals `a.len()`, but when we enter the second loop with `j = 0`, the invariant expects `result.len() == a.len() + j` (which would be `a.len() + 0 = a.len()`). This should actually be satisfied, but we need to help the verifier understand this.
-
-Let me fix the verification issues:
-
 use vstd::prelude::*;
 
 verus! {

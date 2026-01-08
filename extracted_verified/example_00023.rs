@@ -77,5 +77,3 @@ ensures
     result
 }
 }
-
-The key changes:

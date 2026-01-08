@@ -1,28 +1,3 @@
-/*
-This is an attempt of turning the following N Queens Rust implementation into Verus
-https://github.com/TheAlgorithms/Rust/blob/master/src/backtracking/n_queens.rs
-
-A couple of notes:
-1. A couple of features related to Vec<Vec<...>> are currently not supported by Verus 
- let  board = vec![vec!['.'; n]; n];
- board[row][col] = c;
-As a result, I used a nested loop to implement board = vec![vec!['.'; n]; n]
-And, I had to put board[row][col] = c into a Verus external function
-
-2. The reading of board[row][col] *is* supported by Verus.
-In fact, Verus would check buffer overflow at both levels/dimensions.
-As a result, it takes a lot of specification to prove the free of buffer overflows, 
-much more spec than proving free of overflow in a one-dimensional Vec.
-
-3. There actually ARE arithmetic overflow in the original implementation.
- let mut j : i32 = col as i32 - (row as i32 - i as i32);
- and
- let j = col + row - i;
- in the is_safe function
-
- I added the board.len() < 1000 constraint so that Verus won't complain about arithmetic overflow.
-*/
-
 use vstd::prelude::*;
  
 verus!{

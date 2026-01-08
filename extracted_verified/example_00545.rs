@@ -1,7 +1,3 @@
-The problem is that the invariants don't account for the case where an element should be in `result` but we don't add it because it's already there.
-
-//IMPL find_dissimilar
-
 use vstd::prelude::*;
 
 verus! {
@@ -104,18 +100,4 @@ fn find_dissimilar(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
     result
 }
 
-} // verus!
-
-fn main() {}
-
-The key changes I made:
-
-
-   - In the first loop, added an invariant that all elements in `result` are not in `arr2`
-   - In the second loop, added an invariant that all elements in `result` are either not in `arr2` or not in `arr1` (meaning they belong in the dissimilar set)
-
-
-These changes help the verifier understand that:
-- Elements are only added to `result` if they should be there (dissimilar elements)
-- The invariants about which elements should be in `result` are maintained throughout both loops
-- The uniqueness property is preserved
+}

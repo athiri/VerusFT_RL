@@ -37,5 +37,3 @@ pub fn myfun(a: &mut Vec<i32>, b: &mut Vec<i32>, c: &mut Vec<i32>, N: i32)
     }
 }
 }
-
-The main changes I made:

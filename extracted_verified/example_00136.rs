@@ -105,11 +105,3 @@ verus!{
 		}
 	}
 }
-
-The key changes I made:
-
-
-
-
-
-The main insight is that we need to ensure that when we call `create_all_state(i + 1, total_number, level - 1, ...)`, all the preconditions are satisfied. The constraint `increment + level - 1 <= total_number` ensures we have enough numbers left to form a valid combination, and the bounds checking prevents arithmetic overflow.

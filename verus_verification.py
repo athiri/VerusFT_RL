@@ -12,36 +12,152 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 
+def is_valid_verus_code(code: str) -> bool:
+    """
+    Check if extracted code looks like valid Verus/Rust code.
+    Rejects Dafny syntax and prose-only content.
+    """
+    # Must have some code-like content
+    if not code or len(code.strip()) < 10:
+        return False
+    
+    # Reject Dafny syntax patterns
+    dafny_patterns = [
+        r'\bvar\s+\w+\s*:=',       # var x :=
+        r'\bset<\w+>',              # set<int>
+        r'\bseq<\w+>',              # seq<int>  
+        r'\blemma\s+\w+\s*\(',      # lemma name(
+        r'\bfunction\s+\w+\s*\([^)]*\)\s*:\s*\w+',  # function name(...): type (Dafny style)
+        r':=\s*\w+\s*\+\s*1\s*;',   # := x + 1;
+        r'\ba\s*:\|\s*a\s+in\b',    # a :| a in (Dafny choice)
+    ]
+    for pattern in dafny_patterns:
+        if re.search(pattern, code):
+            return False
+    
+    # Must have some Rust/Verus indicators
+    rust_indicators = ['fn ', 'let ', 'use ', 'pub ', 'struct ', 'impl ', 'mod ', 
+                       'verus!', '#[', 'requires', 'ensures', 'invariant', '->']
+    has_rust = any(indicator in code for indicator in rust_indicators)
+    
+    return has_rust
+
+
+def clean_llm_explanations(code: str) -> str:
+    """
+    Remove common LLM explanation patterns from before/after code.
+    """
+    lines = code.split('\n')
+    
+    # Patterns that indicate LLM explanation text (not code)
+    explanation_patterns = [
+        r'^The (key|main|problem|issue|fix)',
+        r'^I (made|added|fixed|changed|updated|would)',
+        r'^However',
+        r'^If you',
+        r'^This (fix|change|modification|code)',
+        r'^Note:',
+        r'^Here',
+        r'^\d+\.\s+\w',  # Numbered list like "1. Fixed..."
+        r'^-\s+\w',      # Bullet point like "- Added..."
+        r'^Key (changes|fixes)',
+        r'^Main (changes|fixes)',
+    ]
+    
+    # Find where actual code starts (skip leading explanations)
+    start_idx = 0
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Check if this line looks like an explanation
+        is_explanation = any(re.match(p, stripped, re.IGNORECASE) for p in explanation_patterns)
+        if not is_explanation:
+            # Check for code indicators
+            code_starters = ['use ', 'fn ', 'pub ', '//', '/*', '#[', 'verus!', 'struct ', 'impl ']
+            if any(stripped.startswith(s) for s in code_starters):
+                start_idx = i
+                break
+    
+    # Find where actual code ends (skip trailing explanations)
+    end_idx = len(lines)
+    
+    # Look for the last closing brace of verus! block or function
+    brace_depth = 0
+    last_code_line = len(lines) - 1
+    in_code = False
+    
+    for i, line in enumerate(lines[start_idx:], start=start_idx):
+        stripped = line.strip()
+        if 'verus!' in stripped or stripped.startswith('fn ') or stripped.startswith('pub fn'):
+            in_code = True
+        if in_code:
+            brace_depth += stripped.count('{') - stripped.count('}')
+            if stripped:
+                last_code_line = i
+            # If we've closed all braces and hit a blank line followed by explanation
+            if brace_depth == 0 and i > start_idx:
+                # Check if remaining lines are explanations
+                remaining = '\n'.join(lines[i+1:]).strip()
+                if remaining:
+                    is_trailing_explanation = any(
+                        re.match(p, remaining, re.IGNORECASE) 
+                        for p in explanation_patterns
+                    )
+                    if is_trailing_explanation:
+                        end_idx = i + 1
+                        break
+    
+    return '\n'.join(lines[start_idx:end_idx]).strip()
+
+
 def extract_code_from_markdown(text: str) -> str:
     """
     Extract Verus code from markdown code blocks.
+    
+    This function is robust against:
+    - LLM explanations before/after code blocks
+    - Missing code block markers
+    - Dafny code (returns empty string to reject)
 
     Args:
         text: Generated text that may contain markdown code blocks
 
     Returns:
-        Extracted code string
+        Extracted code string, or empty string if no valid code found
     """
     # Try to find ```verus ... ``` blocks
     verus_pattern = r"```verus\s*\n(.*?)```"
     matches = re.findall(verus_pattern, text, re.DOTALL)
     if matches:
-        return matches[0].strip()
+        code = matches[0].strip()
+        if is_valid_verus_code(code):
+            return code
 
     # Try to find ```rust ... ``` blocks
     rust_pattern = r"```rust\s*\n(.*?)```"
     matches = re.findall(rust_pattern, text, re.DOTALL)
     if matches:
-        return matches[0].strip()
+        code = matches[0].strip()
+        if is_valid_verus_code(code):
+            return code
 
     # Try generic ``` blocks
     generic_pattern = r"```\s*\n(.*?)```"
     matches = re.findall(generic_pattern, text, re.DOTALL)
     if matches:
-        return matches[0].strip()
+        code = matches[0].strip()
+        if is_valid_verus_code(code):
+            return code
 
-    # If no code blocks, return the text as-is
-    return text.strip()
+    # If no code blocks, try to clean and extract from raw text
+    cleaned = clean_llm_explanations(text)
+    if is_valid_verus_code(cleaned):
+        return cleaned
+    
+    # Return empty string to indicate extraction failure
+    # This prevents saving invalid content
+    return ""
 
 
 def categorize_verus_error(error_output: str) -> str:

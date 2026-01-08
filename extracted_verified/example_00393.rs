@@ -87,5 +87,3 @@ fn integer_square_root(n: i32) -> (result: i32)
 
 fn main() {}
 }
-
-The key fixes I made:

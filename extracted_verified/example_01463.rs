@@ -1,15 +1,3 @@
-/*
-
-This example is from Algorithm/Rust project.
-https://github.com/TheAlgorithms/Rust/blob/master/src/backtracking/sudoku.rs
-
-The original test cases test_sudoku_correct and test_sudoku_incorrect cannot be easily convereted to verification properties.
-Instead, the added proof helps to verify the program free of arithemtic overflow and buffer overflow.
-
-The main function is essentially the test_sudoku_correct function without the two run-time asserts.
-
-*/
-
 use vstd::prelude::*;
 
  

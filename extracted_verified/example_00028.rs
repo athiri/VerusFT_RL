@@ -68,6 +68,4 @@ fn compute_arith_sum(n: u64) -> (sum: u64)
     sum
 }
 
-} // verus!
-
-The main issue was that the file contained explanatory text at the beginning which was being interpreted as code, causing compilation errors. I've removed that text and structured the file properly with the ATOM and IMPL blocks as expected by the format.
+}

@@ -32,5 +32,3 @@ fn last_position(a: &[i32], elem: i32) -> (result: usize)
 
 fn main() {}
 }
-
-The key fix was removing the explanatory text that was placed outside the `verus!` block, which was causing the compilation errors with the Unicode backtick characters and unexpected tokens.

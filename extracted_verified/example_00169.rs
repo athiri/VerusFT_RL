@@ -41,8 +41,4 @@ fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
     true
 }
 
-} // verus!
-
-The key changes I made:
-
-The compilation errors were purely due to the stray text at the end of the file that wasn't properly formatted as Dafny/Verus code or comments.
+}
