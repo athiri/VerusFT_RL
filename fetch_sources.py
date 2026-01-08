@@ -253,9 +253,14 @@ def extract_from_repo(
     output_dir: Path,
     start_index: int,
 ) -> Tuple[List[ExtractedFile], int]:
-    """Extract Verus files from a cloned repository."""
+    """Extract Verus files from a cloned repository.
+    
+    Note: Tracks seen source paths to avoid duplicates when extract_paths overlap
+    (e.g., if both a parent directory and subdirectory are specified).
+    """
     extracted = []
     current_index = start_index
+    seen_paths: set = set()  # Track resolved source paths to avoid duplicates
 
     for extract_path in extract_paths:
         source_dir = repo_dir if extract_path == "." else repo_dir / extract_path
@@ -263,6 +268,12 @@ def extract_from_repo(
             continue
 
         for rs_file in source_dir.rglob("*.rs"):
+            # Dedupe: skip if we've already processed this file
+            resolved_path = rs_file.resolve()
+            if resolved_path in seen_paths:
+                continue
+            seen_paths.add(resolved_path)
+            
             if not should_include(rs_file):
                 continue
 
