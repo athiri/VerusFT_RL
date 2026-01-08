@@ -1,0 +1,6069 @@
+{
+  "timestamp": "2026-01-07T16:05:59.499252",
+  "total_files": 14199,
+  "total_loc": 739239,
+  "repositories": [
+    {
+      "name": "vericoding",
+      "success": true,
+      "files": 13325,
+      "loc": 499928
+    },
+    {
+      "name": "human-eval",
+      "success": true,
+      "files": 174,
+      "loc": 8055
+    },
+    {
+      "name": "verus-tests",
+      "success": true,
+      "files": 110,
+      "loc": 69266
+    },
+    {
+      "name": "vstd",
+      "success": true,
+      "files": 77,
+      "loc": 19739
+    },
+    {
+      "name": "verismo",
+      "success": true,
+      "files": 164,
+      "loc": 30383
+    },
+    {
+      "name": "ironkv",
+      "success": true,
+      "files": 62,
+      "loc": 17232
+    },
+    {
+      "name": "node-replication",
+      "success": true,
+      "files": 30,
+      "loc": 15844
+    },
+    {
+      "name": "mimalloc",
+      "success": true,
+      "files": 27,
+      "loc": 17857
+    },
+    {
+      "name": "vostd",
+      "success": true,
+      "files": 116,
+      "loc": 25691
+    },
+    {
+      "name": "betrfs",
+      "success": true,
+      "files": 114,
+      "loc": 35244
+    }
+  ],
+  "files": [
+    {
+      "dest": "example_00001.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpCopy-spec.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00002.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpBitwiseXor-spec.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00003.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpBitwiseAnd-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00004.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpIsclose-spec.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00005.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpIntersect-spec.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00006.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSquare-spec.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00007.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpAdd-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00008.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpAbs-spec.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00009.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSign-spec.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00010.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpLeftShift-spec.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00011.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpGreater-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00012.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpWhere-spec.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00013.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpTril-spec.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00014.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSelect-spec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00015.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpPower-spec.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00016.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpPolyder-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00017.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpNotEqual-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00018.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpRavel-spec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00019.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpMultiply-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00020.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpGcd-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00021.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpLessEqual-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00022.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpFloorDivide-spec.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00023.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpMod-spec.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00024.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpInvert-spec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00025.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpReshape-spec.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00026.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpArgsort-spec.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00027.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpBroadcast-spec.rs",
+      "loc": 53
+    },
+    {
+      "dest": "example_00028.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpEqual-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00029.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpMin-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00030.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpLcm-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00031.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpClip-spec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00032.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpArgmax-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00033.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpCenter-spec.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00034.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpHistogram-spec.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00035.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpMax-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00036.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpPoly-spec.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00037.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSum-spec.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00038.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpTranspose-spec.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00039.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSort-spec.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00040.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpColumnStack-spec.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00041.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpIsalpha-spec.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00042.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpFlatten-spec.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00043.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpRemainder-spec.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00044.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpCountnonzero-spec.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00045.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpBitwiseOr-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00046.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpShape-spec.rs",
+      "loc": 50
+    },
+    {
+      "dest": "example_00047.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpCumProd-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00048.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpUniqueall-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00049.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpArange-spec.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00050.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpLess-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00051.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpPiecewise-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00052.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpGreaterEqual-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00053.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpDiagonal-spec.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00054.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpCumSum-spec.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00055.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpZeros-spec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00056.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpRightShift-spec.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00057.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpSubtract-spec.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00058.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/files/NpProd-spec.rs",
+      "loc": 42
+    },
+    {
+      "dest": "example_00059.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_simple/issues/NpConvolve-spec.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00060.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_050_encode_shift__decode_shift.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00061.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_111_histogram.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00062.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_085_add.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00063.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_152.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00064.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_012.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00065.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_114_minSubArraySum.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00066.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_103.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00067.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_043.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00068.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_137.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00069.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_154_cycpattern_check.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00070.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_010_is_palindrome__make_palindrome.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00071.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_116_sort_array.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00072.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_067.rs",
+      "loc": 54
+    },
+    {
+      "dest": "example_00073.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_053.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00074.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_113.rs",
+      "loc": 62
+    },
+    {
+      "dest": "example_00075.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_002.rs",
+      "loc": 45
+    },
+    {
+      "dest": "example_00076.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_142.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00077.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_033_sort_third__sort_third.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00078.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_022.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00079.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_076_is_simple_power.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00080.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_162.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00081.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_073.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00082.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_080.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00083.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_107.rs",
+      "loc": 90
+    },
+    {
+      "dest": "example_00084.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_047.rs",
+      "loc": 74
+    },
+    {
+      "dest": "example_00085.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_016.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00086.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_006.rs",
+      "loc": 60
+    },
+    {
+      "dest": "example_00087.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_146.rs",
+      "loc": 53
+    },
+    {
+      "dest": "example_00088.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_057.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00089.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_063.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00090.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_095_check_dict_case.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00091.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_023.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00092.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_072.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00093.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_081.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00094.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_106.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00095.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_046.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00096.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_157.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00097.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_149_sorted_list_sum__sort_strings.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00098.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_007.rs",
+      "loc": 45
+    },
+    {
+      "dest": "example_00099.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_147.rs",
+      "loc": 56
+    },
+    {
+      "dest": "example_00100.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_087_get_row__SortSeq.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00101.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_056.rs",
+      "loc": 33
+    },
+    {
+      "dest": "example_00102.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_037_sort_even__sorted_even.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00103.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_122.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00104.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_062.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00105.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_064_vowels_count.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00106.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_104_unique_digits.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00107.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_130_tri.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00108.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_001_separate-paren-groups.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00109.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_153.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00110.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_013.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00111.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_102.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00112.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_042.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00113.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_027.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00114.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_126.rs",
+      "loc": 72
+    },
+    {
+      "dest": "example_00115.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_066.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00116.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_052.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00117.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_112.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00118.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_003.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00119.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_079_decimal_to_binary.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00120.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_018_how_many_times.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00121.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_109.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00122.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_049.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00123.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_123_get_odd_collatz__next_odd_collatz_iter.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00124.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_077_iscube__is_cube.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00125.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_070_strange_sort_list__strange_sort_list_helper.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00126.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_033_sort_third__SortSeqPred.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00127.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_059.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00128.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_119.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00129.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_008.rs",
+      "loc": 43
+    },
+    {
+      "dest": "example_00130.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_028.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00131.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_139.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00132.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_163_generate_integers__generate_integers.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00133.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_026_remove_duplicates__count.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00134.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_090_next_smallest.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00135.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_149_sorted_list_sum__sort_lengths.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00136.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_069.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00137.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_034_unique__SortSeq.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00138.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_078.rs",
+      "loc": 33
+    },
+    {
+      "dest": "example_00139.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_138.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00140.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_145_order_by_points.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00141.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_149_sorted_list_sum__sorted_list_sum.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00142.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_136_largest_smallest_integers.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00143.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_036_fizz_buzz__fizz_buzz.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00144.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_128.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00145.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_068.rs",
+      "loc": 55
+    },
+    {
+      "dest": "example_00146.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_159.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00147.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_133_sum_squares.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00148.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_108.rs",
+      "loc": 46
+    },
+    {
+      "dest": "example_00149.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_048.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00150.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_026_remove_duplicates__remove_duplicates.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00151.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_038_encode_cyclic__encode_cyclic.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00152.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_148_bf.rs",
+      "loc": 113
+    },
+    {
+      "dest": "example_00153.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_084_solve.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00154.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_150_x_or_y.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00155.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_105_by_length__SortReverseAndName.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00156.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_120_maximum__maximum.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00157.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_009.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00158.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_024_largest-divisor.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00159.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_088.rs",
+      "loc": 49
+    },
+    {
+      "dest": "example_00160.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_034_unique__unique.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00161.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_132_is_nested.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00162.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_021_rescale_to_unit.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00163.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_087_get_row__get_row.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00164.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_105_by_length__reverse.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00165.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_123_get_odd_collatz__get_odd_collatz.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00166.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_089.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00167.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_127_intersection.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00168.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_098_count_upper.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00169.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_050_encode_shift__encode_shift.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00170.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_082.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00171.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_020.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00172.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_014.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00173.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_045.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00174.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_055.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00175.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_115.rs",
+      "loc": 42
+    },
+    {
+      "dest": "example_00176.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_144.rs",
+      "loc": 74
+    },
+    {
+      "dest": "example_00177.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_029_filter_by_prefix.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00178.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_030.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00179.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_121.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00180.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_092.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00181.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_034_unique__uniqueSorted.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00182.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_041.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00183.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_075.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00184.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_158_find_max.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00185.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_135.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00186.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_038_encode_cyclic__decode_cyclic.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00187.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_125.rs",
+      "loc": 106
+    },
+    {
+      "dest": "example_00188.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_065.rs",
+      "loc": 60
+    },
+    {
+      "dest": "example_00189.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_096.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00190.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_000.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00191.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_140.rs",
+      "loc": 45
+    },
+    {
+      "dest": "example_00192.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_051.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00193.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_077_iscube__cube_root.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00194.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_100.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00195.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_040.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00196.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_151.rs",
+      "loc": 41
+    },
+    {
+      "dest": "example_00197.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_011.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00198.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_025.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00199.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_074.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00200.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_134.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00201.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_124.rs",
+      "loc": 85
+    },
+    {
+      "dest": "example_00202.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_035.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00203.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_097.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00204.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_058_common.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00205.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_110.rs",
+      "loc": 33
+    },
+    {
+      "dest": "example_00206.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_036_fizz_buzz__count7.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00207.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_105_by_length__SortSeq.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00208.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_037_sort_even__SortSeqPred.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00209.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_123_get_odd_collatz__get_odd_collatz_unsorted.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00210.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_083.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00211.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_161.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00212.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_120_maximum__SortSeq.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00213.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_155.rs",
+      "loc": 56
+    },
+    {
+      "dest": "example_00214.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_044.rs",
+      "loc": 49
+    },
+    {
+      "dest": "example_00215.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_054.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00216.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_005.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00217.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_031.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00218.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_060.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00219.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_093.rs",
+      "loc": 50
+    },
+    {
+      "dest": "example_00220.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/files/humaneval_118_get_closest_vowel.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00221.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/humaneval/issues/humaneval_004.rs",
+      "loc": 45
+    },
+    {
+      "dest": "example_00222.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/test/files/verina_advanced_10_task.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00223.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_10_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00224.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_102_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00225.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_62_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00226.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_39_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00227.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_72_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00228.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_80_task.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00229.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_74_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00230.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_64_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00231.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_86_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00232.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_96_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00233.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_30_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00234.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_19_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00235.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_42_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00236.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_44_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00237.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_9_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00238.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_26_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00239.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_36_task.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00240.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_31_task.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00241.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_43_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00242.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_18_task.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00243.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_53_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00244.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_55_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00245.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_45_task.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00246.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_8_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00247.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_37_task.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00248.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_27_task.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00249.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_11_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00250.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_81_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00251.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_6_task.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00252.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_103_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00253.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_73_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00254.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_38_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00255.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_63_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00256.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_97_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00257.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_87_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00258.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_65_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00259.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_75_task.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00260.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_17_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00261.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_51_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00262.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_41_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00263.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_78_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00264.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_33_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00265.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_68_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00266.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_108_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00267.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_25_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00268.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_47_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00269.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_57_task.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00270.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_4_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00271.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_71_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00272.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_101_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00273.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_48_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00274.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_13_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00275.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_58_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00276.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_3_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00277.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_15_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00278.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_85_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00279.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_95_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00280.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_77_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00281.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_67_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00282.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_70_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00283.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_60_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00284.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_100_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00285.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_5_task.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00286.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_59_task.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00287.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_49_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00288.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_2_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00289.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_14_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00290.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_66_task.rs",
+      "loc": 9
+    },
+    {
+      "dest": "example_00291.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_76_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00292.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_94_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00293.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_84_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00294.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_40_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00295.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_50_task.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00296.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_69_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00297.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_32_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00298.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_79_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00299.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_34_task.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00300.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_24_task.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00301.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_56_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00302.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_46_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00303.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_21_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00304.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_31_task.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00305.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_98_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00306.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_88_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00307.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_43_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00308.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_18_task.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00309.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_55_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00310.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_45_task.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00311.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_37_task.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00312.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_9_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00313.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_11_task.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00314.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_7_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00315.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_73_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00316.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_38_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00317.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_63_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00318.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_28_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00319.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_91_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00320.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_105_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00321.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_65_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00322.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_75_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00323.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_17_task.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00324.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_10_task.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00325.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_6_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00326.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_90_task.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00327.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_80_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00328.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_62_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00329.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_39_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00330.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_1_task.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00331.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_74_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00332.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_64_task.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00333.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_89_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00334.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_99_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00335.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_30_task.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00336.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_20_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00337.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_52_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00338.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_19_task.rs",
+      "loc": 42
+    },
+    {
+      "dest": "example_00339.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_42_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00340.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_44_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00341.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_8_task.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00342.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_36_task.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00343.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_82_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00344.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_92_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00345.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_70_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00346.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_60_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00347.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_4_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00348.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_59_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00349.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_12_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00350.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_49_task.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00351.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_14_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00352.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_66_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00353.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_76_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00354.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_106_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00355.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_40_task.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00356.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_50_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00357.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_69_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00358.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_32_task.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00359.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_79_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00360.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_34_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00361.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_56_task.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00362.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_46_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00363.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_51_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00364.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_41_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00365.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_78_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00366.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_68_task.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00367.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_35_task.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00368.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_57_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00369.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_61_task.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00370.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_93_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00371.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_83_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00372.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_5_task.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00373.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_48_task.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00374.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_advanced_13_task.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00375.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_58_task.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00376.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_15_task.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00377.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_77_task.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00378.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/files/verina_basic_67_task.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00379.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verina/issues/verina_advanced_16_task.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00380.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_remove_all_greater.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00381.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_index_wise_addition.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00382.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_809.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00383.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_max_array.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00384.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_579.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00385.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_161.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00386.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_trigger.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00387.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_145.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00388.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_ms4.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00389.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_conda.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00390.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_tail_triangle.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00391.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_3.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00392.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s22if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00393.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s5if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00394.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_798.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00395.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_262.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00396.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_replace_chars.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00397.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_is_non_prime.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00398.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_remove_duplicates.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00399.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_2.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00400.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_largest_prime_factor.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00401.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_remove_elements.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00402.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_rolling_max.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00403.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_69.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00404.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_array_append.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00405.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_ms1.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00406.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_273.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00407.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_307.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00408.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s4if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00409.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_filter.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00410.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_808.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00411.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_578.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00412.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_105.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00413.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s42if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00414.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_170.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00415.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_284.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00416.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_cubes.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00417.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_ms5.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00418.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_18.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00419.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_arithmetic_weird.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00420.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_max_index.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00421.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s3if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00422.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_95.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00423.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_unique_better.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00424.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_array_copy.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00425.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_433.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00426.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_bubble_v2.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00427.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s32if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00428.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_741.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00429.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_472.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00430.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_775.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00431.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_has_only_one_distinct_element.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00432.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_map.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00433.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_abs.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00434.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_557.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00435.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_choose_odd.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00436.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_62.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00437.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_brs3.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00438.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_sina3.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00439.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_755.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00440.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_807.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00441.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_644.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00442.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_intersperse.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00443.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_605.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00444.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_567.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00445.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s12if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00446.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_476.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00447.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_remove_element.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00448.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s52if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00449.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_brs2.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00450.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_436.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00451.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_sina2.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00452.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_filter_weak.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00453.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_576.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00454.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_8.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00455.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_760.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00456.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_condn.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00457.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_412.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00458.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_426.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00459.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_477.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00460.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_two_sum.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00461.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_94.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00462.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_smallest_missing_number.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00463.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_624.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00464.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_764.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00465.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_572.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00466.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_610.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00467.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_findmax.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00468.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_replace.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00469.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_447.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00470.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_249.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00471.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s2if.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00472.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_binary_search_recursive.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00473.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_brs1.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00474.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_586.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00475.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_sina1.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00476.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_remove_all_greater_v2.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00477.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_732.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00478.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_790.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00479.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_condm.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00480.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_smallest_list_length.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00481.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_474.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00482.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_last_position.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00483.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_arg_free.rs",
+      "loc": 9
+    },
+    {
+      "dest": "example_00484.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s1if.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00485.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_70.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00486.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_brs5.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00487.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_454.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00488.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s4lif.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00489.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_460.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00490.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_sina5.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00491.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_431.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00492.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_743.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00493.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_max_dafny_lsp.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00494.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_brs4.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00495.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_wip_mcontained.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00496.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_461.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00497.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_bubble_v1.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00498.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_sina4.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00499.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_string_xor.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00500.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_two_way_sort.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00501.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_602.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00502.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_wip_max_segment_sum.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00503.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_445.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00504.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_414.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00505.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_554.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00506.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s2lif.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00507.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_fib.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00508.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_804.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00509.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_616.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00510.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_simple_nested.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00511.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_733.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00512.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_424.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00513.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_is_sorted.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00514.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_399.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00515.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_conditional_average.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00516.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_linearsearch.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00517.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_wip_transpose_matrix.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00518.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s5lif.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00519.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_reverse.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00520.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_629.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00521.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_769.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00522.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_unique.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00523.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_integer_square_root.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00524.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_ms2.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00525.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_array_concat.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00526.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_728.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00527.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_condg.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00528.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_res1.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00529.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_binary_search.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00530.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_barrier.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00531.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_has_close_elements.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00532.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_588.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00533.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_240.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00534.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_618.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00535.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_576_v2.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00536.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_133.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00537.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_251.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00538.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s3lif.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00539.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_res1o.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00540.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/rustbench_array_product.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00541.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_filter_v2.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00542.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_261.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00543.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_binary_search.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00544.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_230.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00545.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_113.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00546.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_282.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00547.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_ms3.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00548.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_task_id_142.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00549.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_s1lif.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00550.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_cell_2_sum.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00551.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/verified_cogen/files/proofsynthesis_res2o.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00552.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_even_list_FindEvenNumbers.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00553.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_743_RotateRight.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00554.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_776_CountVowelNeighbors.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00555.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_290_MaxLengthList.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00556.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Learning_Experience_tmp_tmpuxvcet_u_week1_7_A2_Q1_trimmed_copy_-_\u526f\u672c_ComputeCount.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00557.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Learning_Experience_tmp_tmpuxvcet_u_week1_7_week5_ComputePower_ComputePower.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00558.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_433_IsGreater.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00559.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Exercise3_Increment_Array_incrementArray.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00560.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_161_RemoveElements.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00561.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_canyon_search_CanyonSearch.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00562.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_leetcode_0070-climbing-stairs_ClimbStairs.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00563.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_ass2_ex2_String3Sort.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00564.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Correctness_tmp_tmpwqvg5q_4_Sorting_Tangent_Tangent.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00565.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_replace_replace.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00566.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-duck_tmp_tmplawbgxjo_p4_single.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00567.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_591_SwapFirstAndLast.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00568.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_555_DifferenceSumCubesAndSumNumbers.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00569.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_Search1000_Search2PowLoop.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00570.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Longest_Increasing_Subsequence_longest_increasing_subsequence_longest_increasing_subsequence.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00571.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Verify_tmp_tmphq7j0row_Fine_Tune_Examples_normal_data_completion_MaxPerdV2_max.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00572.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-methods-in-software-engineering_tmp_tmpe7fjnek6_Labs4_gr2_DivMod1.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00573.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseReplace_replace.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00574.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cs245-verification_tmp_tmp0h_nxhqp_A8_Q1_A8Q1.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00575.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafl_tmp_tmp_r3_8w3y_dafny_examples_uiowa_binary-search_binSearch.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00576.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session3Exercises_ExerciseMaximum_mlastMaximum.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00577.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyProjects_tmp_tmp2acw_s4s_longestPrefix_longestPrefix.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00578.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_574_CylinderSurfaceArea.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00579.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_632_swap.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00580.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_452_CalculateLoss.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00581.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Non-overlapping_Intervals_non_overlapping_intervals_bubble_sort.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00582.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_95_SmallestListLength.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00583.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Programs_tmp_tmp99966ew4_lemma_FindZero.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00584.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_prac4_ex2_GetTriple.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00585.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_swap_Swap.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00586.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_18_RemoveChars.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00587.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_557_ToggleCase.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00588.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Insertion_Sort_Normal_insertionSort.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00589.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session9Exercises_ExerciseSeqMaxSum_segMaxSum.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00590.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/AssertivePrograming_tmp_tmpwf43uz0e_MergeSort_Merge.rs",
+      "loc": 58
+    },
+    {
+      "dest": "example_00591.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BinarySearchTree_tmp_tmp_bn2twp5_bst4copy_insertRecursion.rs",
+      "loc": 63
+    },
+    {
+      "dest": "example_00592.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_644_Reverse.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00593.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session4Exercises_ExerciseContained_mcontained.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00594.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-verification_tmp_tmpoepcssay_strings3_haveCommonKSubstring.rs",
+      "loc": 51
+    },
+    {
+      "dest": "example_00595.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_swap_bitvector_SwapBitvectors.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00596.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/se2011_tmp_tmp71eb82zt_ass2_ex2_SecondLargest.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00597.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpmvs2dmry_pancakesort_findmax_findMax.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00598.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MFS_tmp_tmpmmnu354t_Praticas_TP9_Power_powerIter.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00599.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/AssertivePrograming_tmp_tmpwf43uz0e_MergeSort_MergeLoop.rs",
+      "loc": 43
+    },
+    {
+      "dest": "example_00600.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBinarySearch_search.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00601.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MIEIC_mfes_tmp_tmpq3ho7nve_TP3_binary_search_binarySearch.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00602.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_cal_ans_CalDiv.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00603.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_test_array_TestArrayElements.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00604.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_624_ToUppercase.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00605.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Verify_tmp_tmphq7j0row_Generated_Code_ComputePower_ComputePower.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00606.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpmvs2dmry_examples2_gcdCalc.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00607.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session6Exercises_ExercisePeekSum_mPeekSum.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00608.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_8_H8_Partition.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00609.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_bubble_sort_BubbleSort.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00610.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_VSComp2010_Problem1-SumMax_M.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00611.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_tmp_tmp59p638nn_examples_realExponent_pow.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00612.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/CVS-handout1_tmp_tmptm52no3k_1_query.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00613.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MFES_2021_tmp_tmpuljn8zd9_TheoreticalClasses_Power_powerIter.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00614.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cs245-verification_tmp_tmp0h_nxhqp_quicksort-partition_QuicksortPartition.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00615.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/VerifiedMergeSortDafny_tmp_tmpva7qms1b_MergeSort_merge.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00616.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_two_sum_twoSum.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00617.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/CS494-final-project_tmp_tmp7nof55uq_bubblesort_BubbleSort.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00618.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_142_CountIdenticalPositions.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00619.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MIEIC_mfes_tmp_tmpq3ho7nve_exams_mt2_19_p4_calcR.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00620.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_Percentile_Percentile.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00621.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_SumIntsLoop_SumIntsLoop.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00622.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_472_ContainsConsecutiveNumbers.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00623.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/CVS-handout1_tmp_tmptm52no3k_1_queryFast.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00624.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Contains_Duplicate_contains_duplicate_contains_duplicate.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00625.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Quick_Sort_quickSort.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00626.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_cal_sum_Sum.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00627.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_470_PairwiseAddition.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00628.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafleet_tmp_tmpa2e4kb9v_0001-0050_0005-longest-palindromic-substring_longestPalindrome.rs",
+      "loc": 78
+    },
+    {
+      "dest": "example_00629.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_632_MoveZeroesToEnd.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00630.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session6Exercises_ExerciseCountEven_mcountEven.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00631.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_10_Hoangkim_ex10_hoangkim_strange.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00632.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session9Exercises_ExerciseSeqMaxSum_segSumaMaxima2.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00633.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_262_SplitArray.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00634.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_rotate_rotate.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00635.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/t1_MF_tmp_tmpi_sqie4j_exemplos_colecoes_sequences_ex3_Delete.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00636.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_examples_bubblesort_BubbleSort.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00637.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_flex_ex1_sum.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00638.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_399_BitwiseXOR.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00639.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cs245-verification_tmp_tmp0h_nxhqp_power_compute_power.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00640.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyPrograms_tmp_tmp74_f9k_c_prime-database_testPrimeness.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00641.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/assertive-programming-assignment-1_tmp_tmp3h_cj44u_ProdAndCount_ProdAndCount.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00642.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_170_SumInRange.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00643.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_leetcode_lc-remove-element_removeElement.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00644.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_is_even_ComputeIsEven.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00645.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_605_IsPrime.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00646.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session6Exercises_ExerciseCountMin_mCountMin.rs",
+      "loc": 61
+    },
+    {
+      "dest": "example_00647.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_from_dafny_main_repo_dafny2_COST-verif-comp-2011-3-TwoDuplicates_Search.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00648.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/software_analysis_tmp_tmpmt6bo9sf_ss_find_min_index.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00649.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_ProgramProofs_ch15_QuickSortAux.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00650.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_convert_map_key_convert_map_key.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00651.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_576_IsSublist.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00652.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_581_SquarePyramidSurfaceArea.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00653.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_249_Intersection.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00654.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Best_Time_to_Buy_and_Sell_Stock_best_time_to_buy_and_sell_stock_best_time_to_buy_and_sell_stock.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00655.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_dafny2_TuringFactorial_ComputeFactorial.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00656.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/CVS-Projto1_tmp_tmpb1o0bu8z_proj1_proj1_queryFast.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00657.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBinarySearch_binarySearchRec.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00658.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_566_SumOfDigits.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00659.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_is_palindrome_IsPalindrome.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00660.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Verify_tmp_tmphq7j0row_dataset_bql_exampls_SmallNum_add_small_numbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00661.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal_verication_dafny_tmp_tmpwgl2qz28_Challenges_ex1_PalVerify.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00662.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_600_IsEven.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00663.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_760_HasOnlyOneDistinctElement.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00664.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyPrograms_tmp_tmp74_f9k_c_invertarray_InvertArray.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00665.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Verify_tmp_tmphq7j0row_Generated_Code_Count_count.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00666.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_230_ReplaceBlanksWithChar.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00667.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_460_GetFirstElements.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00668.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session5Exercises_ExerciseSumElems_sumElems.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00669.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_leetcode_0027-remove-element_RemoveElement.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00670.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_441_CubeSurfaceArea.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00671.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BinaryAddition_ArrayToSequence.rs",
+      "loc": 58
+    },
+    {
+      "dest": "example_00672.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Workshop_tmp_tmp0cu11bdq_Lecture_Answers_max_array_max.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00673.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_verified_algorithms_lol_sort_lol_sort.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00674.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session2Exercises_ExerciseFibonacci_fibonacci1.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00675.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification-Project_tmp_tmp9gmwsmyp_strings3_maxCommonSubstringLength.rs",
+      "loc": 41
+    },
+    {
+      "dest": "example_00676.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_count_lessthan_CountLessThan.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00677.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_238_CountNonEmptySubstrings.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00678.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_799_RotateLeftBits.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00679.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_242_CountCharacters.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00680.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_603_LucidNumbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00681.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Counting_Bits_counting_bits_counting_bits.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00682.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpmvs2dmry_pancakesort_flip_flip.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00683.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_match_Match.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00684.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification_tmp_tmpuyt21wjt_Dafny_strings1_maxCommonSubstringLength.rs",
+      "loc": 52
+    },
+    {
+      "dest": "example_00685.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/CVS-Projto1_tmp_tmpb1o0bu8z_proj1_proj1_query.rs",
+      "loc": 46
+    },
+    {
+      "dest": "example_00686.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BelowZero_BelowZero.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00687.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_430_ParabolaDirectrix.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00688.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification_tmp_tmpuyt21wjt_Dafny_strings1_haveCommonKSubstring.rs",
+      "loc": 48
+    },
+    {
+      "dest": "example_00689.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_double_quadruple_DoubleQuadruple.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00690.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-duck_tmp_tmplawbgxjo_p6_FilterVowelsArray.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00691.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_804_IsProductEven.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00692.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/AssertivePrograming_tmp_tmpwf43uz0e_Find_Substring_FindFirstOccurrence.rs",
+      "loc": 41
+    },
+    {
+      "dest": "example_00693.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/llm-verified-eval_tmp_tmpd2deqn_i_dafny_5_intersperse.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00694.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_dafny2_SegmentSum_MaxSegSum.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00695.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_linear_search1_LinearSearch.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00696.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_ReverseString_yarra.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00697.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafl_tmp_tmp_r3_8w3y_dafny_examples_uiowa_find_Find.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00698.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BPTree-verif_tmp_tmpq1z6xm1d_Utils_InsertIntoSorted.rs",
+      "loc": 76
+    },
+    {
+      "dest": "example_00699.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BPTree-verif_tmp_tmpq1z6xm1d_Utils_GetInsertIndex.rs",
+      "loc": 74
+    },
+    {
+      "dest": "example_00700.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_appendArray_appendArray.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00701.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBinarySearch_binarySearch.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00702.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpmvs2dmry_examples2_exp_by_sqr.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00703.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_171_PentagonPerimeter.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00704.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_2_BinarySearchDec_SearchRecursive.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00705.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_swap_arith_SwapArithmetic.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00706.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_732_ReplaceWithColon.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00707.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_567_IsSorted.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00708.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_test_shuffle_getRandomDataEntry.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00709.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_637_IsBreakEven.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00710.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session2Exercises_ExercisePositive_mpositive.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00711.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_slope_search_SlopeSearch.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00712.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_618_ElementWiseDivide.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00713.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_477_ToLowercase.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00714.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyProjects_tmp_tmp2acw_s4s_partitionOddEven_partitionOddEven.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00715.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_424_ExtractRearChars.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00716.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session3Exercises_ExerciseMaximum_mmaximum1.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00717.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_572_RemoveDuplicates.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00718.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Learning_Experience_tmp_tmpuxvcet_u_week1_7_A2_Q1_trimmed_copy_-_\u526f\u672c_FooCount.rs",
+      "loc": 26
+    },
+    {
+      "dest": "example_00719.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_leetcode_FindPivotIndex_FindPivotIndex.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00720.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_all_digits_allDigits.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00721.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_countNeg_CountNeg.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00722.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_05_Hoangkim_ex_05_Hoangkim_gcdI.rs",
+      "loc": 29
+    },
+    {
+      "dest": "example_00723.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_leetcode_0001-two-sum_TwoSum.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00724.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_abs_Abs.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00725.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_626_AreaOfLargestTriangleInSemicircle.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00726.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/assertive-programming-assignment-1_tmp_tmp3h_cj44u_SearchAddends_FindAddends.rs",
+      "loc": 41
+    },
+    {
+      "dest": "example_00727.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_284_AllElementsEqual.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00728.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_multi_return_MultipleReturns.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00729.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_double_array_elements_double_array_elements.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00730.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_ass2_ex3_BadSort.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00731.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_triple_Triple.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00732.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpv_d3qi10_2_min_minArray.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00733.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_261_ElementWiseDivision.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00734.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_14_TriangularPrismVolume.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00735.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_594_FirstEvenOddDifference.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00736.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Remove_Duplicates_from_Sorted_Array_remove_duplicates_from_sorted_array_remove_duplicates_from_sorted_array.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00737.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_457_MinLengthSublist.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00738.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_784_ProductEvenOdd.rs",
+      "loc": 46
+    },
+    {
+      "dest": "example_00739.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-verification_tmp_tmpoepcssay_strings3_isPrefix.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00740.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafleet_tmp_tmpa2e4kb9v_0001-0050_0001-two-sum_twoSum.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00741.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_exam_ex3_Symmetric.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00742.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_775_IsOddAtIndexOdd.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00743.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_zapNegatives_ZapNegatives.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00744.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_143_CountArrays.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00745.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/bbfny_tmp_tmpw4m0jvl0_enjoying_FindMax.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00746.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-verification_tmp_tmpoepcssay_strings3_maxCommonSubstringLength.rs",
+      "loc": 52
+    },
+    {
+      "dest": "example_00747.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/llm-verified-eval_tmp_tmpd2deqn_i_dafny_9_rolling_max.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00748.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_selectionsort_SelectionSort.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00749.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_quotient_Quotient.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00750.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyProjects_tmp_tmp2acw_s4s_Power_powerDC.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00751.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session5Exercises_ExerciseSumElems_sumElemsB.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00752.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Verify_tmp_tmphq7j0row_dataset_detailed_examples_SelectionSort_SelectionSort.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00753.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_602_FindFirstRepeatedChar.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00754.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_from_dafny_main_repo_dafny2_Classics_FIND.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00755.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_Search1000_Search1000.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00756.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_reverse_Reverse.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00757.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Correctness_tmp_tmpwqvg5q_4_Sorting_Tangent_BinarySearch.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00758.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpv_d3qi10_3_cumsum_cumsum.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00759.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_461_CountUppercase.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00760.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-methods-in-software-engineering_tmp_tmpe7fjnek6_Labs4_gr2_SqrSum1.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00761.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_769_Difference.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00762.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpmvs2dmry_examples2_Product.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00763.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_07_Hoangkim_ex07_Hoangkim_selectionSort.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00764.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafl_tmp_tmp_r3_8w3y_dafny_examples_uiowa_fibonacci_ComputeFib.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00765.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session4Exercises_ExercisefirstZero_mfirstCero.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00766.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_240_ReplaceLastElement.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00767.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_tmp_tmp59p638nn_examples_SelectionSort_SelectionSort.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00768.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_Search1000_Search2PowRecursive.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00769.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_587_ArrayToSeq.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00770.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_test_shuffle_swap.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00771.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-building-and-verification-Projects_tmp_tmp5tm1srrn_CVS-projeto_aula3_maxArrayReverse.rs",
+      "loc": 37
+    },
+    {
+      "dest": "example_00772.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session4Exercises_ExerciseAllEqual_mallEqual1.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00773.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_251_InsertBeforeEach.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00774.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_412_RemoveOddNumbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00775.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyProjects_tmp_tmp2acw_s4s_CombNK_Comb.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00776.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercises_tmp_tmp5mvrowrx_leetcode_26-remove-duplicates-from-sorted-array_RemoveDuplicates.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00777.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpj88zq5zt_2-Kontrakte_reverse3_swap3.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00778.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_10_Hoangkim_ex10_hoangkim_q.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00779.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_Euclid.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00780.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_demo_Partition.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00781.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session2Exercises_ExerciseSquare_root_mroot1.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00782.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Projects_tmp_tmph399drhy_p2_arraySplit_ArraySplit.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00783.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_tutorial_maximum_Maximum.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00784.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/llm-verified-eval_tmp_tmpd2deqn_i_dafny_161_solve.rs",
+      "loc": 47
+    },
+    {
+      "dest": "example_00785.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_triple3_Triple.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00786.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_622_FindMedian.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00787.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_avg_ComputeAvg.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00788.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_3_IsNonPrime.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00789.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_629_FindEvenNumbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00790.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_array_sum_arraySum.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00791.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_ProgramProofs_ch15_Partition.rs",
+      "loc": 30
+    },
+    {
+      "dest": "example_00792.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_565_SplitStringIntoChars.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00793.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_126_SumOfCommonDivisors.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00794.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal_verication_dafny_tmp_tmpwgl2qz28_Challenges_ex2_Allow42.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00795.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_below_zero_below_zero.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00796.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_801_CountEqualNumbers.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00797.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_array_product_arrayProduct.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00798.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_firstE_firstE.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00799.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_comp_Arrays_LinearSearch.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00800.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_copy_part_copy.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00801.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_dafny4_Bug165_Select.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00802.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Remove_Element_remove_element_remove_element.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00803.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal-verification_tmp_tmpoepcssay_strings3_isSubstring.rs",
+      "loc": 43
+    },
+    {
+      "dest": "example_00804.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/veri-sparse_tmp_tmp15fywna6_dafny_dspmspv_DSpMSpV.rs",
+      "loc": 64
+    },
+    {
+      "dest": "example_00805.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_longest_prefix_LongestCommonPrefix.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00806.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_809_IsSmaller.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00807.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_prac3_ex2_GetEven.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00808.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_3_InsertionSortMultiset_Sort.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00809.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_578_Interleave.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00810.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Selection_Sort_Standard_selectionSorted.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00811.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_610_RemoveElement.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00812.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_588_DifferenceMinMax.rs",
+      "loc": 43
+    },
+    {
+      "dest": "example_00813.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-duck_tmp_tmplawbgxjo_ex3_BadSort.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00814.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal_verication_dafny_tmp_tmpwgl2qz28_Challenges_ex7_Sorter.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00815.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_554_FindOddNumbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00816.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-language-server_tmp_tmpkir0kenl_Test_vstte2012_Two-Way-Sort_two_way_sort.rs",
+      "loc": 33
+    },
+    {
+      "dest": "example_00817.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/software_analysis_tmp_tmpmt6bo9sf_ss_selection_sort.rs",
+      "loc": 46
+    },
+    {
+      "dest": "example_00818.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_return_seven_M.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00819.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification-Project_tmp_tmp9gmwsmyp_strings3_haveCommonKSubstring.rs",
+      "loc": 52
+    },
+    {
+      "dest": "example_00820.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/VerifiedMergeSortDafny_tmp_tmpva7qms1b_MergeSort_mergeSimple.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00821.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_InsertionSort_InsertionSort.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00822.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_Percentile_PercentileNonUniqueAnswer.rs",
+      "loc": 36
+    },
+    {
+      "dest": "example_00823.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification_tmp_tmpuyt21wjt_Dafny_strings3_haveCommonKSubstring.rs",
+      "loc": 50
+    },
+    {
+      "dest": "example_00824.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/assertive-programming-assignment-1_tmp_tmp3h_cj44u_FindRange_BinarySearch.rs",
+      "loc": 33
+    },
+    {
+      "dest": "example_00825.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Prog-Fun-Solutions_tmp_tmp7_gmnz5f_extra_mod2_mod2.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00826.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_examples_relativeOrder_FindEvenNumbers.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00827.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/vfag_tmp_tmpc29dxm1j_sumar_componentes_suma_componentes.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00828.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-demo_tmp_tmpkgr_dvdi_Dafny_BinarySearch_BinarySearch.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00829.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseSeparate_separate.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00830.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Simulink-To_dafny_tmp_tmpbcuesj2t_Tank_checkRegulation.rs",
+      "loc": 50
+    },
+    {
+      "dest": "example_00831.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_basic_examples_BubbleSort_bubbleSort.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00832.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/llm-verified-eval_tmp_tmpd2deqn_i_dafny_0_has_close_elements.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00833.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_455_MonthHas31Days.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00834.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification-Project_tmp_tmp9gmwsmyp_strings3_isSubstring.rs",
+      "loc": 38
+    },
+    {
+      "dest": "example_00835.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-duck_tmp_tmplawbgxjo_p1_SumArray.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00836.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_728_AddLists.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00837.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BinaryAddition_BinaryAddition.rs",
+      "loc": 63
+    },
+    {
+      "dest": "example_00838.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_online_max_onlineMax.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00839.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_750_AddTupleToList.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00840.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_3_SelectionSortMultiset_Sort.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00841.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MIEIC_mfes_tmp_tmpq3ho7nve_exams_mt2_19_p5_partition.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00842.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_273_SubtractSequences.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00843.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cs245-verification_tmp_tmp0h_nxhqp_SortingIssues_FirstAttempt_sort.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00844.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_106_AppendArrayToSeq.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00845.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/FlexWeek_tmp_tmpc_tfdj_3_reverse_Reverse.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00846.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/FlexWeek_tmp_tmpc_tfdj_3_ex4_join.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00847.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_integer_square_root_SquareRoot.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00848.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/MFES_2021_tmp_tmpuljn8zd9_Exams_Special_Exam_03_2020_4_CatalanNumbers_calcC.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00849.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_431_HasCommonElement.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00850.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_641_NthNonagonalNumber.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00851.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/AssertivePrograming_tmp_tmpwf43uz0e_DivMode_Unary_IterativeDivMod.rs",
+      "loc": 92
+    },
+    {
+      "dest": "example_00852.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_432_MedianLength.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00853.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafleet_tmp_tmpa2e4kb9v_0001-0050_0003-longest-substring-without-repeating-characters_lengthOfLongestSubstring.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00854.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_basic_examples_BubbleSort_sol_bubbleSort.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00855.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/feup-mfes_tmp_tmp6_a1y5a5_examples_SelectionSort_selectionSort.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00856.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_max_array_maxArray.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00857.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBubbleSort_bubbleSorta.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00858.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_insert_insert.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00859.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_leetcode_validAnagram_isAnagram.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00860.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_304_ElementAtIndexAfterRotation.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00861.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_swap_sim_SwapSimultaneous.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00862.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_04_Hoangkim_ex_04_Hoangkim_intDiv.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00863.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session8Exercises_ExerciseInsertionSort_InsertionSort.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00864.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_advanced_examples_MatrixMultiplication_multiply.rs",
+      "loc": 55
+    },
+    {
+      "dest": "example_00865.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_tmp_tmp59p638nn_examples_SelectionSort_SelectionnSort.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00866.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Insertion_Sorted_Standard_sorting.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00867.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_69_ContainsSequence.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00868.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_1_LinearSearch_SearchLoop.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00869.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_triple2_Triple.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00870.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_803_IsPerfectSquare.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00871.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseSelSort_selSort.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00872.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBubbleSort_bubbleSort.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00873.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_616_ElementWiseModulo.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00874.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/verified-using-dafny_tmp_tmp7jatpjyn_longestZero_longestZero.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00875.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Practice_tmp_tmphnmt4ovh_BST_InsertBST.rs",
+      "loc": 40
+    },
+    {
+      "dest": "example_00876.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_598_IsArmstrong.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00877.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_reverse_reverse.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00878.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session10Exercises_ExerciseBarrier_barrier.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00879.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/assertive-programming-assignment-1_tmp_tmp3h_cj44u_FindRange_FindRange.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00880.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_projects_tmp_tmpjutqwjv4_tutorial_tutorial_FindZero.rs",
+      "loc": 58
+    },
+    {
+      "dest": "example_00881.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_filter_Filter.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00882.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_435_LastDigit.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00883.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/feup-mfes_tmp_tmp6_a1y5a5_examples_SelectionSort_findMin.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00884.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-experiences_tmp_tmp150sm9qy_dafny_started_tutorial_dafny_tutorial_array_FindMax.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00885.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_577_FactorialOfLastDigit.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00886.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_436_FindNegativeNumbers.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00887.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_07_Hoangkim_ex07_Hoangkim_FindMin.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00888.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_update_array_UpdateElements.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00889.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_misc_tmp_tmpg4vzlnm1_rosetta_code_fibonacci_sequence_FibonacciIterative.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00890.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-programs_tmp_tmpnso9eu7u_Algorithms___sorting_bubble-sort_BubbleSort.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00891.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-exercise_tmp_tmpouftptir_absIt_AbsIt.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00892.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_mathematical_objects_verification_examples_fast_exp_FastExp.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00893.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_751_IsMinHeap.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00894.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_verified_algorithms_lol_sort_swap.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00895.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_573_UniqueProduct.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00896.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-programs_tmp_tmpcwodh6qh_src_factorial_factorial.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00897.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_binary_search_BinarySearch.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00898.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session3Exercises_ExerciseMaximum_mfirstMaximum.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00899.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/vfag_tmp_tmpc29dxm1j_Verificacion_torneo_torneo.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00900.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_733_FindFirstOccurrence.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00901.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_627_SmallestMissingNumber.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00902.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-building-and-verification-Projects_tmp_tmp5tm1srrn_CVS-projeto_handout1_queryFast.rs",
+      "loc": 25
+    },
+    {
+      "dest": "example_00903.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Grind75_tmp_tmpsxfz3i4r_problems_twoSum_twoSum.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00904.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-building-and-verification-Projects_tmp_tmp5tm1srrn_CVS-projeto_aula3_sumBackwards.rs",
+      "loc": 42
+    },
+    {
+      "dest": "example_00905.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_790_IsEvenAtIndexEven.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00906.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_70_AllSequencesEqualLength.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00907.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_606_DegreesToRadians.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00908.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_exam_ex2_Getmini.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00909.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_min_array_minArray.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00910.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_586_SplitAndAppend.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00911.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Programmverifikation-und-synthese_tmp_tmppurk6ime_PVS_Assignment_ex_06_Hoangkim_ex_06_hoangkim_gcdI.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00912.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_array_append_append.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00913.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Valid_Palindrome_valid_panlindrome_isPalindrome.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00914.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Practice_tmp_tmphnmt4ovh_Pattern_Matching_FindAllOccurrences.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00915.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal_verication_dafny_tmp_tmpwgl2qz28_Challenges_ex6_BullsCows.rs",
+      "loc": 59
+    },
+    {
+      "dest": "example_00916.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_755_SecondSmallest.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00917.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_227_MinOfThree.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00918.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_625_SwapFirstAndLast.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00919.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_793_LastPosition.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00920.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_1_LinearSearch_SearchRecursive.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00921.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_476_SumMinMax.rs",
+      "loc": 45
+    },
+    {
+      "dest": "example_00922.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_474_ReplaceChars.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00923.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session7Exercises_ExerciseBinarySearch_otherbSearch.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00924.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_759_IsDecimalWithTwoPrecision.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00925.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_Heimaverkefni_3_InsertionSortMultiset_Search.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00926.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-programs_tmp_tmpcwodh6qh_src_expt_expt.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00927.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_792_CountLists.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00928.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/DafnyPrograms_tmp_tmp74_f9k_c_automaton_ExecuteAutomaton.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00929.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_find_Find.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00930.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/BinarySearchTree_tmp_tmp_bn2twp5_bst4copy_insert.rs",
+      "loc": 73
+    },
+    {
+      "dest": "example_00931.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_784_FirstEvenOddIndices.rs",
+      "loc": 32
+    },
+    {
+      "dest": "example_00932.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_623_PowerOfListElements.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00933.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny-Exercises_tmp_tmpjm75muf__Session4Exercises_ExerciseFirstNegative_mfirstNegative.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00934.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_projects_tmp_tmpjutqwjv4_tutorial_tutorial_Find.rs",
+      "loc": 55
+    },
+    {
+      "dest": "example_00935.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_array_concat_concat.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00936.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_798_ArraySum.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00937.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/formal_verication_dafny_tmp_tmpwgl2qz28_Challenges_ex7_Exchanger.rs",
+      "loc": 35
+    },
+    {
+      "dest": "example_00938.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_IsPrime.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00939.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/AssertivePrograming_tmp_tmpwf43uz0e_MergeSort_MergeSort.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00940.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_examples_tmp_tmp8qotd4ez_leetcode_0069-sqrt_mySqrt.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00941.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/SENG2011_tmp_tmpgk5jq85q_ass2_ex1_StringSwap.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00942.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_swap_in_array_swap.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00943.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_Reverse.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00944.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafleet_tmp_tmpa2e4kb9v_0001-0050_0005-longest-palindromic-substring_expand_from_center.rs",
+      "loc": 71
+    },
+    {
+      "dest": "example_00945.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_599_SumAndAverage.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00946.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_145_MaxDifference.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00947.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/veri-sparse_tmp_tmp15fywna6_dafny_spmv_SpMV.rs",
+      "loc": 28
+    },
+    {
+      "dest": "example_00948.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_133_SumOfNegatives.rs",
+      "loc": 24
+    },
+    {
+      "dest": "example_00949.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Quick_Sort_threshold.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00950.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_triple4_Triple.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00951.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Software-Verification_tmp_tmpv4ueky2d_Non-overlapping_Intervals_non_overlapping_intervals_non_overlapping_intervals.rs",
+      "loc": 39
+    },
+    {
+      "dest": "example_00952.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_2_SharedElements.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00953.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_tmp_tmp49a6ihvk_m4_DutchFlag.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00954.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_741_AllCharactersSame.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00955.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_770_SumOfFourthPowerOfOddNumbers.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00956.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_127_Multiply.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00957.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_414_AnyValueExists.rs",
+      "loc": 10
+    },
+    {
+      "dest": "example_00958.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-Verification_tmp_tmpuyt21wjt_Dafny_strings3_maxCommonSubstringLength.rs",
+      "loc": 49
+    },
+    {
+      "dest": "example_00959.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_234_CubeVolume.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00960.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_InsertionSortSeq_InsertionSort.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00961.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmpj88zq5zt_2-Kontrakte_max_max.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00962.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_ProgramProofs_ch15_SelectionSort.rs",
+      "loc": 22
+    },
+    {
+      "dest": "example_00963.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_762_IsMonthWith30Days.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00964.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_has_close_elements_has_close_elements.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00965.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Programs_tmp_tmp99966ew4_binary_search_BinarySearch.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00966.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_113_IsInteger.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00967.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_linear_search2_LinearSearch.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00968.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_233_CylinderLateralSurfaceArea.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00969.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/630-dafny_tmp_tmpz2kokaiq_Solution_BinarySearch.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00970.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_ProgrammingLanguages_tmp_tmp82_e0kji_ExtraCredit_optimizeCorrect.rs",
+      "loc": 52
+    },
+    {
+      "dest": "example_00971.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/llm-verified-eval_tmp_tmpd2deqn_i_dafny_3_below_zero.rs",
+      "loc": 20
+    },
+    {
+      "dest": "example_00972.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_IntDiv.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00973.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Program-Verification-Dataset_tmp_tmpgbdrlnu__Dafny_algorithms_and_leetcode_ProgramProofs_ch15_QuickSort.rs",
+      "loc": 44
+    },
+    {
+      "dest": "example_00974.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Learning_Experience_tmp_tmpuxvcet_u_week8_12_a3_search_findPositionOfIndex_FindPositionOfElement.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00975.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_105_CountTrue.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00976.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_644_ReverseUptoK.rs",
+      "loc": 19
+    },
+    {
+      "dest": "example_00977.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_579_DissimilarElements.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00978.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny_misc_tmp_tmpg4vzlnm1_rosetta_code_factorial_IterativeFactorial.rs",
+      "loc": 16
+    },
+    {
+      "dest": "example_00979.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_ArraySum.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00980.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_tmp_tmp0wu8wmfr_tests_F1a_Mid.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00981.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/bbfny_tmp_tmpw4m0jvl0_enjoying_Find.rs",
+      "loc": 31
+    },
+    {
+      "dest": "example_00982.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_426_FilterOddNumbers.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00983.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_modify_2d_array_modify_array_element.rs",
+      "loc": 23
+    },
+    {
+      "dest": "example_00984.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Dafny_Learning_Experience_tmp_tmpuxvcet_u_week1_7_A2_Q1_trimmed_copy_-_\u526f\u672c_PreCompute.rs",
+      "loc": 34
+    },
+    {
+      "dest": "example_00985.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_401_IndexWiseAddition.rs",
+      "loc": 18
+    },
+    {
+      "dest": "example_00986.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Clover_min_of_two_Min.rs",
+      "loc": 12
+    },
+    {
+      "dest": "example_00987.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Final-Project-Dafny_tmp_tmpmcywuqox_Attempts_Insertion_Sort_Normal_lookForMin.rs",
+      "loc": 21
+    },
+    {
+      "dest": "example_00988.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_807_FindFirstOdd.rs",
+      "loc": 17
+    },
+    {
+      "dest": "example_00989.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/dafny-synthesis_task_id_94_MinSecondValueFirst.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00990.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/files/Formal-methods-of-software-development_tmp_tmppryvbyty_Bloque_2_Lab6_vector_Sum.rs",
+      "loc": 52
+    },
+    {
+      "dest": "example_00991.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/issues/cmsc433_tmp_tmpe3ob3a0o_dafny_project1_p1-assignment-2_NoDups.rs",
+      "loc": 11
+    },
+    {
+      "dest": "example_00992.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/dafnybench/issues/formal-methods-in-software-engineering_tmp_tmpe7fjnek6_Labs4_gr2_HoareTripleReqEns.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00993.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/polynomial_legendre_legmul.rs",
+      "loc": 14
+    },
+    {
+      "dest": "example_00994.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/io_operations_array_str.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00995.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/ufuncs_types.rs",
+      "loc": 67
+    },
+    {
+      "dest": "example_00996.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/constants_NPY_LOGE10.rs",
+      "loc": 13
+    },
+    {
+      "dest": "example_00997.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/mathematical_functions_fmax.rs",
+      "loc": 27
+    },
+    {
+      "dest": "example_00998.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/polynomial_legendre_legvander.rs",
+      "loc": 15
+    },
+    {
+      "dest": "example_00999.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/constants_euler_gamma.rs",
+      "loc": 9
+    },
+    {
+      "dest": "example_01000.rs",
+      "repo": "vericoding",
+      "src": "benchmarks/verus/numpy_triple/files/mathematical_functions_sinh.rs",
+      "loc": 16
+    }
+  ]
+}
