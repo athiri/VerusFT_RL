@@ -60,7 +60,7 @@ To mimic real-world deployment scenarios:
 
 ### Specification Evaluation
 
-We evaluate generated specifications using an executable proxy:
+We evaluate generated specifications using an executable proxy to scale checks beyond manual proof inspection and to approximate spec soundness/completeness with concrete behaviors:
 
 1. Generate positive and negative input/output pairs from code (see `data/coq-translation/extraction_verus.rs` for the `triangle` / `loop_triangle` source used below).
    - **Positive pairs**: Inputs and outputs that satisfy the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `6`, matching `ensures sum == triangle(n as nat)`).
