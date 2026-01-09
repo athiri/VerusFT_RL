@@ -39,8 +39,8 @@ def load_model(model_path="./sft_output"):
 
 def generate_code(model, tokenizer, prompt, max_length=300):
     """Generate Verus code from a prompt."""
-    # Tokenize input
-    inputs = tokenizer(prompt, return_tensors="pt")
+    # Tokenize input and move to model's device
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     
     # Generate
     outputs = model.generate(
