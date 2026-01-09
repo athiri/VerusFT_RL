@@ -186,7 +186,7 @@ python test_inference.py
 
 **Current prototype limitations (as of Dec 2, 2025):**
 
-- ❌ **High compute requirements**: Qwen2.5-72B requires substantial GPU resources
+- ❌ **High compute requirements**: Qwen2.5-72B and Qwen3-Coder-480B require substantial GPU resources
 - ❌ **No Verus evaluation**: Training metrics (loss, token accuracy) don't measure actual verification success
 - ❌ **No minimizer integration**: Dataset is hand-crafted, not automatically generated
 - ❌ **Single-task only**: No multi-task training across spec generation, code synthesis, and repair
@@ -802,7 +802,7 @@ This repo is designed to support multiple small research projects (e.g., rotatio
 | 4 | **SFT for Proof/Invariant Repair (Task C)** | 📋 Planned | Hard | Build dataset of (broken, error) → (fixed), train repair models |
 | 5 | **Benchmark & Evaluation Harness** | 📋 Planned | Medium | Automate Verus compilation, execution, and metric collection |
 | 6 | **AST/Structure Ablation Study** | 📋 Planned | Advanced | Design AST encodings, run controlled ablations vs. text-only |
-| 7 | **Qwen Model Baseline Evaluation** | 📋 Planned | Easy-Medium | Run Qwen2.5-Coder models (0.5B, 1.5B, 7B) on Verus tasks, collect zero-shot and few-shot baselines, compare with the Qwen2.5-72B prototype |
+| 7 | **Qwen Model Baseline Evaluation** | 📋 Planned | Easy-Medium | Run Qwen2.5-Coder models (0.5B, 1.5B, 7B) on Verus tasks, collect zero-shot and few-shot baselines, compare with the Qwen2.5-72B baseline |
 
 ### Getting Started with a Subproject
 
@@ -833,7 +833,7 @@ This repo is designed to support multiple small research projects (e.g., rotatio
 
 **Goal**: Establish strong baseline results for code-specialized models before fine-tuning.
 
-**Why this matters**: The current prototype uses Qwen2.5-72B. We need to measure how well smaller code-specialized models like Qwen2.5-Coder perform on Verus tasks *before* fine-tuning to quantify the value of SFT.
+**Why this matters**: The current open-model baseline uses Qwen2.5-72B. We need to measure how well smaller code-specialized models like Qwen2.5-Coder perform on Verus tasks *before* fine-tuning to quantify the value of SFT.
 
 **Deliverables**:
 1. **Inference script** for running Qwen models on Verus prompts
@@ -945,7 +945,7 @@ python sft_example.py
 ```
 
 **What happens during training:**
-- Loads Qwen2.5-72B base model and tokenizer
+- Loads Qwen2.5-Coder-7B base model and tokenizer by default (configurable)
 - Applies LoRA adapters for efficient fine-tuning
 - Trains on 10 Verus examples for 10 epochs
 - Saves adapter weights to `./sft_output/` (~6MB)
@@ -961,6 +961,8 @@ Training complete! Model saved to ./sft_output/
 ```
 
 **Training time:** ~15 seconds on a modern GPU, ~2 minutes on CPU
+
+> **Note:** The example defaults to Qwen2.5-Coder-7B for portability. If you switch to Qwen2.5-72B or Qwen3-Coder-480B, ensure you have sufficient GPU memory and consider device mapping or quantization to avoid OOM errors.
 
 ### 2. Inference
 
@@ -1023,14 +1025,15 @@ Edit `sft_example.py` to:
 
 ### Switching Base Models
 
-The current implementation uses Qwen2.5-72B. To use a different model, edit `sft_example.py`:
+The current implementation defaults to Qwen2.5-Coder-7B for a runnable example. To use a different model, edit `sft_example.py`:
 
 ```python
 # Replace this line:
-model_name = "Qwen/Qwen2.5-72B"
+model_name = "Qwen/Qwen2.5-Coder-7B"
 
 # With one of these recommended models:
-model_name = "Qwen/Qwen2.5-Coder-7B"  # Recommended for smaller GPU setups
+model_name = "Qwen/Qwen2.5-72B"  # Open-model baseline (very large)
+# model_name = "Qwen/Qwen2.5-Coder-7B"  # Recommended for smaller GPU setups
 # model_name = "Qwen/Qwen2.5-Coder-14B"
 # model_name = "Qwen/Qwen2.5-Coder-32B"
 ```
@@ -1172,14 +1175,14 @@ VerusSFT/
 ## FAQ
 
 <details>
-<summary><b>Why start with Qwen2.5-72B instead of a smaller code model?</b></summary>
+<summary><b>Why default to Qwen2.5-Coder-7B in the example script?</b></summary>
 
-Qwen2.5-72B is used for the current prototype because it:
-- Provides strong code-focused priors for Verus-style tasks
-- Sets a high-quality baseline before testing smaller models
-- Aligns with the repository's goal of verification-capable generation
+Qwen2.5-Coder-7B is used in the example script because it:
+- Runs on more accessible hardware than 72B/480B-scale models
+- Makes the training script runnable without specialized infrastructure
+- Still reflects a code-focused baseline for Verus-style tasks
 
-**Next step:** Evaluate smaller Qwen2.5-Coder variants for speed/compute tradeoffs.
+**Next step:** Evaluate Qwen2.5-72B and Qwen3-Coder-480B for large-scale baselines, and smaller Qwen2.5-Coder variants for speed/compute tradeoffs.
 </details>
 
 <details>

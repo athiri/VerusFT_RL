@@ -10,7 +10,7 @@ instruction→completion task).  The key steps are:
     (completion).  In a real project you would replace the examples below with
     your own curated data.
 
-2.  Load a pre‑trained model and tokenizer.  The example uses Qwen2.5-72B,
+2.  Load a pre‑trained model and tokenizer.  The example uses Qwen2.5-Coder-7B,
     a code-specialized model, but you can substitute any causal language model
     compatible with Hugging Face transformers.  If you wish to use LoRA for
     parameter-efficient fine‑tuning, you can provide a `LoraConfig` (see below).
@@ -29,6 +29,7 @@ instruction→completion task).  The key steps are:
 
 from datasets import Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers.utils import is_accelerate_available
 from trl import SFTTrainer, SFTConfig
 
 # Optional: LoRA configuration for parameter‑efficient fine‑tuning
@@ -90,13 +91,13 @@ def main():
     # Load your dataset
     train_dataset = build_dataset()
 
-    # Choose a base model. Using Qwen2.5-72B - a larger code-specialized model
-    # that should have better performance on complex Verus code generation.
+    # Choose a base model. Defaulting to Qwen2.5-Coder-7B for a runnable example.
+    # For large-scale baselines, use Qwen2.5-72B.
     # Alternative options:
-    # - "Qwen/Qwen2.5-Coder-7B" (smaller, faster, less VRAM)
+    # - "Qwen/Qwen2.5-72B" (best quality, requires substantial GPU memory)
     # - "Qwen/Qwen2.5-Coder-14B" (high quality, requires 32GB+ VRAM)
     # - "Qwen/Qwen2.5-Coder-32B" (best quality, requires 80GB+ VRAM)
-    model_name = "Qwen/Qwen2.5-72B"
+    model_name = "Qwen/Qwen2.5-Coder-7B"
 
     # Load tokenizer and model.  Use ``tokenizer`` to map strings to token
     # sequences and ``model`` to initialize the pre‑trained weights.
@@ -106,7 +107,14 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model_load_kwargs = {
+        "torch_dtype": "auto",
+        "low_cpu_mem_usage": True,
+    }
+    if is_accelerate_available():
+        model_load_kwargs["device_map"] = "auto"
+
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_load_kwargs)
     model.config.pad_token_id = tokenizer.pad_token_id
 
     # Define training configuration.  Adjust hyperparameters according to your
