@@ -155,7 +155,7 @@ python test_inference.py
 **Current Implementation Status** (as of December 2025):
 
 - ✅ **Parameter-efficient fine-tuning with LoRA**
-- ✅ **10 diverse Verus training examples** (seed set, expanding soon)
+- ✅ **Verus formal verification dataset (14,659 verified samples)** with train/val/test splits
 - ✅ **Configurable training hyperparameters**
 - ✅ **Inference script for testing trained models**
 - ✅ **Small adapter weights** (~6.2MB) instead of full model
@@ -180,12 +180,11 @@ python test_inference.py
 
 **Current prototype limitations (as of Dec 2, 2025):**
 
-- ❌ **Tiny dataset**: Only 10 training examples (not representative of real Verus code diversity)
 - ❌ **No code-specialized base model**: Using GPT-2 instead of models trained on code
 - ❌ **No Verus evaluation**: Training metrics (loss, token accuracy) don't measure actual verification success
 - ❌ **No minimizer integration**: Dataset is hand-crafted, not automatically generated
 - ❌ **Single-task only**: No multi-task training across spec generation, code synthesis, and repair
-- ❌ **No benchmark suite**: No standardized held-out test set for evaluation
+- ❌ **No benchmark suite integration**: A standardized held-out test set exists but is not wired into evaluation scripts
 
 **What this means:**
 - The prototype validates the *training infrastructure* (LoRA, SFT pipeline)
@@ -1086,22 +1085,31 @@ For users without local GPU access:
 
 ## Dataset
 
-### Current Dataset (Seed Set)
+### Current Dataset (Verus Formal Verification Dataset)
 
-The training dataset includes **10 examples** covering common Verus patterns:
+The repository now includes a **14,659-example** Verus formal verification dataset with **100% verification rate**, organized across three tasks (A/B/C) and stored in JSONL + SQLite formats.
 
-| Task Type | Examples | Coverage |
-|-----------|----------|----------|
-| Specification Generation | 5 | `abs`, `max`, `min`, array bounds, division |
-| Code Synthesis | 3 | `add_one`, `double`, `subtract` |
-| Combined Spec + Code | 2 | `is_positive`, `square` |
+**Location:** `workspace/min_dataset/`
 
-**Example format:**
-```python
-{
-    "text": "Add Verus specs to this function:\n```rust\n...\n```\n```verus\n...\n```"
-}
-```
+**Splits (80/10/10, combined):**
+| Split | Examples |
+|-------|----------|
+| Train | 11,725 |
+| Val | 1,466 |
+| Test | 1,468 |
+| **Total** | **14,659** |
+
+**Task coverage (totals):**
+| Task | Examples |
+|------|----------|
+| Task A — Code → Specs | 3,677 |
+| Task B — Specs → Code | 3,251 |
+| Task C — Repair | 7,731 |
+
+**Formats:**
+- `dataset.jsonl` (full dataset)
+- `dataset.sqlite3` (queryable format)
+- `splits/*.jsonl` (task-specific and combined splits)
 
 ### Adding Your Own Examples
 
