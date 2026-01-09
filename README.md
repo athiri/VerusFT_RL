@@ -71,7 +71,7 @@ We evaluate generated specifications using an executable proxy to scale checks b
      5. Deduplicate and label pairs, then feed them into the executable-proxy check.
    - **Positive pairs**: Inputs and outputs that satisfy the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `6`, matching `ensures sum == triangle(n as nat)`).
    - **Negative pairs**: Inputs and outputs that violate the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `5`, or inputs that violate `requires triangle(n as nat) < 0x1_0000_0000`).
-2. Check whether the generated `requires` / `ensures` formulas (note that precondition and postcondition evaluation can use different pair sets or criteria):
+2. Check whether the generated `requires` / `ensures` formulas (note that precondition and postcondition evaluation can use different pair sets or criteria because preconditions filter valid inputs, while postconditions validate outputs for those valid inputs):
    - Accept valid behaviors (soundness).
    - Reject invalid behaviors (completeness).
 3. Aggregate results into quantitative metrics.
