@@ -4,6 +4,18 @@ This repository collects datasets and evaluation infrastructure for post-trainin
 
 ---
 
+## 🎯 Current Priority: Task Specifications & Evaluation
+
+**📄 [Task Specifications Document](./workspace/TASK_SPECIFICATIONS.md)** — Complete input/output formats and evaluation methods for all three tasks:
+
+| Task | Input | Output | Evaluation Method |
+|------|-------|--------|-------------------|
+| **A** | Code without specs | Specifications | Positive/negative proxy testing |
+| **B** | Signature + specs | Full implementation | Execute & compare outputs |
+| **C** | Broken code | Fixed code | Verify with Verus |
+
+---
+
 ## Overview
 
 We collect diverse Verus-related supervision signals and use them to:
@@ -68,7 +80,7 @@ To mimic real-world deployment scenarios:
 
 We evaluate generated specifications using an executable proxy to scale checks beyond manual proof inspection and to approximate spec soundness/completeness with concrete behaviors:
 
-1. Generate positive and negative input/output pairs from code (see `data/coq-translation/extraction_verus.rs` for the `triangle` / `loop_triangle` source used below).
+1. Generate positive and negative input/output pairs from code (see [`data/coq-translation/extraction_verus.rs`](./data/coq-translation/extraction_verus.rs) for the `triangle` / `loop_triangle` source used below).
    - **Pair-generation plan**:
      1. Choose a target function and extract its `requires`/`ensures` plus any referenced `spec fn` definitions.
      2. Sample inputs that satisfy the `requires` clauses (use small bounded domains first; expand with random or symbolic sampling).
@@ -232,6 +244,8 @@ python test_inference.py
 3. **Task C — Error-Guided Repair** 📋 *Planned*
    - Input: Code + spec + Verus error message
    - Output: Patched invariant, spec, or proof block
+
+📄 **Detailed Task Specifications**: See [workspace/TASK_SPECIFICATIONS.md](./workspace/TASK_SPECIFICATIONS.md) for complete input/output formats and evaluation methods for each task.
 
 ### 🔬 Secondary Goal (Research Question)
 
@@ -1122,6 +1136,8 @@ The repository now includes a **14,659-example** Verus formal verification datas
 | Task A — Code → Specs | 3,677 |
 | Task B — Specs → Code | 3,251 |
 | Task C — Repair | 7,731 |
+
+📄 **Task I/O & Evaluation Details**: [workspace/TASK_SPECIFICATIONS.md](./workspace/TASK_SPECIFICATIONS.md)
 
 **Formats:**
 - `dataset.jsonl` (full dataset)
