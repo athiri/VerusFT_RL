@@ -2,18 +2,33 @@
 Simple inference script to test the fine-tuned Verus code generation model.
 """
 
+import os
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.utils import is_accelerate_available
 from peft import PeftModel
+
+BASE_MODEL_NAME = os.getenv("VERUS_BASE_MODEL", "Qwen/Qwen2.5-Coder-7B")
+# Override with VERUS_BASE_MODEL to point at larger checkpoints (ensure enough VRAM).
 
 def load_model(model_path="./sft_output"):
     """Load the fine-tuned model with LoRA adapter."""
     print(f"Loading model from {model_path}...")
     
     # Load base model
-    base_model = AutoModelForCausalLM.from_pretrained("gpt2")
+    model_load_kwargs = {
+        "torch_dtype": "auto",
+        "low_cpu_mem_usage": True,
+    }
+    if is_accelerate_available():
+        model_load_kwargs["device_map"] = "auto"
+
+    base_model = AutoModelForCausalLM.from_pretrained(BASE_MODEL_NAME, **model_load_kwargs)
     
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     
     # Load LoRA adapter
     model = PeftModel.from_pretrained(base_model, model_path)
@@ -24,8 +39,8 @@ def load_model(model_path="./sft_output"):
 
 def generate_code(model, tokenizer, prompt, max_length=300):
     """Generate Verus code from a prompt."""
-    # Tokenize input
-    inputs = tokenizer(prompt, return_tensors="pt")
+    # Tokenize input and move to model's device
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     
     # Generate
     outputs = model.generate(
@@ -76,6 +91,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-

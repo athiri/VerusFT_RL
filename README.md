@@ -44,6 +44,12 @@ We will post-train large code models starting with:
 - Qwen2.5-72B
 - Qwen3-Coder-480B
 
+For closed models, we use:
+
+- GPT-5.2
+- o1
+- Claude Opus 4.5
+
 Before any post-training, we evaluate baseline performance on both open-source and closed models (where available). This ensures improvements can be attributed to data and training rather than evaluation artifacts.
 
 ---
@@ -188,7 +194,7 @@ python test_inference.py
 
 **Current prototype limitations (as of Dec 2, 2025):**
 
-- ❌ **No code-specialized base model**: Using GPT-2 instead of models trained on code
+- ❌ **High compute requirements**: Qwen2.5-72B and Qwen3-Coder-480B require substantial GPU resources
 - ❌ **No Verus evaluation**: Training metrics (loss, token accuracy) don't measure actual verification success
 - ❌ **No minimizer integration**: Dataset is hand-crafted, not automatically generated
 - ❌ **Single-task only**: No multi-task training across spec generation, code synthesis, and repair
@@ -474,7 +480,7 @@ Training is done in an instruction-style format compatible with downstream usage
 
 Compare fine-tuned models against:
 
-1. **Zero-shot baselines**: GPT-4, Claude, Qwen2.5-Coder (no fine-tuning)
+1. **Zero-shot baselines**: GPT-5.2, o1, Claude Opus 4.5, Qwen2.5-72B, Qwen3-Coder-480B (no fine-tuning)
 2. **Few-shot prompting**: With 3-5 in-context examples
 3. **VeriStruct**: Retrieval-augmented prompting baseline
 4. **Text-only SFT**: Our approach
@@ -804,7 +810,7 @@ This repo is designed to support multiple small research projects (e.g., rotatio
 | 4 | **SFT for Proof/Invariant Repair (Task C)** | 📋 Planned | Hard | Build dataset of (broken, error) → (fixed), train repair models |
 | 5 | **Benchmark & Evaluation Harness** | 📋 Planned | Medium | Automate Verus compilation, execution, and metric collection |
 | 6 | **AST/Structure Ablation Study** | 📋 Planned | Advanced | Design AST encodings, run controlled ablations vs. text-only |
-| 7 | **Qwen Model Baseline Evaluation** | 📋 Planned | Easy-Medium | Run Qwen2.5-Coder models (0.5B, 1.5B, 7B) on Verus tasks, collect zero-shot and few-shot baselines, compare with GPT-2 prototype |
+| 7 | **Qwen Model Baseline Evaluation** | 📋 Planned | Easy-Medium | Run Qwen2.5-Coder models (0.5B, 1.5B, 7B) on Verus tasks, collect zero-shot and few-shot baselines, compare with the Qwen2.5-72B baseline |
 
 ### Getting Started with a Subproject
 
@@ -835,13 +841,13 @@ This repo is designed to support multiple small research projects (e.g., rotatio
 
 **Goal**: Establish strong baseline results for code-specialized models before fine-tuning.
 
-**Why this matters**: The current prototype uses GPT-2 (a general-purpose model). We need to measure how well code-specialized models like Qwen2.5-Coder perform on Verus tasks *before* fine-tuning to quantify the value of SFT.
+**Why this matters**: The current open-model baseline uses Qwen2.5-72B. We need to measure how well smaller code-specialized models like Qwen2.5-Coder perform on Verus tasks *before* fine-tuning to quantify the value of SFT.
 
 **Deliverables**:
 1. **Inference script** for running Qwen models on Verus prompts
 2. **Zero-shot evaluation**: Raw model performance on 10-20 test examples
 3. **Few-shot evaluation**: Performance with 3-5 in-context examples
-4. **Comparison report**: Baseline metrics vs. GPT-2 (see [Evaluation](#phase-1-evaluation))
+4. **Comparison report**: Baseline metrics vs. Qwen2.5-72B (see [Evaluation](#phase-1-evaluation))
 5. **Documentation**: Best prompts, temperature settings, and failure modes
 
 **Technical steps**:
@@ -947,7 +953,7 @@ python sft_example.py
 ```
 
 **What happens during training:**
-- Loads GPT-2 base model and tokenizer
+- Loads Qwen2.5-Coder-7B base model and tokenizer by default (configurable)
 - Applies LoRA adapters for efficient fine-tuning
 - Trains on 10 Verus examples for 10 epochs
 - Saves adapter weights to `./sft_output/` (~6MB)
@@ -963,6 +969,8 @@ Training complete! Model saved to ./sft_output/
 ```
 
 **Training time:** ~15 seconds on a modern GPU, ~2 minutes on CPU
+
+> **Note:** The example defaults to Qwen2.5-Coder-7B for portability. If you switch to Qwen2.5-72B or Qwen3-Coder-480B, ensure you have sufficient GPU memory and consider device mapping or quantization to avoid OOM errors.
 
 ### 2. Inference
 
@@ -1020,21 +1028,22 @@ Edit `sft_example.py` to:
 |-----------|---------|-------------|-------|
 | `r` | 16 | LoRA rank | Higher = more capacity but larger adapter |
 | `lora_alpha` | 32 | LoRA scaling parameter | Typically 2× the rank |
-| `target_modules` | `["c_attn", "c_proj"]` | Layers to apply LoRA | GPT-2 specific; adjust for other models |
+| `target_modules` | `["q_proj", "k_proj", "v_proj", "o_proj"]` | Layers to apply LoRA | Qwen2.5 attention layers; adjust for other models |
 | `lora_dropout` | 0.05 | Dropout rate | Prevents overfitting |
 
 ### Switching Base Models
 
-The current implementation uses GPT-2. To use a different model, edit `sft_example.py`:
+The current implementation defaults to Qwen2.5-Coder-7B for a runnable example. To use a different model, edit `sft_example.py`:
 
 ```python
 # Replace this line:
-model_name = "gpt2"
+model_name = "Qwen/Qwen2.5-Coder-7B"
 
 # With one of these recommended models:
-model_name = "Qwen/Qwen2.5-Coder-1.5B"  # Recommended for code
-# model_name = "bigcode/starcoder2-3b"
-# model_name = "deepseek-ai/deepseek-coder-1.3b-base"
+model_name = "Qwen/Qwen2.5-72B"  # Open-model baseline (very large)
+# model_name = "Qwen/Qwen2.5-Coder-7B"  # Recommended for smaller GPU setups
+# model_name = "Qwen/Qwen2.5-Coder-14B"
+# model_name = "Qwen/Qwen2.5-Coder-32B"
 ```
 
 **Note**: When changing models, update `target_modules` in the LoRA config to match the new model's architecture.
@@ -1047,7 +1056,7 @@ model_name = "Qwen/Qwen2.5-Coder-1.5B"  # Recommended for code
 
 | Use Case | RAM | GPU | Training Time (10 epochs) | Notes |
 |----------|-----|-----|---------------------------|-------|
-| **Prototype (GPT-2)** | 8GB | CPU or any GPU | ~2 min (CPU), ~15s (GPU) | Good for testing pipeline |
+| **Large models (72B)** | 128GB+ | 80GB+ VRAM (A100/H100) | 1-3 hours | Full-scale research experiments |
 | **Small models (1.5B)** | 16GB | 8GB VRAM (RTX 3070+) | ~5-10 min | Qwen2.5-Coder-1.5B, DeepSeek-Coder-1.3B |
 | **Medium models (3B)** | 32GB | 16GB VRAM (RTX 4080+) | ~15-30 min | StarCoder2-3B, CodeLlama-7B with aggressive LoRA |
 | **Large models (7B+)** | 64GB+ | 24GB+ VRAM (RTX 4090/A100) | 1-3 hours | Full-scale research experiments |
@@ -1055,7 +1064,7 @@ model_name = "Qwen/Qwen2.5-Coder-1.5B"  # Recommended for code
 ### Disk Space
 
 - **Python dependencies**: ~5GB (PyTorch, transformers, etc.)
-- **Base model cache**: 0.5GB (GPT-2) to 15GB (7B models)
+- **Base model cache**: 15GB (7B models) to 140GB+ (72B models)
 - **LoRA adapters**: 6MB (r=16) to 50MB (r=64)
 - **Verus**: ~2GB (includes Z3 and dependencies)
 - **Dataset**: 10MB (current) to 500MB+ (planned full dataset)
@@ -1066,8 +1075,8 @@ model_name = "Qwen/Qwen2.5-Coder-1.5B"  # Recommended for code
 
 For users without local GPU access:
 
-- **Google Colab** (Free tier): Sufficient for GPT-2 and small models, 12GB GPU
-- **Google Colab Pro**: Recommended for 1.5B-3B models, better GPU options
+- **Google Colab** (Free tier): Sufficient for small models, 12GB GPU
+- **Google Colab Pro**: Recommended for 1.5B-7B models, better GPU options
 - **AWS/GCP/Azure**: For large-scale experiments and production training
 - **Lambda Labs / RunPod**: Cost-effective GPU rentals for research
 
@@ -1174,14 +1183,14 @@ VerusSFT/
 ## FAQ
 
 <details>
-<summary><b>Why start with GPT-2 instead of a larger code model?</b></summary>
+<summary><b>Why default to Qwen2.5-Coder-7B in the example script?</b></summary>
 
-GPT-2 is used for the initial prototype because it:
-- Trains quickly (~15 seconds) for rapid iteration
-- Works on CPU or small GPUs
-- Validates the training pipeline before scaling up
+Qwen2.5-Coder-7B is used in the example script because it:
+- Runs on more accessible hardware than 72B/480B-scale models
+- Makes the training script runnable without specialized infrastructure
+- Still reflects a code-focused baseline for Verus-style tasks
 
-**Next step:** Switch to code-specific models like Qwen2.5-Coder or StarCoder2.
+**Next step:** Evaluate Qwen2.5-72B and Qwen3-Coder-480B for large-scale baselines, and smaller Qwen2.5-Coder variants for speed/compute tradeoffs.
 </details>
 
 <details>
