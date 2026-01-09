@@ -169,9 +169,9 @@ verus! {{
                 "code_extracted": extracted_code,
             }
 
-        # Run Verus verification
+        # Run Verus verification (--crate-type=lib for library code without main)
         result = subprocess.run(
-            [verus_path, temp_file],
+            [verus_path, "--crate-type=lib", temp_file],
             capture_output=True,
             text=True,
             timeout=timeout,

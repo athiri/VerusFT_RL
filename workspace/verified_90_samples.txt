@@ -1,0 +1,4529 @@
+================================================================================
+SAMPLE 1/90
+================================================================================
+ID: task_a_6dfdc8f8658e
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn can_step(e: Expr) -> bool
+    {
+    match e {
+        Expr::App { e1, e2 } => {
+            can_step(*e1) ||
+            (is_value(*e1) && can_step(*e2)) ||
+            (is_value(*e1) && is_value(*e2) && is_lam_expr(*e1))
+        }
+        Expr::If { cond, .. } => {
+            can_step(*cond) || is_tru_expr(*cond) || is_fls_expr(*cond)
+        }
+        Expr::Succ { e } => can_step(*e),
+        Expr::Pred { e } => can_step(*e) || is_zero_expr(*e) || (is_succ_expr(*e) && is_numeric_value(*e)),
+        Expr::IsZero { e } => can_step(*e) || is_zero_expr(*e) || (is_succ_expr(*e) && is_numeric_value(*e)),
+        _ => false,
+    }
+}
+
+} // verus!
+
+--- target_text ---
+decreases e
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn is_numeric_value(e: Expr) -> bool
+    decreases e
+{
+    match e {
+        Expr::Zero => true,
+        Expr::Succ { e } => is_numeric_value(*e),
+        _ => false,
+    }
+}
+
+pub open spec fn is_succ_expr(e: Expr) -> bool {
+    match e {
+        Expr::Succ { .. } => true,
+        _ => false,
+    }
+}
+
+pub open spec fn is_zero_expr(e: Expr) -> bool {
+    match e {
+        Expr::Zero => true,
+        _ => false,
+    }
+}
+
+
+pub open spec fn is_value(e: Expr) -> bool
+    decreases e
+{
+    match e {
+        Expr::Lam { .. } => true,
+        Expr::Tru => true,
+        Expr::Fls => true,
+        Expr::Zero => true,
+        Expr::Succ { e } => is_numeric_value(*e),
+        _ => false,
+    }
+}
+
+pub open spec fn is_lam_expr(e: Expr) -> bool {
+    match e {
+        Expr::Lam { .. } => true,
+        _ => false,
+    }
+}
+
+pub open spec fn is_tru_expr(e: Expr) -> bool {
+    match e {
+        Expr::Tru => true,
+        _ => false,
+    }
+}
+
+pub open spec fn is_fls_expr(e: Expr) -> bool {
+    match e {
+        Expr::Fls => true,
+        _ => false,
+    }
+}
+
+
+pub type Var = nat;
+
+pub enum Ty {
+    TBool,
+    TNat,
+    TArrow { t1: Box<Ty>, t2: Box<Ty> },
+}
+
+pub enum Expr {
+    Var { x: Var },
+    Lam { x: Var, ty: Ty, body: Box<Expr> },
+    App { e1: Box<Expr>, e2: Box<Expr> },
+    Tru,
+    Fls,
+    If { cond: Box<Expr>, then_br: Box<Expr>, else_br: Box<Expr> },
+    Zero,
+    Succ { e: Box<Expr> },
+    Pred { e: Box<Expr> },
+    IsZero { e: Box<Expr> },
+}
+
+
+pub open spec fn can_step(e: Expr) -> bool
+    decreases e
+{
+    match e {
+        Expr::App { e1, e2 } => {
+            can_step(*e1) ||
+            (is_value(*e1) && can_step(*e2)) ||
+            (is_value(*e1) && is_value(*e2) && is_lam_expr(*e1))
+        }
+        Expr::If { cond, .. } => {
+            can_step(*cond) || is_tru_expr(*cond) || is_fls_expr(*cond)
+        }
+        Expr::Succ { e } => can_step(*e),
+        Expr::Pred { e } => can_step(*e) || is_zero_expr(*e) || (is_succ_expr(*e) && is_numeric_value(*e)),
+        Expr::IsZero { e } => can_step(*e) || is_zero_expr(*e) || (is_succ_expr(*e) && is_numeric_value(*e)),
+        _ => false,
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 2/90
+================================================================================
+ID: task_a_7b5f7e94f536
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn findMax (a : & [i32]) -> (max : i32)   { let mut max = a [0] ; let mut i = 1 ; while i < a . len ()  { if a [i] > max { max = a [i] ; } i += 1 ; } max }
+
+} // verus!
+
+--- target_text ---
+requires a . len () > 0 
+ensures exists | k : int | 0 <= k < a . len () && max == a [k] , forall | k : int | 0 <= k < a . len () ==> max >= a [k]
+decreases a . len () - i
+invariant 0 <= i <= a . len () , exists | k : int | 0 <= k < i && max == a [k] , forall | k : int | 0 <= k < i ==> max >= a [k]
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn findMax (a : & [i32]) -> (max : i32) requires a . len () > 0 , ensures exists | k : int | 0 <= k < a . len () && max == a [k] , forall | k : int | 0 <= k < a . len () ==> max >= a [k] { let mut max = a [0] ; let mut i = 1 ; while i < a . len () invariant 0 <= i <= a . len () , exists | k : int | 0 <= k < i && max == a [k] , forall | k : int | 0 <= k < i ==> max >= a [k] decreases a . len () - i { if a [i] > max { max = a [i] ; } i += 1 ; } max }
+
+} // verus!
+
+================================================================================
+SAMPLE 3/90
+================================================================================
+ID: task_a_d5076568e671
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn element_wise_division (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >)   { let mut result = Vec :: new () ; let mut i = 0 ; while i < arr1 . len ()  {   let div_result = arr1 [i] / arr2 [i] ; result . push (div_result) ; i += 1 ; } result }
+
+} // verus!
+
+--- target_text ---
+requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | m : int | 0 <= m < arr1 . len () ==> (MIN <= # [trigger] arr1 [m] / # [trigger] arr2 [m] <= MAX) 
+ensures result . len () == arr1 . len () , forall | i : int | 0 <= i < result . len () ==> # [trigger] result [i] == # [trigger] (arr1 [i] / arr2 [i]) 
+decreases arr1 . len () - i 
+invariant i <= arr1 . len () , arr1 . len () == arr2 . len () , result . len () == i , forall | j : int | 0 <= j < i ==> # [trigger] result [j] == # [trigger] (arr1 [j] / arr2 [j]) , forall | k : int | 0 <= k < arr2 . len () ==> arr2 [k] != 0 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn element_wise_division (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >) requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | m : int | 0 <= m < arr1 . len () ==> (MIN <= # [trigger] arr1 [m] / # [trigger] arr2 [m] <= MAX) , ensures result . len () == arr1 . len () , forall | i : int | 0 <= i < result . len () ==> # [trigger] result [i] == # [trigger] (arr1 [i] / arr2 [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < arr1 . len () invariant i <= arr1 . len () , arr1 . len () == arr2 . len () , result . len () == i , forall | j : int | 0 <= j < i ==> # [trigger] result [j] == # [trigger] (arr1 [j] / arr2 [j]) , forall | k : int | 0 <= k < arr2 . len () ==> arr2 [k] != 0 , decreases arr1 . len () - i , { assert (i < arr2 . len ()) ; assert (arr2 [i as int] != 0) ; let div_result = arr1 [i] / arr2 [i] ; result . push (div_result) ; i += 1 ; } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 4/90
+================================================================================
+ID: task_a_819b538916ee
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn witness_satisfies<A>(gen: Set<A>, pred: spec_fn(A) -> bool)
+
+{
+}
+
+} // verus!
+
+--- target_text ---
+requires has_witness(gen, pred)
+    ensures find_witness(gen, pred).is_some()
+ensures find_witness(gen, pred).is_some()
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn find_witness<A>(gen: Set<A>, pred: spec_fn(A) -> bool) -> Option<A> {
+    if exists|a: A| gen.contains(a) && pred(a) {
+        Option::Some(choose|a: A| gen.contains(a) && pred(a))
+    } else {
+        Option::None
+    }
+}
+
+pub open spec fn has_witness<A>(gen: Set<A>, pred: spec_fn(A) -> bool) -> bool {
+    exists|a: A| gen.contains(a) && pred(a)
+}
+
+
+pub proof fn witness_satisfies<A>(gen: Set<A>, pred: spec_fn(A) -> bool)
+    requires has_witness(gen, pred)
+    ensures find_witness(gen, pred).is_some()
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 5/90
+================================================================================
+ID: task_a_2f121e2a452e
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn search_insert_postcond (xs : Seq < int > , target : int , result : int) -> bool { let in_bounds = result <= xs . len () ; let all_before_less = all_before_less (xs , target , result) ; let inserted_correctly = result < xs . len () ==> target <= xs [result] ; in_bounds && all_before_less && inserted_correctly }
+spec fn search_insert_precond (xs : Seq < int > , target : int) -> bool { is_sorted (xs) }
+spec fn is_sorted (xs : Seq < int >) -> bool { forall | i : int , j : int | 0 <= i < j < xs . len () ==> xs [i] < xs [j] }
+spec fn all_before_less (xs : Seq < int > , target : int , result : int) -> bool { forall | i : int | 0 <= i < result ==> xs [i] < target }
+fn helper (ys : & Vec < int > , target : int , idx : usize) -> (result : usize)   { if idx == ys . len () { idx } else if target <= ys [idx] { idx } else { helper (ys , target , idx + 1) } }
+fn search_insert (xs : & Vec < int > , target : int) -> (result : usize)   { helper (xs , target , 0) }
+
+} // verus!
+
+--- target_text ---
+requires idx <= ys . len () , is_sorted (ys @) , forall | i : int | 0 <= i < idx ==> ys @ [i] < target , search_insert_precond (xs @ , target) 
+ensures idx <= result <= ys . len () , forall | i : int | idx <= i < result ==> ys @ [i] < target , result < ys . len () ==> target <= ys @ [result as int] , search_insert_postcond (xs @ , target , result as int) , idx <= result <= ys . len () , forall | i : int | idx <= i < result ==> ys @ [i] < target , result < ys . len () ==> target <= ys @ [result as int] , decreases ys . len () - idx 
+decreases ys . len () - idx 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn search_insert_postcond (xs : Seq < int > , target : int , result : int) -> bool { let in_bounds = result <= xs . len () ; let all_before_less = all_before_less (xs , target , result) ; let inserted_correctly = result < xs . len () ==> target <= xs [result] ; in_bounds && all_before_less && inserted_correctly }
+spec fn search_insert_precond (xs : Seq < int > , target : int) -> bool { is_sorted (xs) }
+spec fn is_sorted (xs : Seq < int >) -> bool { forall | i : int , j : int | 0 <= i < j < xs . len () ==> xs [i] < xs [j] }
+spec fn all_before_less (xs : Seq < int > , target : int , result : int) -> bool { forall | i : int | 0 <= i < result ==> xs [i] < target }
+fn helper (ys : & Vec < int > , target : int , idx : usize) -> (result : usize) requires idx <= ys . len () , is_sorted (ys @) , forall | i : int | 0 <= i < idx ==> ys @ [i] < target , ensures idx <= result <= ys . len () , forall | i : int | idx <= i < result ==> ys @ [i] < target , result < ys . len () ==> target <= ys @ [result as int] , decreases ys . len () - idx , { if idx == ys . len () { idx } else if target <= ys [idx] { idx } else { helper (ys , target , idx + 1) } }
+fn search_insert (xs : & Vec < int > , target : int) -> (result : usize) requires search_insert_precond (xs @ , target) , ensures search_insert_postcond (xs @ , target , result as int) , { helper (xs , target , 0) }
+
+} // verus!
+
+================================================================================
+SAMPLE 6/90
+================================================================================
+ID: task_a_08fa248ef5f5
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn linear_search (a : & [int] , e : int) -> (n : usize)   { let mut i = 0 ; while i < a . len ()  { if a [i] == e { return i ; } i += 1 ; }  0 }
+
+} // verus!
+
+--- target_text ---
+requires exists | i : int | 0 <= i < a . len () && a [i] == e 
+ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | 0 <= k < n ==> a [k] != e 
+decreases a . len () - i
+invariant 0 <= i <= a . len () , forall | k : int | 0 <= k < i ==> a [k] != e , exists | j : int | i <= j < a . len () && a [j] == e 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn linear_search (a : & [int] , e : int) -> (n : usize) requires exists | i : int | 0 <= i < a . len () && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | 0 <= k < n ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | 0 <= k < i ==> a [k] != e , exists | j : int | i <= j < a . len () && a [j] == e , decreases a . len () - i { if a [i] == e { return i ; } i += 1 ; } proof { assert (false) ; } 0 }
+
+} // verus!
+
+================================================================================
+SAMPLE 7/90
+================================================================================
+ID: task_a_fbc23ba4a7da
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn strlen (string : & Vec < char >) -> (length : usize)  { string . len () }
+
+} // verus!
+
+--- target_text ---
+ensures length == string . len () 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn strlen (string : & Vec < char >) -> (length : usize) ensures length == string . len () , { string . len () }
+
+} // verus!
+
+================================================================================
+SAMPLE 8/90
+================================================================================
+ID: task_a_dfd8fc138793
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn odd (n : int) -> bool { n % 2 == 1 }
+fn odd_exec (n : u32) -> (result : bool)  { n % 2 == 1 }
+fn partition_odd_even (a : & mut Vec < u32 >)   { let mut left = 0 ; let mut right = a . len () ; while left < right  { if odd_exec (a [left]) { left += 1 ; } else { right -= 1 ; let temp = a [left] ; let right_val = a [right] ; a . set (left , right_val) ; a . set (right , temp) ; } } }
+
+} // verus!
+
+--- target_text ---
+requires old (a) . len () > 0 
+ensures result == odd (n as int), a @ . len () == old (a) @ . len () 
+decreases right - left
+invariant left <= right , right <= a . len () , a @ . len () == old (a) @ . len () 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn odd (n : int) -> bool { n % 2 == 1 }
+fn odd_exec (n : u32) -> (result : bool) ensures result == odd (n as int) { n % 2 == 1 }
+fn partition_odd_even (a : & mut Vec < u32 >) requires old (a) . len () > 0 , ensures a @ . len () == old (a) @ . len () , { let mut left = 0 ; let mut right = a . len () ; while left < right invariant left <= right , right <= a . len () , a @ . len () == old (a) @ . len () , decreases right - left { if odd_exec (a [left]) { left += 1 ; } else { right -= 1 ; let temp = a [left] ; let right_val = a [right] ; a . set (left , right_val) ; a . set (right , temp) ; } } }
+
+} // verus!
+
+================================================================================
+SAMPLE 9/90
+================================================================================
+ID: task_a_f124c9f1ecb4
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn shrink_seq_removes_elements(xs: Seq<nat>, i: int)
+
+{
+    let removes = Seq::new(xs.len(), |j: int| xs.remove(j));
+
+}
+
+} // verus!
+
+--- target_text ---
+requires xs.len() > 1,
+             0 <= i < xs.len() as int
+    ensures shrink_seq_nat(xs)[i].len() == xs.len() - 1
+ensures shrink_seq_nat(xs)[i].len() == xs.len() - 1
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn shrink_seq_nat(xs: Seq<nat>) -> Seq<Seq<nat>>
+    decreases xs.len()
+{
+    if xs.len() == 0 {
+        Seq::empty()
+    } else if xs.len() == 1 {
+        // Single element: try empty sequence
+        seq![Seq::empty()]
+    } else {
+        // Multiple elements: try removing each element
+        let removes = Seq::new(xs.len(), |i: int| xs.remove(i));
+        removes
+    }
+}
+
+
+pub proof fn shrink_seq_removes_elements(xs: Seq<nat>, i: int)
+    requires xs.len() > 1,
+             0 <= i < xs.len() as int
+    ensures shrink_seq_nat(xs)[i].len() == xs.len() - 1
+{
+    let removes = Seq::new(xs.len(), |j: int| xs.remove(j));
+    assert(shrink_seq_nat(xs) =~= removes);
+    assert(removes[i] == xs.remove(i));
+    assert(xs.remove(i).len() == xs.len() - 1);
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 10/90
+================================================================================
+ID: task_a_32c198187058
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains (arr : & Vec < i32 > , key : i32) -> (result : bool)  { for i in 0 .. arr . len ()  { if arr [i] == key { return true ; } } false }
+
+} // verus!
+
+--- target_text ---
+ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) 
+invariant forall | j : int | 0 <= j < i ==> arr [j] != key 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains (arr : & Vec < i32 > , key : i32) -> (result : bool) ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) , { for i in 0 .. arr . len () invariant forall | j : int | 0 <= j < i ==> arr [j] != key , { if arr [i] == key { return true ; } } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 11/90
+================================================================================
+ID: task_a_fa9fe227ebaf
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn same_seed_same_replay(info: ReplayInfo)
+    
+{
+}
+
+} // verus!
+
+--- target_text ---
+ensures replay_produces_same_test(info, info)
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub struct ReplayInfo {
+    pub seed: nat,
+    pub size: nat,
+    pub test_number: nat,
+}
+
+pub open spec fn replay_produces_same_test(info1: ReplayInfo, info2: ReplayInfo) -> bool {
+    info1.seed == info2.seed && info1.size == info2.size ==>
+        info1.test_number == info2.test_number
+}
+
+
+pub proof fn same_seed_same_replay(info: ReplayInfo)
+    ensures replay_produces_same_test(info, info)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 12/90
+================================================================================
+ID: task_a_8e010ca81f70
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn zip_with_m_length<A, B, C>(
+    xs: Seq<A>,
+    ys: Seq<B>,
+    f: spec_fn(A, B) -> Option<C>,
+    result: Seq<C>
+)
+    
+     { xs.len() }
+
+} // verus!
+
+--- target_text ---
+requires zip_with_m_option(xs, ys, f) == Option::Some(result)
+    ensures result.len() == if xs.len() < ys.len()
+ensures result.len() == if xs.len() < ys.len()
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn zip_with_m_option<A, B, C>(xs: Seq<A>, ys: Seq<B>, f: spec_fn(A, B) -> C) -> Option<Seq<C>>
+    decreases xs.len()
+{
+    if xs.len() != ys.len() {
+        None
+    } else if xs.len() == 0 {
+        Some(Seq::empty())
+    } else {
+        match zip_with_m_option(xs.drop_first(), ys.drop_first(), f) {
+            None => None,
+            Some(rest) => Some(seq![f(xs.first(), ys.first())].add(rest))
+        }
+    }
+}
+
+pub proof fn zip_with_m_option_len<A, B, C>(xs: Seq<A>, ys: Seq<B>, f: spec_fn(A, B) -> C, result: Seq<C>)
+    requires zip_with_m_option(xs, ys, f) == Option::Some(result)
+    ensures result.len() == xs.len()
+    decreases xs.len()
+{
+    if xs.len() > 0 {
+        match zip_with_m_option(xs.drop_first(), ys.drop_first(), f) {
+            Some(rest) => {
+                zip_with_m_option_len(xs.drop_first(), ys.drop_first(), f, rest);
+            }
+            None => {}
+        }
+    }
+}
+
+} // verus!
+
+
+================================================================================
+SAMPLE 13/90
+================================================================================
+ID: task_a_fa97f81ffe2d
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn trie_lookup<V>(t: Trie<V>, key: Seq<bool>) -> Option<V>
+    {
+    match t {
+        Trie::Leaf => None,
+        Trie::Node { value, left, right } =>
+            if key.len() == 0 {
+                value
+            } else if key[0] {
+                trie_lookup(*right, key.skip(1))
+            } else {
+                trie_lookup(*left, key.skip(1))
+            }
+    }
+}
+
+} // verus!
+
+--- target_text ---
+decreases key.len()
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub enum Trie<V> {
+    Leaf,
+    Node {
+        value: Option<V>,
+        left: Box<Trie<V>>,   // false branch
+        right: Box<Trie<V>>,  // true branch
+    },
+}
+
+
+pub open spec fn trie_lookup<V>(t: Trie<V>, key: Seq<bool>) -> Option<V>
+    decreases key.len()
+{
+    match t {
+        Trie::Leaf => None,
+        Trie::Node { value, left, right } =>
+            if key.len() == 0 {
+                value
+            } else if key[0] {
+                trie_lookup(*right, key.skip(1))
+            } else {
+                trie_lookup(*left, key.skip(1))
+            }
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 14/90
+================================================================================
+ID: task_a_229fd2450c67
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn prop_true_evals_true()
+    
+{
+}
+
+} // verus!
+
+--- target_text ---
+ensures eval_property(prop_true()) == true
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub enum Property {
+    Bool { value: bool },
+    Conditional { guard: bool, prop: Box<Property> },
+    Conjunction { p1: Box<Property>, p2: Box<Property> },
+    Disjunction { p1: Box<Property>, p2: Box<Property> },
+    ForAll { values: Seq<nat>, prop_fn_result: bool },
+}
+
+pub open spec fn prop_true() -> Property {
+    Property::Bool { value: true }
+}
+
+pub open spec fn eval_property(p: Property) -> bool
+    decreases p
+{
+    match p {
+        Property::Bool { value } => value,
+        Property::Conditional { guard, prop } => {
+            if guard { eval_property(*prop) } else { true }  // Vacuously true
+        }
+        Property::Conjunction { p1, p2 } => eval_property(*p1) && eval_property(*p2),
+        Property::Disjunction { p1, p2 } => eval_property(*p1) || eval_property(*p2),
+        Property::ForAll { values, prop_fn_result } => prop_fn_result,
+    }
+}
+
+
+pub proof fn prop_true_evals_true()
+    ensures eval_property(prop_true()) == true
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 15/90
+================================================================================
+ID: task_a_8a32f56ddb47
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn remove_kth_element (list : & Vec < i32 > , k : usize) -> (new_list : Vec < i32 >)   { let mut new_list = Vec :: new () ; let mut i = 0 ; while i < k - 1  { new_list . push (list [i]) ; i += 1 ; } let mut j = k ; while j < list . len ()  { new_list . push (list [j]) ; j += 1 ; } new_list }
+
+} // verus!
+
+--- target_text ---
+requires list . len () > 0 , 0 < k < list @ . len () 
+ensures new_list @ == list @ . subrange (0 , k - 1 as int) . add (list @ . subrange (k as int , list . len () as int) ,) 
+decreases k - 1 - i , list . len () - j 
+invariant 0 <= i <= k - 1 , k - 1 < list . len () , new_list @ == list @ . subrange (0 , i as int) , k <= j <= list . len () , k < list . len () , new_list @ == list @ . subrange (0 , k - 1 as int) . add (list @ . subrange (k as int , j as int)) 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn remove_kth_element (list : & Vec < i32 > , k : usize) -> (new_list : Vec < i32 >) requires list . len () > 0 , 0 < k < list @ . len () , ensures new_list @ == list @ . subrange (0 , k - 1 as int) . add (list @ . subrange (k as int , list . len () as int) ,) , { let mut new_list = Vec :: new () ; let mut i = 0 ; while i < k - 1 invariant 0 <= i <= k - 1 , k - 1 < list . len () , new_list @ == list @ . subrange (0 , i as int) , decreases k - 1 - i , { new_list . push (list [i]) ; i += 1 ; } let mut j = k ; while j < list . len () invariant k <= j <= list . len () , k < list . len () , new_list @ == list @ . subrange (0 , k - 1 as int) . add (list @ . subrange (k as int , j as int)) , decreases list . len () - j , { new_list . push (list [j]) ; j += 1 ; } new_list }
+
+} // verus!
+
+================================================================================
+SAMPLE 16/90
+================================================================================
+ID: task_a_87ea9560c5a7
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn count_accepted<A>(values: Seq<A>, predicate: spec_fn(A) -> bool) -> nat
+    {
+    if values.len() == 0 {
+        0
+    } else {
+        let first = values[0];
+        let rest = count_accepted(values.drop_first(), predicate);
+        if predicate(first) { 1 + rest } else { rest }
+    }
+}
+
+} // verus!
+
+--- target_text ---
+decreases values.len()
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn count_accepted<A>(values: Seq<A>, predicate: spec_fn(A) -> bool) -> nat
+    decreases values.len()
+{
+    if values.len() == 0 {
+        0
+    } else {
+        let first = values[0];
+        let rest = count_accepted(values.drop_first(), predicate);
+        if predicate(first) { 1 + rest } else { rest }
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 17/90
+================================================================================
+ID: task_a_92d9db1ecdcf
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn binary_search_precond (a : Seq < i32 > , key : i32) -> bool { forall | i : int , j : int | 0 <= i < j < a . len () ==> a [i] <= a [j] }
+fn binary_search_loop (a : & Vec < i32 > , key : i32 , lo : usize , hi : usize) -> (result : usize)   { if lo == hi { return lo ; } let mid = lo + (hi - lo) / 2 ; if a [mid] < key { binary_search_loop (a , key , mid + 1 , hi) } else { binary_search_loop (a , key , lo , mid) } }
+fn binary_search (a : & Vec < i32 > , key : i32) -> (result : usize)   { binary_search_loop (a , key , 0 , a . len ()) }
+
+} // verus!
+
+--- target_text ---
+requires lo <= hi <= a . len () , binary_search_precond (a @ , key) , forall | i : int | 0 <= i < lo ==> a [i] < key , forall | i : int | hi <= i < a . len () ==> a [i] >= key , binary_search_precond (a @ , key) 
+ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , decreases hi - lo
+decreases hi - lo
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn binary_search_precond (a : Seq < i32 > , key : i32) -> bool { forall | i : int , j : int | 0 <= i < j < a . len () ==> a [i] <= a [j] }
+fn binary_search_loop (a : & Vec < i32 > , key : i32 , lo : usize , hi : usize) -> (result : usize) requires lo <= hi <= a . len () , binary_search_precond (a @ , key) , forall | i : int | 0 <= i < lo ==> a [i] < key , forall | i : int | hi <= i < a . len () ==> a [i] >= key , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , decreases hi - lo { if lo == hi { return lo ; } let mid = lo + (hi - lo) / 2 ; if a [mid] < key { binary_search_loop (a , key , mid + 1 , hi) } else { binary_search_loop (a , key , lo , mid) } }
+fn binary_search (a : & Vec < i32 > , key : i32) -> (result : usize) requires binary_search_precond (a @ , key) , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , { binary_search_loop (a , key , 0 , a . len ()) }
+
+} // verus!
+
+================================================================================
+SAMPLE 18/90
+================================================================================
+ID: task_a_3dab0ffa2913
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn max_difference (arr : & Vec < i32 >) -> (diff : i32)   { let mut max_val = arr [0] ; let mut min_val = arr [0] ; let mut idx = 1 ; while idx < arr . len ()  { if arr [idx] > max_val { max_val = arr [idx] ; } if arr [idx] < min_val { min_val = arr [idx] ; } idx = idx + 1 ; } max_val - min_val }
+
+} // verus!
+
+--- target_text ---
+requires arr . len () > 0 , forall | i : int | 0 <= i < arr . len () ==> MIN / 2 < # [trigger] arr [i] < MAX / 2 
+ensures forall | i : int , j : int | 0 <= i < arr . len () && 0 <= j < arr . len () ==> arr [i] - arr [j] <= diff 
+decreases arr . len () - idx
+invariant 1 <= idx <= arr . len () , forall | k : int | 0 <= k < idx ==> arr [k] <= max_val , forall | k : int | 0 <= k < idx ==> min_val <= arr [k] , exists | k : int | 0 <= k < idx && arr [k] == max_val , exists | k : int | 0 <= k < idx && arr [k] == min_val 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn max_difference (arr : & Vec < i32 >) -> (diff : i32) requires arr . len () > 0 , forall | i : int | 0 <= i < arr . len () ==> MIN / 2 < # [trigger] arr [i] < MAX / 2 , ensures forall | i : int , j : int | 0 <= i < arr . len () && 0 <= j < arr . len () ==> arr [i] - arr [j] <= diff , { let mut max_val = arr [0] ; let mut min_val = arr [0] ; let mut idx = 1 ; while idx < arr . len () invariant 1 <= idx <= arr . len () , forall | k : int | 0 <= k < idx ==> arr [k] <= max_val , forall | k : int | 0 <= k < idx ==> min_val <= arr [k] , exists | k : int | 0 <= k < idx && arr [k] == max_val , exists | k : int | 0 <= k < idx && arr [k] == min_val , decreases arr . len () - idx { if arr [idx] > max_val { max_val = arr [idx] ; } if arr [idx] < min_val { min_val = arr [idx] ; } idx = idx + 1 ; } max_val - min_val }
+
+} // verus!
+
+================================================================================
+SAMPLE 19/90
+================================================================================
+ID: task_a_48c949066cae
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn list_deep_clone (arr : & Vec < u64 >) -> (copied : Vec < u64 >)  { let mut copied = Vec :: new () ; let mut index = 0 ; while index < arr . len ()  { copied . push (arr [index]) ; index += 1 ; } copied }
+
+} // verus!
+
+--- target_text ---
+ensures arr @ . len () == copied @ . len () , forall | i : int | (0 <= i < arr . len ()) ==> arr [i] == copied [i] 
+decreases arr . len () - index
+invariant index <= arr . len () , copied @ . len () == index , forall | i : int | (0 <= i < index) ==> arr [i] == copied [i] 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn list_deep_clone (arr : & Vec < u64 >) -> (copied : Vec < u64 >) ensures arr @ . len () == copied @ . len () , forall | i : int | (0 <= i < arr . len ()) ==> arr [i] == copied [i] , { let mut copied = Vec :: new () ; let mut index = 0 ; while index < arr . len () invariant index <= arr . len () , copied @ . len () == index , forall | i : int | (0 <= i < index) ==> arr [i] == copied [i] , decreases arr . len () - index { copied . push (arr [index]) ; index += 1 ; } copied }
+
+} // verus!
+
+================================================================================
+SAMPLE 20/90
+================================================================================
+ID: task_a_babb4104c1c3
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn myfun (a : & mut Vec < i32 > , b : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)   { let mut i = 0 ; while i < N  { a . set (i as usize , N + 1) ; i += 1 ; } }
+
+} // verus!
+
+--- target_text ---
+requires N > 0 , old (a) . len () == N , old (b) . len () == N , old (sum) . len () == 1 , N < 1000 
+ensures forall | k : int | 0 <= k < N ==> a [k] == N + 1 
+decreases N - i 
+invariant 0 <= i <= N , a . len () == N , N < 1000 , forall | k : int | 0 <= k < i ==> a [k as int] == N + 1 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn myfun (a : & mut Vec < i32 > , b : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (b) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures forall | k : int | 0 <= k < N ==> a [k] == N + 1 , { let mut i = 0 ; while i < N invariant 0 <= i <= N , a . len () == N , N < 1000 , forall | k : int | 0 <= k < i ==> a [k as int] == N + 1 , decreases N - i , { a . set (i as usize , N + 1) ; i += 1 ; } }
+
+} // verus!
+
+================================================================================
+SAMPLE 21/90
+================================================================================
+ID: task_a_88a5d8cea0cb
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn encode_char_spec (c : int) -> (result : int) recommends 65 <= c <= 90 , { (c - 65 + 5) % 26 + 65 }
+fn encode_char (c : u8) -> (r : u8)   { let shifted = (c - 65 + 5) % 26 + 65 ; shifted }
+
+} // verus!
+
+--- target_text ---
+requires 65 <= c <= 90 
+ensures r == encode_char_spec (c as int) , 65 <= r <= 90 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn encode_char_spec (c : int) -> (result : int) recommends 65 <= c <= 90 , { (c - 65 + 5) % 26 + 65 }
+fn encode_char (c : u8) -> (r : u8) requires 65 <= c <= 90 , ensures r == encode_char_spec (c as int) , 65 <= r <= 90 , { let shifted = (c - 65 + 5) % 26 + 65 ; shifted }
+
+} // verus!
+
+================================================================================
+SAMPLE 22/90
+================================================================================
+ID: task_a_05396bfaaf4e
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains (arr : & Vec < i32 > , key : i32) -> (result : bool)  { for i in 0 .. arr . len ()  { if arr [i] == key { return true ; } } false }
+fn intersection (arr1 : & Vec < i32 > , arr2 : & Vec < i32 >) -> (result : Vec < i32 >)  { let mut result = Vec :: new () ; for i in 0 .. arr1 . len ()  { let elem = arr1 [i] ; if contains (arr2 , elem) && ! contains (& result , elem) { result . push (elem) ; } } result }
+
+} // verus!
+
+--- target_text ---
+ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) , forall | i : int | 0 <= i < result . len () ==> (arr1 @ . contains (# [trigger] result [i]) && arr2 @ . contains (# [trigger] result [i] ,)) , forall | i : int , j : int | 0 <= i < j < result . len () ==> result [i] != result [j] 
+invariant forall | j : int | 0 <= j < i ==> arr [j] != key , forall | k : int | 0 <= k < result . len () ==> (arr1 @ . contains (# [trigger] result [k]) && arr2 @ . contains (# [trigger] result [k] ,)) , forall | k1 : int , k2 : int | 0 <= k1 < k2 < result . len () ==> result [k1] != result [k2] 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains (arr : & Vec < i32 > , key : i32) -> (result : bool) ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) , { for i in 0 .. arr . len () invariant forall | j : int | 0 <= j < i ==> arr [j] != key , { if arr [i] == key { return true ; } } false }
+fn intersection (arr1 : & Vec < i32 > , arr2 : & Vec < i32 >) -> (result : Vec < i32 >) ensures forall | i : int | 0 <= i < result . len () ==> (arr1 @ . contains (# [trigger] result [i]) && arr2 @ . contains (# [trigger] result [i] ,)) , forall | i : int , j : int | 0 <= i < j < result . len () ==> result [i] != result [j] , { let mut result = Vec :: new () ; for i in 0 .. arr1 . len () invariant forall | k : int | 0 <= k < result . len () ==> (arr1 @ . contains (# [trigger] result [k]) && arr2 @ . contains (# [trigger] result [k] ,)) , forall | k1 : int , k2 : int | 0 <= k1 < k2 < result . len () ==> result [k1] != result [k2] , { let elem = arr1 [i] ; if contains (arr2 , elem) && ! contains (& result , elem) { result . push (elem) ; } } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 23/90
+================================================================================
+ID: task_a_53f84560d550
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn add(n: nat, m: nat) -> nat
+    {
+    if n == 0 {
+        m
+    } else {
+        add((n - 1) as nat, m) + 1
+    }
+}
+
+} // verus!
+
+--- target_text ---
+decreases n
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn add(n: nat, m: nat) -> nat
+    decreases n
+{
+    if n == 0 {
+        m
+    } else {
+        add((n - 1) as nat, m) + 1
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 24/90
+================================================================================
+ID: task_a_728af6aea84d
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn choose_is_bounded(lo: nat, hi: nat)
+
+{
+    }
+
+} // verus!
+
+--- target_text ---
+requires hi > 0
+    ensures gen_outputs_bounded(choose_outputs(lo, hi), (hi - 1) as nat)
+ensures gen_outputs_bounded(choose_outputs(lo, hi), (hi - 1) as nat)
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn in_range(n: nat, lo: nat, hi: nat) -> bool {
+    lo <= n && n < hi
+}
+
+
+pub open spec fn choose_outputs(lo: nat, hi: nat) -> Set<nat> {
+    Set::new(|n: nat| in_range(n, lo, hi))
+}
+
+pub open spec fn gen_outputs_bounded(outputs: Set<nat>, bound: nat) -> bool {
+    forall|n: nat| outputs.contains(n) ==> n <= bound
+}
+
+pub proof fn choose_bounded(lo: nat, hi: nat, n: nat)
+    requires choose_outputs(lo, hi).contains(n)
+    ensures lo <= n && n < hi
+{
+}
+
+
+pub proof fn choose_is_bounded(lo: nat, hi: nat)
+    requires hi > 0
+    ensures gen_outputs_bounded(choose_outputs(lo, hi), (hi - 1) as nat)
+{
+    assert forall|n: nat| choose_outputs(lo, hi).contains(n) implies n <= (hi - 1) as nat by {
+        choose_bounded(lo, hi, n);
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 25/90
+================================================================================
+ID: task_a_991bbe1d1168
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn split_and_append (list : & Vec < i32 > , n : usize) -> (new_list : Vec < i32 >)   { let mut result = Vec :: new () ; let mut i = n ; while i < list . len ()  { result . push (list [i]) ; i += 1 ; } let mut j = 0 ; while j < n  { result . push (list [j]) ; j += 1 ; } result }
+
+} // verus!
+
+--- target_text ---
+requires list @ . len () > 0 , 0 < n < list @ . len () 
+ensures new_list @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , n as int)) 
+decreases list . len () - i , n - j 
+invariant n <= i <= list . len () , result @ == list @ . subrange (n as int , i as int) , 0 <= j <= n , n < list . len () , result @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , j as int)) 
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn split_and_append (list : & Vec < i32 > , n : usize) -> (new_list : Vec < i32 >) requires list @ . len () > 0 , 0 < n < list @ . len () , ensures new_list @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , n as int)) , { let mut result = Vec :: new () ; let mut i = n ; while i < list . len () invariant n <= i <= list . len () , result @ == list @ . subrange (n as int , i as int) , decreases list . len () - i , { result . push (list [i]) ; i += 1 ; } let mut j = 0 ; while j < n invariant 0 <= j <= n , n < list . len () , result @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , j as int)) , decreases n - j , { result . push (list [j]) ; j += 1 ; } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 26/90
+================================================================================
+ID: task_a_edf2a60c3c25
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn dec_eq_nat_sound(a: nat, b: nat)
+    
+{
+}
+
+} // verus!
+
+--- target_text ---
+ensures dec_to_bool(dec_eq_nat(a, b)) <==> (a == b)
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn bool_to_dec(b: bool) -> Dec {
+    if b { Dec::Yes } else { Dec::No }
+}
+
+
+pub enum Dec {
+    Yes,
+    No,
+}
+
+pub open spec fn dec_eq_nat(a: nat, b: nat) -> Dec {
+    bool_to_dec(a == b)
+}
+
+pub open spec fn dec_to_bool(d: Dec) -> bool {
+    match d {
+        Dec::Yes => true,
+        Dec::No => false,
+    }
+}
+
+
+pub proof fn dec_eq_nat_sound(a: nat, b: nat)
+    ensures dec_to_bool(dec_eq_nat(a, b)) <==> (a == b)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 27/90
+================================================================================
+ID: task_a_ace45313dc15
+Task: task_a
+Source: vericoding_ast
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn arithmetic () -> (result : i32)  { 0 }
+
+} // verus!
+
+--- target_text ---
+ensures result < 10
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn arithmetic () -> (result : i32) ensures result < 10 { 0 }
+
+} // verus!
+
+================================================================================
+SAMPLE 28/90
+================================================================================
+ID: task_a_c14d97213b65
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn option_map_m_helper(s: Seq<nat>, f: spec_fn(nat) -> Option<nat>, idx: int, acc: Seq<nat>) -> Option<Seq<nat>>
+    {
+    if idx >= s.len() {
+        Some(acc)
+    } else {
+        match f(s[idx]) {
+            None => None,
+            Some(y) => option_map_m_helper(s, f, idx + 1, acc.push(y)),
+        }
+    }
+}
+
+} // verus!
+
+--- target_text ---
+decreases s.len() - idx
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn option_map_m_helper(s: Seq<nat>, f: spec_fn(nat) -> Option<nat>, idx: int, acc: Seq<nat>) -> Option<Seq<nat>>
+    decreases s.len() - idx
+{
+    if idx >= s.len() {
+        Some(acc)
+    } else {
+        match f(s[idx]) {
+            None => None,
+            Some(y) => option_map_m_helper(s, f, idx + 1, acc.push(y)),
+        }
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 29/90
+================================================================================
+ID: task_a_ea6c87ea707f
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn verify_prop_mul_zero(x: nat)
+    
+{
+}
+
+} // verus!
+
+--- target_text ---
+ensures prop_mul_zero(x)
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn prop_mul_zero(x: nat) -> bool {
+    x * 0 == 0 && 0 * x == 0
+}
+
+
+pub proof fn verify_prop_mul_zero(x: nat)
+    ensures prop_mul_zero(x)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 30/90
+================================================================================
+ID: task_a_1552bba1dfdd
+Task: task_a
+Source: coq_translation
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn get_or_insert_none(default: nat)
+    
+{
+    // Trivially true
+}
+
+} // verus!
+
+--- target_text ---
+ensures get_or_insert(Option::<nat>::None, default) == (Option::Some(default), default)
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn get_or_insert<A>(o: Option<A>, default: A) -> (Option<A>, A) {
+    match o {
+        Option::None => (Option::Some(default), default),
+        Option::Some(x) => (Option::Some(x), x),
+    }
+}
+
+
+pub proof fn get_or_insert_none(default: nat)
+    ensures get_or_insert(Option::<nat>::None, default) == (Option::Some(default), default)
+{
+    // Trivially true
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 31/90
+================================================================================
+ID: task_b_178b93b593a4
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn dec_forall_range_sound(lo: nat, hi: nat, p: spec_fn(nat) -> bool)
+    ensures dec_to_bool(dec_forall_range(lo, hi, p)) == forall_range(lo, hi, p)
+ensures dec_to_bool(dec_forall_range(lo, hi, p)) == forall_range(lo, hi, p)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn dec_forall_range_sound(lo: nat, hi: nat, p: spec_fn(nat) -> bool)
+    ensures dec_to_bool(dec_forall_range(lo, hi, p)) == forall_range(lo, hi, p)
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn forall_range_helper(lo: nat, hi: nat, p: spec_fn(nat) -> bool, i: nat) -> bool
+    decreases hi - i when i <= hi
+{
+    if i >= hi {
+        true
+    } else if !p(i) {
+        false
+    } else {
+        forall_range_helper(lo, hi, p, i + 1)
+    }
+}
+
+pub open spec fn bool_to_dec(b: bool) -> Dec {
+    if b { Dec::Yes } else { Dec::No }
+}
+
+
+pub enum Dec {
+    Yes,
+    No,
+}
+
+pub open spec fn dec_forall_range(lo: nat, hi: nat, p: spec_fn(nat) -> bool) -> Dec {
+    bool_to_dec(forall_range(lo, hi, p))
+}
+
+pub open spec fn forall_range(lo: nat, hi: nat, p: spec_fn(nat) -> bool) -> bool {
+    forall_range_helper(lo, hi, p, lo)
+}
+
+pub open spec fn dec_to_bool(d: Dec) -> bool {
+    match d {
+        Dec::Yes => true,
+        Dec::No => false,
+    }
+}
+
+
+pub proof fn dec_forall_range_sound(lo: nat, hi: nat, p: spec_fn(nat) -> bool)
+    ensures dec_to_bool(dec_forall_range(lo, hi, p)) == forall_range(lo, hi, p)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 32/90
+================================================================================
+ID: task_b_f02c619e0da2
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn binary_search (a : & Vec < i32 > , key : i32) -> (result : usize)
+requires lo <= hi <= a . len () , binary_search_precond (a @ , key) , forall | i : int | 0 <= i < lo ==> a [i] < key , forall | i : int | hi <= i < a . len () ==> a [i] >= key , binary_search_precond (a @ , key) 
+ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , decreases hi - lo
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn binary_search_precond (a : Seq < i32 > , key : i32) -> bool { forall | i : int , j : int | 0 <= i < j < a . len () ==> a [i] <= a [j] }
+fn binary_search_loop (a : & Vec < i32 > , key : i32 , lo : usize , hi : usize) -> (result : usize) requires lo <= hi <= a . len () , binary_search_precond (a @ , key) , forall | i : int | 0 <= i < lo ==> a [i] < key , forall | i : int | hi <= i < a . len () ==> a [i] >= key , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , decreases hi - lo { if lo == hi { return lo ; } let mid = lo + (hi - lo) / 2 ; if a [mid] < key { binary_search_loop (a , key , mid + 1 , hi) } else { binary_search_loop (a , key , lo , mid) } }
+fn binary_search (a : & Vec < i32 > , key : i32) -> (result : usize) requires binary_search_precond (a @ , key) , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , { binary_search_loop (a , key , 0 , a . len ()) }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn binary_search_precond (a : Seq < i32 > , key : i32) -> bool { forall | i : int , j : int | 0 <= i < j < a . len () ==> a [i] <= a [j] }
+fn binary_search_loop (a : & Vec < i32 > , key : i32 , lo : usize , hi : usize) -> (result : usize) requires lo <= hi <= a . len () , binary_search_precond (a @ , key) , forall | i : int | 0 <= i < lo ==> a [i] < key , forall | i : int | hi <= i < a . len () ==> a [i] >= key , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , decreases hi - lo { if lo == hi { return lo ; } let mid = lo + (hi - lo) / 2 ; if a [mid] < key { binary_search_loop (a , key , mid + 1 , hi) } else { binary_search_loop (a , key , lo , mid) } }
+fn binary_search (a : & Vec < i32 > , key : i32) -> (result : usize) requires binary_search_precond (a @ , key) , ensures result <= a . len () , forall | i : int | 0 <= i < result ==> a [i] < key , forall | i : int | result <= i < a . len () ==> a [i] >= key , { binary_search_loop (a , key , 0 , a . len ()) }
+
+} // verus!
+
+================================================================================
+SAMPLE 33/90
+================================================================================
+ID: task_b_fb8fe6ce0b4c
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn number_to_char_impl (n : u8) -> (char_vec : Vec < char >)
+requires 0 <= n <= 9 
+ensures single_digit_number_to_char (n as nat) == output , char_vec @ == number_to_char (n as nat) , char_vec @ == number_to_char (n as nat) , decreases n
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn number_to_char (n : nat) -> (result : Seq < char >) decreases n , { if (n == 0) { seq ! [] } else { number_to_char (n / 10) . add (seq ! [single_digit_number_to_char (n % 10)]) } }
+spec fn single_digit_number_to_char (n : nat) -> (result : char) { if n == 0 { '0' } else if n == 1 { '1' } else if n == 2 { '2' } else if n == 3 { '3' } else if n == 4 { '4' } else if n == 5 { '5' } else if n == 6 { '6' } else if n == 7 { '7' } else if n == 8 { '8' } else { '9' } }
+fn single_digit_number_to_char_impl (n : u8) -> (output : char) requires 0 <= n <= 9 , ensures single_digit_number_to_char (n as nat) == output , { match n { 0 => '0' , 1 => '1' , 2 => '2' , 3 => '3' , 4 => '4' , 5 => '5' , 6 => '6' , 7 => '7' , 8 => '8' , _ => '9' , } }
+fn number_to_char_impl (n : u8) -> (char_vec : Vec < char >) ensures char_vec @ == number_to_char (n as nat) , decreases n { if n == 0 { Vec :: new () } else { let mut result = number_to_char_impl (n / 10) ; let digit_char = single_digit_number_to_char_impl (n % 10) ; result . push (digit_char) ; result } }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn number_to_char (n : nat) -> (result : Seq < char >) decreases n , { if (n == 0) { seq ! [] } else { number_to_char (n / 10) . add (seq ! [single_digit_number_to_char (n % 10)]) } }
+spec fn single_digit_number_to_char (n : nat) -> (result : char) { if n == 0 { '0' } else if n == 1 { '1' } else if n == 2 { '2' } else if n == 3 { '3' } else if n == 4 { '4' } else if n == 5 { '5' } else if n == 6 { '6' } else if n == 7 { '7' } else if n == 8 { '8' } else { '9' } }
+fn single_digit_number_to_char_impl (n : u8) -> (output : char) requires 0 <= n <= 9 , ensures single_digit_number_to_char (n as nat) == output , { match n { 0 => '0' , 1 => '1' , 2 => '2' , 3 => '3' , 4 => '4' , 5 => '5' , 6 => '6' , 7 => '7' , 8 => '8' , _ => '9' , } }
+fn number_to_char_impl (n : u8) -> (char_vec : Vec < char >) ensures char_vec @ == number_to_char (n as nat) , decreases n { if n == 0 { Vec :: new () } else { let mut result = number_to_char_impl (n / 10) ; let digit_char = single_digit_number_to_char_impl (n % 10) ; result . push (digit_char) ; result } }
+
+} // verus!
+
+================================================================================
+SAMPLE 34/90
+================================================================================
+ID: task_b_659e36320796
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn bubble_outer (a : & mut Vec < i32 > , i : usize)
+requires j <= i , i + 1 < old (a) . len () , i < old (a) . len () , j < old (a) . len () , i + 1 < old (a) . len () 
+ensures a . len () == old (a) . len () , a . len () == old (a) . len () , a [i as int] == old (a) [j as int] , a [j as int] == old (a) [i as int] , forall | k : int | 0 <= k < a . len () && k != i && k != j ==> a [k] == old (a) [k] , a . len () == old (a) . len () , a . len () == old (a) . len () , decreases i - j , a . len () == old (a) . len () , decreases i 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn bubble_inner (a : & mut Vec < i32 > , j : usize , i : usize) requires j <= i , i + 1 < old (a) . len () , ensures a . len () == old (a) . len () , decreases i - j , { if j < i { if a [j] > a [j + 1] { swap (a , j , j + 1) ; } bubble_inner (a , j + 1 , i) ; } }
+fn swap (a : & mut Vec < i32 > , i : usize , j : usize) requires i < old (a) . len () , j < old (a) . len () , ensures a . len () == old (a) . len () , a [i as int] == old (a) [j as int] , a [j as int] == old (a) [i as int] , forall | k : int | 0 <= k < a . len () && k != i && k != j ==> a [k] == old (a) [k] , { let temp_i = a [i] ; let temp_j = a [j] ; a . set (i , temp_j) ; a . set (j , temp_i) ; }
+fn bubble_outer (a : & mut Vec < i32 > , i : usize) requires i + 1 < old (a) . len () , ensures a . len () == old (a) . len () , decreases i , { if i > 0 { bubble_inner (a , 0 , i) ; bubble_outer (a , i - 1) ; } }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn bubble_inner (a : & mut Vec < i32 > , j : usize , i : usize) requires j <= i , i + 1 < old (a) . len () , ensures a . len () == old (a) . len () , decreases i - j , { if j < i { if a [j] > a [j + 1] { swap (a , j , j + 1) ; } bubble_inner (a , j + 1 , i) ; } }
+fn swap (a : & mut Vec < i32 > , i : usize , j : usize) requires i < old (a) . len () , j < old (a) . len () , ensures a . len () == old (a) . len () , a [i as int] == old (a) [j as int] , a [j as int] == old (a) [i as int] , forall | k : int | 0 <= k < a . len () && k != i && k != j ==> a [k] == old (a) [k] , { let temp_i = a [i] ; let temp_j = a [j] ; a . set (i , temp_j) ; a . set (j , temp_i) ; }
+fn bubble_outer (a : & mut Vec < i32 > , i : usize) requires i + 1 < old (a) . len () , ensures a . len () == old (a) . len () , decreases i , { if i > 0 { bubble_inner (a , 0 , i) ; bubble_outer (a , i - 1) ; } }
+
+} // verus!
+
+================================================================================
+SAMPLE 35/90
+================================================================================
+ID: task_b_18a8a3491401
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn split_produces_different_seeds(state: GenState)
+ensures split_state(state).0.seed != state.seed || state.seed == 0,
+        split_state(state).1.seed != split_state(state).0.seed || split_state(state).0.seed == 0
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn split_produces_different_seeds(state: GenState)
+    ensures
+        split_state(state).0.seed != state.seed || state.seed == 0,
+        split_state(state).1.seed != split_state(state).0.seed || split_state(state).0.seed == 0
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn advance_seed(state: GenState) -> GenState {
+    GenState {
+        seed: (state.seed * 1103515245 + 12345) % 2147483648,
+        size: state.size,
+        depth: state.depth,
+    }
+}
+
+
+pub struct GenState {
+    pub seed: nat,
+    pub size: nat,
+    pub depth: nat,
+}
+
+pub open spec fn split_state(state: GenState) -> (GenState, GenState) {
+    let left = advance_seed(state);
+    let right = advance_seed(left);
+    (left, right)
+}
+
+
+pub proof fn split_produces_different_seeds(state: GenState)
+    ensures
+        split_state(state).0.seed != state.seed || state.seed == 0,
+        split_state(state).1.seed != split_state(state).0.seed || split_state(state).0.seed == 0
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 36/90
+================================================================================
+ID: task_b_dc28565fd671
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn sum_of_digits_exec (x : u32) -> (result : u32)
+ensures result == sum_of_digits (x as nat)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn sum_of_digits (x : nat) -> nat decreases x { if x == 0 { 0nat } else { (x % 10) + sum_of_digits (x / 10) } }
+# [verifier :: external_body] fn sum_of_digits_exec (x : u32) -> (result : u32) ensures result == sum_of_digits (x as nat) { let mut n = x ; let mut sum = 0u32 ; while n > 0 { sum = sum + (n % 10) ; n = n / 10 ; } sum }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn sum_of_digits (x : nat) -> nat decreases x { if x == 0 { 0nat } else { (x % 10) + sum_of_digits (x / 10) } }
+# [verifier :: external_body] fn sum_of_digits_exec (x : u32) -> (result : u32) ensures result == sum_of_digits (x as nat) { let mut n = x ; let mut sum = 0u32 ; while n > 0 { sum = sum + (n % 10) ; n = n / 10 ; } sum }
+
+} // verus!
+
+================================================================================
+SAMPLE 37/90
+================================================================================
+ID: task_b_ed7268e84226
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize)
+requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 
+ensures sum [0] == 2 * N 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 2 * N , { sum . set (0 , 2 * N as i32) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 2 * N , { sum . set (0 , 2 * N as i32) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 38/90
+================================================================================
+ID: task_b_3f9b98bf2a60
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn fib_lower_bound(n: nat)
+requires n >= 1
+    ensures fib(n) >= (n - 1) as nat
+    decreases n
+ensures fib(n) >= (n - 1) as nat
+    decreases n
+decreases n
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn fib_lower_bound(n: nat)
+    requires n >= 1
+    ensures fib(n) >= (n - 1) as nat
+    decreases n
+{
+    reveal_with_fuel(fib, 3);
+    if n > 2 {
+        fib_lower_bound((n - 1) as nat);
+        fib_lower_bound((n - 2) as nat);
+    }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn fib(n: nat) -> nat
+    decreases n
+{
+    if n == 0 { 0 }
+    else if n == 1 { 1 }
+    else { fib((n - 1) as nat) + fib((n - 2) as nat) }
+}
+
+
+pub proof fn fib_lower_bound(n: nat)
+    requires n >= 1
+    ensures fib(n) >= (n - 1) as nat
+    decreases n
+{
+    reveal_with_fuel(fib, 3);
+    if n > 2 {
+        fib_lower_bound((n - 1) as nat);
+        fib_lower_bound((n - 2) as nat);
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 39/90
+================================================================================
+ID: task_b_6394d02944f0
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize)
+requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e 
+ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize) requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | (0 <= k < i as int) ==> a [k] != e , exists | j : int | (0 <= j < a . len () as int) && a [j] == e , decreases a . len () - i { if a [i] == e { return i ; } i += 1 ; } proof { assert (i == a . len ()) ; assert (forall | k : int | (0 <= k < i as int) ==> a [k] != e) ; assert (exists | j : int | (0 <= j < a . len () as int) && a [j] == e) ; assert (false) ; } 0 }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize) requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | (0 <= k < i as int) ==> a [k] != e , exists | j : int | (0 <= j < a . len () as int) && a [j] == e , decreases a . len () - i { if a [i] == e { return i ; } i += 1 ; } proof { assert (i == a . len ()) ; assert (forall | k : int | (0 <= k < i as int) ==> a [k] != e) ; assert (exists | j : int | (0 <= j < a . len () as int) && a [j] == e) ; assert (false) ; } 0 }
+
+} // verus!
+
+================================================================================
+SAMPLE 40/90
+================================================================================
+ID: task_b_cfc6ccf1ee04
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn remove_preserves(x: nat, y: nat, s: Set<nat>)
+requires x != y
+    ensures set_contains(y, set_remove(x, s)) == set_contains(y, s)
+ensures set_contains(y, set_remove(x, s)) == set_contains(y, s)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn remove_preserves(x: nat, y: nat, s: Set<nat>)
+    requires x != y
+    ensures set_contains(y, set_remove(x, s)) == set_contains(y, s)
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn set_contains(x: nat, s: Set<nat>) -> bool {
+    s.contains(x)
+}
+
+pub open spec fn set_remove(x: nat, s: Set<nat>) -> Set<nat> {
+    s.remove(x)
+}
+
+
+pub proof fn remove_preserves(x: nat, y: nat, s: Set<nat>)
+    requires x != y
+    ensures set_contains(y, set_remove(x, s)) == set_contains(y, s)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 41/90
+================================================================================
+ID: task_b_65fe05bf6dc5
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn run_length_encoder (input : Vec < char >) -> (result : Vec < char >)
+requires run_length_encoder_precond (input @)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn run_length_encoder_precond (input : Seq < char >) -> bool { true }
+fn run_length_encoder (input : Vec < char >) -> (result : Vec < char >) requires run_length_encoder_precond (input @) { return Vec :: new () ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn run_length_encoder_precond (input : Seq < char >) -> bool { true }
+fn run_length_encoder (input : Vec < char >) -> (result : Vec < char >) requires run_length_encoder_precond (input @) { return Vec :: new () ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 42/90
+================================================================================
+ID: task_b_1b6ca1d9ff6b
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool)
+ensures result == in_array (a @ , x) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant forall | j : int | 0 <= j < i ==> a @ [j] != x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant forall | j : int | 0 <= j < i ==> a @ [j] != x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 43/90
+================================================================================
+ID: task_b_ad62c8ff5efd
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn has_common_element (a : & Vec < i32 > , b : & Vec < i32 >) -> (result : bool)
+requires has_common_element_precond (a @ , b @) 
+ensures has_common_element_postcond (a @ , b @ , result) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn has_common_element_precond (a : Seq < i32 > , b : Seq < i32 >) -> bool { a . len () > 0 && b . len () > 0 }
+spec fn has_common_element_postcond (a : Seq < i32 > , b : Seq < i32 > , result : bool) -> bool { (exists | i : int , j : int | 0 <= i < a . len () && 0 <= j < b . len () && a [i] == b [j]) <==> result }
+fn has_common_element (a : & Vec < i32 > , b : & Vec < i32 >) -> (result : bool) requires has_common_element_precond (a @ , b @) , ensures has_common_element_postcond (a @ , b @ , result) , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | ii : int , j : int | 0 <= ii < i && 0 <= j < b @ . len () ==> a @ [ii] != b @ [j] , decreases a . len () - i { let mut j = 0 ; while j < b . len () invariant 0 <= i < a . len () , 0 <= j <= b . len () , forall | jj : int | 0 <= jj < j ==> a @ [i as int] != b @ [jj] , forall | ii : int , jj : int | 0 <= ii < i && 0 <= jj < b @ . len () ==> a @ [ii] != b @ [jj] , decreases b . len () - j { if a [i] == b [j] { return true ; } j += 1 ; } i += 1 ; } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn has_common_element_precond (a : Seq < i32 > , b : Seq < i32 >) -> bool { a . len () > 0 && b . len () > 0 }
+spec fn has_common_element_postcond (a : Seq < i32 > , b : Seq < i32 > , result : bool) -> bool { (exists | i : int , j : int | 0 <= i < a . len () && 0 <= j < b . len () && a [i] == b [j]) <==> result }
+fn has_common_element (a : & Vec < i32 > , b : & Vec < i32 >) -> (result : bool) requires has_common_element_precond (a @ , b @) , ensures has_common_element_postcond (a @ , b @ , result) , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | ii : int , j : int | 0 <= ii < i && 0 <= j < b @ . len () ==> a @ [ii] != b @ [j] , decreases a . len () - i { let mut j = 0 ; while j < b . len () invariant 0 <= i < a . len () , 0 <= j <= b . len () , forall | jj : int | 0 <= jj < j ==> a @ [i as int] != b @ [jj] , forall | ii : int , jj : int | 0 <= ii < i && 0 <= jj < b @ . len () ==> a @ [ii] != b @ [jj] , decreases b . len () - j { if a [i] == b [j] { return true ; } j += 1 ; } i += 1 ; } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 44/90
+================================================================================
+ID: task_b_5cb4af354fe7
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+pub fn myfun (a : & mut Vec < i32 > , b : & mut Vec < i32 > , c : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)
+requires N > 0 , old (a) . len () == N , old (b) . len () == N , old (c) . len () == N , old (sum) . len () == 1 , N < 1000 
+ensures sum [0] <= 3 * N 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , b : & mut Vec < i32 > , c : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (b) . len () == N , old (c) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] <= 3 * N , { sum . set (0 , 0) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , b : & mut Vec < i32 > , c : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (b) . len () == N , old (c) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] <= 3 * N , { sum . set (0 , 0) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 45/90
+================================================================================
+ID: task_b_ca4fd00d9375
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn has_close_elements (numbers : & [i32] , threshold : i32) -> (flag : bool)
+requires i != MIN , threshold > 0 , forall | i : int , j : int | 0 <= i && i < numbers . len () && 0 <= j && j < numbers . len () ==> numbers [i] - numbers [j] < MAX && - (numbers [i] - numbers [j]) < MAX
+ensures i < 0 ==> res == - i , i >= 0 ==> res == i, flag == exists | i : int , j : int | 0 <= i && 0 <= j && i < numbers . len () && j < numbers . len () && i != j && abs_spec (numbers [i] - numbers [j]) < threshold
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn abs_spec (i : int) -> int { if i < 0 { - i } else { i } }
+fn abs (i : i32) -> (res : i32) requires i != MIN , ensures i < 0 ==> res == - i , i >= 0 ==> res == i { if i < 0 { - i } else { i } }
+# [verifier :: loop_isolation (false)] fn has_close_elements (numbers : & [i32] , threshold : i32) -> (flag : bool) requires threshold > 0 , forall | i : int , j : int | 0 <= i && i < numbers . len () && 0 <= j && j < numbers . len () ==> numbers [i] - numbers [j] < MAX && - (numbers [i] - numbers [j]) < MAX ensures flag == exists | i : int , j : int | 0 <= i && 0 <= j && i < numbers . len () && j < numbers . len () && i != j && abs_spec (numbers [i] - numbers [j]) < threshold { let mut i = 0usize ; while i < numbers . len () invariant 0 <= i <= numbers . len () , forall | ii : int , jj : int | 0 <= ii && ii < i && 0 <= jj && jj < numbers . len () && ii != jj ==> abs_spec (numbers [ii] - numbers [jj]) >= threshold decreases numbers . len () - i { let mut j = 0usize ; while j < numbers . len () invariant 0 <= i < numbers . len () , 0 <= j <= numbers . len () , forall | ii : int , jj : int | 0 <= ii && ii < i && 0 <= jj && jj < numbers . len () && ii != jj ==> abs_spec (numbers [ii] - numbers [jj]) >= threshold , forall | jj : int | 0 <= jj && jj < j && (i as int) != jj ==> abs_spec (numbers [i as int] - numbers [jj]) >= threshold decreases numbers . len () - j { if i != j { let diff = numbers [i] - numbers [j] ; let abs_diff = abs (diff) ; if abs_diff < threshold { return true ; } } j += 1 ; } i += 1 ; } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn abs_spec (i : int) -> int { if i < 0 { - i } else { i } }
+fn abs (i : i32) -> (res : i32) requires i != MIN , ensures i < 0 ==> res == - i , i >= 0 ==> res == i { if i < 0 { - i } else { i } }
+# [verifier :: loop_isolation (false)] fn has_close_elements (numbers : & [i32] , threshold : i32) -> (flag : bool) requires threshold > 0 , forall | i : int , j : int | 0 <= i && i < numbers . len () && 0 <= j && j < numbers . len () ==> numbers [i] - numbers [j] < MAX && - (numbers [i] - numbers [j]) < MAX ensures flag == exists | i : int , j : int | 0 <= i && 0 <= j && i < numbers . len () && j < numbers . len () && i != j && abs_spec (numbers [i] - numbers [j]) < threshold { let mut i = 0usize ; while i < numbers . len () invariant 0 <= i <= numbers . len () , forall | ii : int , jj : int | 0 <= ii && ii < i && 0 <= jj && jj < numbers . len () && ii != jj ==> abs_spec (numbers [ii] - numbers [jj]) >= threshold decreases numbers . len () - i { let mut j = 0usize ; while j < numbers . len () invariant 0 <= i < numbers . len () , 0 <= j <= numbers . len () , forall | ii : int , jj : int | 0 <= ii && ii < i && 0 <= jj && jj < numbers . len () && ii != jj ==> abs_spec (numbers [ii] - numbers [jj]) >= threshold , forall | jj : int | 0 <= jj && jj < j && (i as int) != jj ==> abs_spec (numbers [i as int] - numbers [jj]) >= threshold decreases numbers . len () - j { if i != j { let diff = numbers [i] - numbers [j] ; let abs_diff = abs (diff) ; if abs_diff < threshold { return true ; } } j += 1 ; } i += 1 ; } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 46/90
+================================================================================
+ID: task_b_332009c5997f
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn swap_swap<A, B>(p: (A, B)
+ensures swap(swap(p)) == p
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn swap_swap<A, B>(p: (A, B)) ensures swap(swap(p)) == p {}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn swap<A, B>(p: (A, B)) -> (B, A) { (p.1, p.0) }
+
+
+pub proof fn swap_swap<A, B>(p: (A, B)) ensures swap(swap(p)) == p {}
+
+} // verus!
+
+================================================================================
+SAMPLE 47/90
+================================================================================
+ID: task_b_342f4c21e202
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool)
+ensures result == in_array (a @ , x) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant forall | j : int | 0 <= j < i ==> a @ [j] != x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant forall | j : int | 0 <= j < i ==> a @ [j] != x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 48/90
+================================================================================
+ID: task_b_a034c452334d
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn replace_last_element (first : & Vec < i32 > , second : & Vec < i32 >) -> (replaced_list : Vec < i32 >)
+requires first . len () > 0 
+ensures replaced_list @ == first @ . subrange (0 , first . len () - 1) . add (second @) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn replace_last_element (first : & Vec < i32 > , second : & Vec < i32 >) -> (replaced_list : Vec < i32 >) requires first . len () > 0 , ensures replaced_list @ == first @ . subrange (0 , first . len () - 1) . add (second @) , { let mut result = Vec :: new () ; for i in 0 .. (first . len () - 1) invariant i <= first . len () - 1 , result @ == first @ . subrange (0 , i as int) , { result . push (first [i]) ; } for i in 0 .. second . len () invariant i <= second . len () , result @ == first @ . subrange (0 , first . len () - 1) . add (second @ . subrange (0 , i as int)) , { result . push (second [i]) ; } result }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn replace_last_element (first : & Vec < i32 > , second : & Vec < i32 >) -> (replaced_list : Vec < i32 >) requires first . len () > 0 , ensures replaced_list @ == first @ . subrange (0 , first . len () - 1) . add (second @) , { let mut result = Vec :: new () ; for i in 0 .. (first . len () - 1) invariant i <= first . len () - 1 , result @ == first @ . subrange (0 , i as int) , { result . push (first [i]) ; } for i in 0 .. second . len () invariant i <= second . len () , result @ == first @ . subrange (0 , first . len () - 1) . add (second @ . subrange (0 , i as int)) , { result . push (second [i]) ; } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 49/90
+================================================================================
+ID: task_b_1839b2af5d5d
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)
+requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 
+ensures sum [0] == 2 * N 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 2 * N , { sum . set (0 , 2 * N) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 2 * N , { sum . set (0 , 2 * N) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 50/90
+================================================================================
+ID: task_b_059445716718
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn aux (m : i32 , fuel : u32) -> (result : bool)
+requires m > 0 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn aux (m : i32 , fuel : u32) -> (result : bool) requires m > 0 , decreases fuel { if fuel == 0 { false } else if m == 1 { true } else if m % 2 == 1 { false } else { aux (m / 2 , fuel - 1) } }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn aux (m : i32 , fuel : u32) -> (result : bool) requires m > 0 , decreases fuel { if fuel == 0 { false } else if m == 1 { true } else if m % 2 == 1 { false } else { aux (m / 2 , fuel - 1) } }
+
+} // verus!
+
+================================================================================
+SAMPLE 51/90
+================================================================================
+ID: task_b_cabbb977ab37
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn smallest_list_length (list : & Vec < Vec < i32 > >) -> (min : usize)
+requires list . len () > 0 
+ensures min >= 0 , forall | i : int | 0 <= i < list . len () ==> min <= # [trigger] list [i] . len () , exists | i : int | 0 <= i < list . len () && min == # [trigger] list [i] . len () 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn smallest_list_length (list : & Vec < Vec < i32 > >) -> (min : usize) requires list . len () > 0 , ensures min >= 0 , forall | i : int | 0 <= i < list . len () ==> min <= # [trigger] list [i] . len () , exists | i : int | 0 <= i < list . len () && min == # [trigger] list [i] . len () , { let mut min = list [0] . len () ; let mut j = 1 ; while j < list . len () invariant 1 <= j <= list . len () , forall | i : int | 0 <= i < j ==> min <= # [trigger] list [i] . len () , exists | i : int | 0 <= i < j && min == # [trigger] list [i] . len () , decreases list . len () - j { if list [j] . len () < min { min = list [j] . len () ; } j += 1 ; } min }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn smallest_list_length (list : & Vec < Vec < i32 > >) -> (min : usize) requires list . len () > 0 , ensures min >= 0 , forall | i : int | 0 <= i < list . len () ==> min <= # [trigger] list [i] . len () , exists | i : int | 0 <= i < list . len () && min == # [trigger] list [i] . len () , { let mut min = list [0] . len () ; let mut j = 1 ; while j < list . len () invariant 1 <= j <= list . len () , forall | i : int | 0 <= i < j ==> min <= # [trigger] list [i] . len () , exists | i : int | 0 <= i < j && min == # [trigger] list [i] . len () , decreases list . len () - j { if list [j] . len () < min { min = list [j] . len () ; } j += 1 ; } min }
+
+} // verus!
+
+================================================================================
+SAMPLE 52/90
+================================================================================
+ID: task_b_4e2998c1460f
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn longest_consecutive (nums : & Vec < i32 >) -> (result : usize)
+requires longest_consecutive_precond (nums) 
+ensures longest_consecutive_postcond (nums , result as nat) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn longest_consecutive_postcond (nums : & Vec < i32 > , result : nat) -> bool { (nums . len () == 0 ==> result == 0) && result <= nums . len () }
+spec fn longest_consecutive_precond (nums : & Vec < i32 >) -> bool { forall | i : int , j : int | 0 <= i < nums . len () && 0 <= j < nums . len () && i != j ==> nums [i] != nums [j] }
+fn longest_consecutive (nums : & Vec < i32 >) -> (result : usize) requires longest_consecutive_precond (nums) , ensures longest_consecutive_postcond (nums , result as nat) , { return 0 ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn longest_consecutive_postcond (nums : & Vec < i32 > , result : nat) -> bool { (nums . len () == 0 ==> result == 0) && result <= nums . len () }
+spec fn longest_consecutive_precond (nums : & Vec < i32 >) -> bool { forall | i : int , j : int | 0 <= i < nums . len () && 0 <= j < nums . len () && i != j ==> nums [i] != nums [j] }
+fn longest_consecutive (nums : & Vec < i32 >) -> (result : usize) requires longest_consecutive_precond (nums) , ensures longest_consecutive_postcond (nums , result as nat) , { return 0 ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 53/90
+================================================================================
+ID: task_b_d5bc24f83307
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn is_prime (n : u32) -> (result : bool)
+requires n >= 2 
+ensures result ==> (forall | k : int | 2 <= k < n ==> # [trigger] (n as int % k) != 0) , ! result ==> exists | k : int | 2 <= k < n && # [trigger] (n as int % k) == 0 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn is_prime (n : u32) -> (result : bool) requires n >= 2 , ensures result ==> (forall | k : int | 2 <= k < n ==> # [trigger] (n as int % k) != 0) , ! result ==> exists | k : int | 2 <= k < n && # [trigger] (n as int % k) == 0 , { let mut i = 2 ; while i < n invariant 2 <= i <= n , forall | k : int | 2 <= k < i ==> # [trigger] (n as int % k) != 0 , decreases n - i { if n % i == 0 { return false ; } i = i + 1 ; } true }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn is_prime (n : u32) -> (result : bool) requires n >= 2 , ensures result ==> (forall | k : int | 2 <= k < n ==> # [trigger] (n as int % k) != 0) , ! result ==> exists | k : int | 2 <= k < n && # [trigger] (n as int % k) == 0 , { let mut i = 2 ; while i < n invariant 2 <= i <= n , forall | k : int | 2 <= k < i ==> # [trigger] (n as int % k) != 0 , decreases n - i { if n % i == 0 { return false ; } i = i + 1 ; } true }
+
+} // verus!
+
+================================================================================
+SAMPLE 54/90
+================================================================================
+ID: task_b_a30fc0bdbcce
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn state_fresh_id_increments(st: State)
+ensures state_fresh_id(st).0 == st.next_id,
+        state_fresh_id(st).1.next_id == st.next_id + 1,
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn state_fresh_id_increments(st: State)
+    ensures
+        state_fresh_id(st).0 == st.next_id,
+        state_fresh_id(st).1.next_id == st.next_id + 1,
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub type Id = nat;
+
+pub type Var = nat;
+
+pub enum Ty {
+    TBool,
+    TNat,
+    TArrow { t1: Box<Ty>, t2: Box<Ty> },
+}
+
+pub enum Expr {
+    Var { x: Id },
+    BoolConst { b: bool },
+    NatConst { n: nat },
+    Plus { e1: Box<Expr>, e2: Box<Expr> },
+    If { cond: Box<Expr>, then_br: Box<Expr>, else_br: Box<Expr> },
+    App { e1: Box<Expr>, e2: Box<Expr> },
+    Lam { x: Id, ty: Ty, body: Box<Expr> },
+    Eq { e1: Box<Expr>, e2: Box<Expr> },
+    Lt { e1: Box<Expr>, e2: Box<Expr> },
+}
+
+pub enum Value {
+    VBool { b: bool },
+    VNat { n: nat },
+    VClosure { x: Id, ty: Ty, body: Box<Expr>, env: Env },
+}
+
+pub type Env = Map<Id, Value>;
+
+pub struct State {
+    pub env: Env,
+    pub next_id: Id,
+}
+
+pub open spec fn state_fresh_id(st: State) -> (Id, State) {
+    let id = st.next_id;
+    let new_state = State {
+        env: st.env,
+        next_id: id + 1,
+    };
+    (id, new_state)
+}
+
+
+pub proof fn state_fresh_id_increments(st: State)
+    ensures
+        state_fresh_id(st).0 == st.next_id,
+        state_fresh_id(st).1.next_id == st.next_id + 1,
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 55/90
+================================================================================
+ID: task_b_15316c192ba9
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn is_digit (c : u8) -> (res : bool)
+ensures res == is_digit_spec (c) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_digit_spec (c : u8) -> bool { c >= 48 && c <= 57 }
+fn is_digit (c : u8) -> (res : bool) ensures res == is_digit_spec (c) , { c >= 48 && c <= 57 }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_digit_spec (c : u8) -> bool { c >= 48 && c <= 57 }
+fn is_digit (c : u8) -> (res : bool) ensures res == is_digit_spec (c) , { c >= 48 && c <= 57 }
+
+} // verus!
+
+================================================================================
+SAMPLE 56/90
+================================================================================
+ID: task_b_a53ae1316ec6
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn is_integer (text : & [u8]) -> (result : bool)
+ensures res == is_digit_spec (c) , result == (forall | i : int | 0 <= i < text . len () ==> (# [trigger] is_digit_spec (text [i]))) 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_digit_spec (c : u8) -> bool { c >= 48 && c <= 57 }
+fn is_digit (c : u8) -> (res : bool) ensures res == is_digit_spec (c) , { c >= 48 && c <= 57 }
+fn is_integer (text : & [u8]) -> (result : bool) ensures result == (forall | i : int | 0 <= i < text . len () ==> (# [trigger] is_digit_spec (text [i]))) , { let mut i = 0 ; while i < text . len () invariant 0 <= i <= text . len () , forall | j : int | 0 <= j < i ==> is_digit_spec (text [j]) , decreases text . len () - i , { if ! is_digit (text [i]) { return false ; } i += 1 ; } true }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_digit_spec (c : u8) -> bool { c >= 48 && c <= 57 }
+fn is_digit (c : u8) -> (res : bool) ensures res == is_digit_spec (c) , { c >= 48 && c <= 57 }
+fn is_integer (text : & [u8]) -> (result : bool) ensures result == (forall | i : int | 0 <= i < text . len () ==> (# [trigger] is_digit_spec (text [i]))) , { let mut i = 0 ; while i < text . len () invariant 0 <= i <= text . len () , forall | j : int | 0 <= j < i ==> is_digit_spec (text [j]) , decreases text . len () - i , { if ! is_digit (text [i]) { return false ; } i += 1 ; } true }
+
+} // verus!
+
+================================================================================
+SAMPLE 57/90
+================================================================================
+ID: task_b_7e582526c6ea
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn de_morgan_or(a: bool, b: bool)
+ensures bool_not(bool_or(a, b)) == bool_and(bool_not(a), bool_not(b))
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn de_morgan_or(a: bool, b: bool)
+    ensures bool_not(bool_or(a, b)) == bool_and(bool_not(a), bool_not(b))
+{}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn bool_not(a: bool) -> bool { !a }
+
+pub open spec fn bool_and(a: bool, b: bool) -> bool { a && b }
+
+pub open spec fn bool_or(a: bool, b: bool) -> bool { a || b }
+
+
+pub proof fn de_morgan_or(a: bool, b: bool)
+    ensures bool_not(bool_or(a, b)) == bool_and(bool_not(a), bool_not(b))
+{}
+
+} // verus!
+
+================================================================================
+SAMPLE 58/90
+================================================================================
+ID: task_b_b4d84c1f67cc
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool)
+requires start < l . len (), is_peak_valley_precond (lst @)
+ensures is_peak_valley_postcond (lst @ , result)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_peak_valley_precond (lst : Seq < i32 >) -> bool { true }
+spec fn is_peak_valley_postcond (lst : Seq < i32 > , result : bool) -> bool { (lst . len () <= 2 ==> ! result) }
+fn aux (l : & Vec < i32 > , start : usize , increasing : bool , started_decreasing : bool) -> (res : bool) requires start < l . len () decreases l . len () - start { if start == l . len () - 1 { return started_decreasing ; } let current = l [start] ; let next = l [start + 1] ; if increasing { if current < next { aux (l , start + 1 , true , false) } else if current > next { if start == 0 { false } else { aux (l , start + 1 , false , true) } } else { false } } else { if current > next { aux (l , start + 1 , false , true) } else { false } } }
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool) requires is_peak_valley_precond (lst @) ensures is_peak_valley_postcond (lst @ , result) { if lst . len () <= 2 { return false ; } aux (& lst , 0 , true , false) }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_peak_valley_precond (lst : Seq < i32 >) -> bool { true }
+spec fn is_peak_valley_postcond (lst : Seq < i32 > , result : bool) -> bool { (lst . len () <= 2 ==> ! result) }
+fn aux (l : & Vec < i32 > , start : usize , increasing : bool , started_decreasing : bool) -> (res : bool) requires start < l . len () decreases l . len () - start { if start == l . len () - 1 { return started_decreasing ; } let current = l [start] ; let next = l [start + 1] ; if increasing { if current < next { aux (l , start + 1 , true , false) } else if current > next { if start == 0 { false } else { aux (l , start + 1 , false , true) } } else { false } } else { if current > next { aux (l , start + 1 , false , true) } else { false } } }
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool) requires is_peak_valley_precond (lst @) ensures is_peak_valley_postcond (lst @ , result) { if lst . len () <= 2 { return false ; } aux (& lst , 0 , true , false) }
+
+} // verus!
+
+================================================================================
+SAMPLE 59/90
+================================================================================
+ID: task_b_17f4761be47f
+Task: task_b
+Source: coq_translation
+
+--- input_text ---
+pub proof fn lift_and3_sound(p1: bool, p2: bool, p3: bool)
+ensures dec_to_bool(lift_and3(p1, p2, p3)) == (p1 && p2 && p3)
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn lift_and3_sound(p1: bool, p2: bool, p3: bool)
+    ensures dec_to_bool(lift_and3(p1, p2, p3)) == (p1 && p2 && p3)
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn dec_and(d1: Dec, d2: Dec) -> Dec {
+    match (d1, d2) {
+        (Dec::Yes, Dec::Yes) => Dec::Yes,
+        _ => Dec::No,
+    }
+}
+
+
+pub open spec fn bool_to_dec(b: bool) -> Dec {
+    if b { Dec::Yes } else { Dec::No }
+}
+
+pub open spec fn dec_and3(d1: Dec, d2: Dec, d3: Dec) -> Dec {
+    dec_and(dec_and(d1, d2), d3)
+}
+
+
+pub enum Dec {
+    Yes,
+    No,
+}
+
+pub open spec fn dec_to_bool(d: Dec) -> bool {
+    match d {
+        Dec::Yes => true,
+        Dec::No => false,
+    }
+}
+
+pub open spec fn lift_and3(p1: bool, p2: bool, p3: bool) -> Dec {
+    dec_and3(bool_to_dec(p1), bool_to_dec(p2), bool_to_dec(p3))
+}
+
+
+pub proof fn lift_and3_sound(p1: bool, p2: bool, p3: bool)
+    ensures dec_to_bool(lift_and3(p1, p2, p3)) == (p1 && p2 && p3)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 60/90
+================================================================================
+ID: task_b_a9338b565e15
+Task: task_b
+Source: vericoding_ast
+
+--- input_text ---
+fn min_of_vec (v : & Vec < i32 >) -> (min : i32)
+requires v . len () > 0 
+ensures exists | i : int | 0 <= i < v . len () && v [i] == min , forall | i : int | 0 <= i < v . len () ==> min <= v [i] 
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn min_of_vec (v : & Vec < i32 >) -> (min : i32) requires v . len () > 0 , ensures exists | i : int | 0 <= i < v . len () && v [i] == min , forall | i : int | 0 <= i < v . len () ==> min <= v [i] , { let mut min_val = v [0] ; let mut idx = 1 ; while idx < v . len () invariant 1 <= idx <= v . len () , exists | i : int | 0 <= i < idx && v [i] == min_val , forall | i : int | 0 <= i < idx ==> min_val <= v [i] , decreases v . len () - idx { if v [idx] < min_val { min_val = v [idx] ; } idx += 1 ; } min_val }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn min_of_vec (v : & Vec < i32 >) -> (min : i32) requires v . len () > 0 , ensures exists | i : int | 0 <= i < v . len () && v [i] == min , forall | i : int | 0 <= i < v . len () ==> min <= v [i] , { let mut min_val = v [0] ; let mut idx = 1 ; while idx < v . len () invariant 1 <= idx <= v . len () , exists | i : int | 0 <= i < idx && v [i] == min_val , forall | i : int | 0 <= i < idx ==> min_val <= v [i] , decreases v . len () - idx { if v [idx] < min_val { min_val = v [idx] ; } idx += 1 ; } min_val }
+
+} // verus!
+
+================================================================================
+SAMPLE 61/90
+================================================================================
+ID: task_c_missing_decreases_45023ec76be0
+Task: task_c
+Source: coq_translation
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn reverse_acc_len(s: Seq<nat>, acc: Seq<nat>)
+    ensures reverse_acc(s, acc).len() == s.len() + acc.len()
+    {
+    reveal_with_fuel(reverse_acc, 2);
+    if s.len() > 0 {
+        reverse_acc_len(s.skip(1), seq![s[0]] + acc);
+    }
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn reverse_acc_len(s: Seq<nat>, acc: Seq<nat>)
+    ensures reverse_acc(s, acc).len() == s.len() + acc.len()
+    decreases s.len()
+{
+    reveal_with_fuel(reverse_acc, 2);
+    if s.len() > 0 {
+        reverse_acc_len(s.skip(1), seq![s[0]] + acc);
+    }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn reverse_acc(s: Seq<nat>, acc: Seq<nat>) -> Seq<nat>
+    decreases s.len()
+{
+    if s.len() == 0 {
+        acc
+    } else {
+        reverse_acc(s.skip(1), seq![s[0]] + acc)
+    }
+}
+
+
+pub proof fn reverse_acc_len(s: Seq<nat>, acc: Seq<nat>)
+    ensures reverse_acc(s, acc).len() == s.len() + acc.len()
+    decreases s.len()
+{
+    reveal_with_fuel(reverse_acc, 2);
+    if s.len() > 0 {
+        reverse_acc_len(s.skip(1), seq![s[0]] + acc);
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 62/90
+================================================================================
+ID: task_c_missing_invariant_67c91cec2fab
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_invariant
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn index_wise_addition (a : & Vec < Vec < i32 > > , b : & Vec < Vec < i32 > >) -> (c : Vec < Vec < i32 > >) requires a . len () == b . len () , forall | i : int | # ! [auto] 0 <= i < a . len () ==> a [i] . len () == b [i] . len () , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] <= MAX , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] >= MIN , ensures c . len () == a . len () , forall | i : int | # ! [auto] 0 <= i < c . len () ==> c [i] . len () == a [i] . len () , forall | i : int | # ! [trigger a [i] , b [i] , c [i]] 0 <= i < c . len () ==> forall | j : int | # ! [auto] 0 <= j < c [i] . len () ==> c [i] [j] == a [i] [j] + b [i] [j] , { let mut c : Vec < Vec < i32 > > = Vec :: new () ; for i in 0 .. a . len ()  { let mut row : Vec < i32 > = Vec :: new () ; for j in 0 .. a [i] . len ()  { row . push (a [i] [j] + b [i] [j]) ; } c . push (row) ; } c }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn index_wise_addition (a : & Vec < Vec < i32 > > , b : & Vec < Vec < i32 > >) -> (c : Vec < Vec < i32 > >) requires a . len () == b . len () , forall | i : int | # ! [auto] 0 <= i < a . len () ==> a [i] . len () == b [i] . len () , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] <= MAX , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] >= MIN , ensures c . len () == a . len () , forall | i : int | # ! [auto] 0 <= i < c . len () ==> c [i] . len () == a [i] . len () , forall | i : int | # ! [trigger a [i] , b [i] , c [i]] 0 <= i < c . len () ==> forall | j : int | # ! [auto] 0 <= j < c [i] . len () ==> c [i] [j] == a [i] [j] + b [i] [j] , { let mut c : Vec < Vec < i32 > > = Vec :: new () ; for i in 0 .. a . len () invariant c . len () == i , forall | k : int | # ! [auto] 0 <= k < i ==> c [k] . len () == a [k] . len () , forall | k : int | # ! [trigger a [k] , b [k] , c [k]] 0 <= k < i ==> forall | j : int | # ! [auto] 0 <= j < c [k] . len () ==> c [k] [j] == a [k] [j] + b [k] [j] , { let mut row : Vec < i32 > = Vec :: new () ; for j in 0 .. a [i] . len () invariant row . len () == j , forall | l : int | # ! [auto] 0 <= l < j ==> row [l] == a [i as int] [l] + b [i as int] [l] , { row . push (a [i] [j] + b [i] [j]) ; } c . push (row) ; } c }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn index_wise_addition (a : & Vec < Vec < i32 > > , b : & Vec < Vec < i32 > >) -> (c : Vec < Vec < i32 > >) requires a . len () == b . len () , forall | i : int | # ! [auto] 0 <= i < a . len () ==> a [i] . len () == b [i] . len () , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] <= MAX , forall | i : int | # ! [trigger a [i] , b [i]] 0 <= i < a . len () ==> forall | j : int | 0 <= j < a [i] . len () ==> a [i] [j] + b [i] [j] >= MIN , ensures c . len () == a . len () , forall | i : int | # ! [auto] 0 <= i < c . len () ==> c [i] . len () == a [i] . len () , forall | i : int | # ! [trigger a [i] , b [i] , c [i]] 0 <= i < c . len () ==> forall | j : int | # ! [auto] 0 <= j < c [i] . len () ==> c [i] [j] == a [i] [j] + b [i] [j] , { let mut c : Vec < Vec < i32 > > = Vec :: new () ; for i in 0 .. a . len () invariant c . len () == i , forall | k : int | # ! [auto] 0 <= k < i ==> c [k] . len () == a [k] . len () , forall | k : int | # ! [trigger a [k] , b [k] , c [k]] 0 <= k < i ==> forall | j : int | # ! [auto] 0 <= j < c [k] . len () ==> c [k] [j] == a [k] [j] + b [k] [j] , { let mut row : Vec < i32 > = Vec :: new () ; for j in 0 .. a [i] . len () invariant row . len () == j , forall | l : int | # ! [auto] 0 <= l < j ==> row [l] == a [i as int] [l] + b [i as int] [l] , { row . push (a [i] [j] + b [i] [j]) ; } c . push (row) ; } c }
+
+} // verus!
+
+================================================================================
+SAMPLE 63/90
+================================================================================
+ID: task_c_missing_requires_075cea08b9f9
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_requires
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)  ensures sum [0] == N , { sum . set (0 , N) ; }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , ensures sum [0] == N , { sum . set (0 , N) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , ensures sum [0] == N , { sum . set (0 , N) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 64/90
+================================================================================
+ID: task_c_missing_decreases_b5dcdc870050
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn longest_increasing_streak_aux (nums : & Vec < i32 > , idx : usize , prev : Option < i32 > , curr_len : usize , max_len : usize) -> (result : usize) requires idx <= nums . len () , curr_len <= nums . len () , max_len <= nums . len () ensures result <= nums . len () { return 0 ; }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn longest_increasing_streak_aux (nums : & Vec < i32 > , idx : usize , prev : Option < i32 > , curr_len : usize , max_len : usize) -> (result : usize) requires idx <= nums . len () , curr_len <= nums . len () , max_len <= nums . len () ensures result <= nums . len () decreases nums . len () - idx { return 0 ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn longest_increasing_streak_aux (nums : & Vec < i32 > , idx : usize , prev : Option < i32 > , curr_len : usize , max_len : usize) -> (result : usize) requires idx <= nums . len () , curr_len <= nums . len () , max_len <= nums . len () ensures result <= nums . len () decreases nums . len () - idx { return 0 ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 65/90
+================================================================================
+ID: task_c_missing_invariant_9bcb64058fda
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_invariant
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len ()  { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant ! exists | j : int | 0 <= j < i && a @ [j] == x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn in_array (a : Seq < i32 > , x : i32) -> bool { exists | i : int | 0 <= i < a . len () && a [i] == x }
+fn in_array_exec (a : & Vec < i32 > , x : i32) -> (result : bool) ensures result == in_array (a @ , x) , { for i in 0 .. a . len () invariant ! exists | j : int | 0 <= j < i && a @ [j] == x , { if a [i] == x { return true ; } } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 66/90
+================================================================================
+ID: task_c_missing_ensures_9ddb25988061
+Task: task_c
+Source: coq_translation
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn ring_add_comm_nat(a: nat, b: nat)
+    
+{
+    assert((a + b) as nat == (b + a) as nat);
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn ring_add_comm_nat(a: nat, b: nat)
+    ensures ring_add_nat(a, b) == ring_add_nat(b, a)
+{
+    assert((a + b) as nat == (b + a) as nat);
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn ring_add_nat(a: nat, b: nat) -> nat {
+    (a + b) as nat
+}
+
+
+pub proof fn ring_add_comm_nat(a: nat, b: nat)
+    ensures ring_add_nat(a, b) == ring_add_nat(b, a)
+{
+    assert((a + b) as nat == (b + a) as nat);
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 67/90
+================================================================================
+ID: task_c_missing_invariant_e0cc80966e4b
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_invariant
+
+--- input_text ---
+use vstd::prelude::*;
+use vstd :: map :: * ;
+use vstd :: modes :: * ;
+use vstd :: multiset :: * ;
+use vstd :: seq :: * ;
+use vstd :: set :: * ;
+use vstd :: pervasive :: * ;
+use vstd :: seq_lib :: * ;
+use vstd :: { seq :: * , seq_lib :: * } ;
+use vstd :: bytes :: * ;
+use vstd :: calc_macro :: * ;
+use vstd :: set_lib :: * ;
+use vstd :: slice :: * ;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub type Arg = Vec < u8 > ;
+pub open spec fn optional_value_view (ov : Option :: < Vec :: < u8 > >) -> Option :: < Seq :: < u8 > > { match ov { Some (v) => Some (v @) , None => None , } }
+# [doc = " Clone a Vec<u8>."] # [doc = ""] # [doc = " Implemented as a loop, so might not be as efficient as the"] # [doc = " `Vec::clone` method."] pub fn clone_vec_u8 (v : & Vec < u8 >) -> (out : Vec < u8 >) ensures out @ == v @ { let mut out : Arg = Vec :: with_capacity (v . len ()) ; let mut i = 0 ; while i < v . len ()  { out . push (v [i]) ; i = i + 1 ; } proof { assert_seqs_equal ! (out @, v @) ; } out }
+pub fn clone_optional_value (ov : & Option :: < Vec :: < u8 > >) -> (res : Option :: < Vec :: < u8 > >) ensures optional_value_view (* ov) == optional_value_view (res) { match ov . as_ref () { Some (v) => Some (clone_vec_u8 (v)) , None => None , } }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+use vstd :: map :: * ;
+use vstd :: modes :: * ;
+use vstd :: multiset :: * ;
+use vstd :: seq :: * ;
+use vstd :: set :: * ;
+use vstd :: pervasive :: * ;
+use vstd :: seq_lib :: * ;
+use vstd :: { seq :: * , seq_lib :: * } ;
+use vstd :: bytes :: * ;
+use vstd :: calc_macro :: * ;
+use vstd :: set_lib :: * ;
+use vstd :: slice :: * ;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub type Arg = Vec < u8 > ;
+pub open spec fn optional_value_view (ov : Option :: < Vec :: < u8 > >) -> Option :: < Seq :: < u8 > > { match ov { Some (v) => Some (v @) , None => None , } }
+# [doc = " Clone a Vec<u8>."] # [doc = ""] # [doc = " Implemented as a loop, so might not be as efficient as the"] # [doc = " `Vec::clone` method."] pub fn clone_vec_u8 (v : & Vec < u8 >) -> (out : Vec < u8 >) ensures out @ == v @ { let mut out : Arg = Vec :: with_capacity (v . len ()) ; let mut i = 0 ; while i < v . len () invariant i <= v . len () , i == out . len () , forall | j | # ! [auto] 0 <= j < i ==> out @ [j] == v @ [j] , decreases v . len () - i , { out . push (v [i]) ; i = i + 1 ; } proof { assert_seqs_equal ! (out @, v @) ; } out }
+pub fn clone_optional_value (ov : & Option :: < Vec :: < u8 > >) -> (res : Option :: < Vec :: < u8 > >) ensures optional_value_view (* ov) == optional_value_view (res) { match ov . as_ref () { Some (v) => Some (clone_vec_u8 (v)) , None => None , } }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+use vstd :: map :: * ;
+use vstd :: modes :: * ;
+use vstd :: multiset :: * ;
+use vstd :: seq :: * ;
+use vstd :: set :: * ;
+use vstd :: pervasive :: * ;
+use vstd :: seq_lib :: * ;
+use vstd :: { seq :: * , seq_lib :: * } ;
+use vstd :: bytes :: * ;
+use vstd :: calc_macro :: * ;
+use vstd :: set_lib :: * ;
+use vstd :: slice :: * ;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub type Arg = Vec < u8 > ;
+pub open spec fn optional_value_view (ov : Option :: < Vec :: < u8 > >) -> Option :: < Seq :: < u8 > > { match ov { Some (v) => Some (v @) , None => None , } }
+# [doc = " Clone a Vec<u8>."] # [doc = ""] # [doc = " Implemented as a loop, so might not be as efficient as the"] # [doc = " `Vec::clone` method."] pub fn clone_vec_u8 (v : & Vec < u8 >) -> (out : Vec < u8 >) ensures out @ == v @ { let mut out : Arg = Vec :: with_capacity (v . len ()) ; let mut i = 0 ; while i < v . len () invariant i <= v . len () , i == out . len () , forall | j | # ! [auto] 0 <= j < i ==> out @ [j] == v @ [j] , decreases v . len () - i , { out . push (v [i]) ; i = i + 1 ; } proof { assert_seqs_equal ! (out @, v @) ; } out }
+pub fn clone_optional_value (ov : & Option :: < Vec :: < u8 > >) -> (res : Option :: < Vec :: < u8 > >) ensures optional_value_view (* ov) == optional_value_view (res) { match ov . as_ref () { Some (v) => Some (clone_vec_u8 (v)) , None => None , } }
+
+} // verus!
+
+================================================================================
+SAMPLE 68/90
+================================================================================
+ID: task_c_missing_ensures_b4d84c1f67cc
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_peak_valley_precond (lst : Seq < i32 >) -> bool { true }
+spec fn is_peak_valley_postcond (lst : Seq < i32 > , result : bool) -> bool { (lst . len () <= 2 ==> ! result) }
+fn aux (l : & Vec < i32 > , start : usize , increasing : bool , started_decreasing : bool) -> (res : bool) requires start < l . len () decreases l . len () - start { if start == l . len () - 1 { return started_decreasing ; } let current = l [start] ; let next = l [start + 1] ; if increasing { if current < next { aux (l , start + 1 , true , false) } else if current > next { if start == 0 { false } else { aux (l , start + 1 , false , true) } } else { false } } else { if current > next { aux (l , start + 1 , false , true) } else { false } } }
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool) requires is_peak_valley_precond (lst @)  { if lst . len () <= 2 { return false ; } aux (& lst , 0 , true , false) }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_peak_valley_precond (lst : Seq < i32 >) -> bool { true }
+spec fn is_peak_valley_postcond (lst : Seq < i32 > , result : bool) -> bool { (lst . len () <= 2 ==> ! result) }
+fn aux (l : & Vec < i32 > , start : usize , increasing : bool , started_decreasing : bool) -> (res : bool) requires start < l . len () decreases l . len () - start { if start == l . len () - 1 { return started_decreasing ; } let current = l [start] ; let next = l [start + 1] ; if increasing { if current < next { aux (l , start + 1 , true , false) } else if current > next { if start == 0 { false } else { aux (l , start + 1 , false , true) } } else { false } } else { if current > next { aux (l , start + 1 , false , true) } else { false } } }
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool) requires is_peak_valley_precond (lst @) ensures is_peak_valley_postcond (lst @ , result) { if lst . len () <= 2 { return false ; } aux (& lst , 0 , true , false) }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_peak_valley_precond (lst : Seq < i32 >) -> bool { true }
+spec fn is_peak_valley_postcond (lst : Seq < i32 > , result : bool) -> bool { (lst . len () <= 2 ==> ! result) }
+fn aux (l : & Vec < i32 > , start : usize , increasing : bool , started_decreasing : bool) -> (res : bool) requires start < l . len () decreases l . len () - start { if start == l . len () - 1 { return started_decreasing ; } let current = l [start] ; let next = l [start + 1] ; if increasing { if current < next { aux (l , start + 1 , true , false) } else if current > next { if start == 0 { false } else { aux (l , start + 1 , false , true) } } else { false } } else { if current > next { aux (l , start + 1 , false , true) } else { false } } }
+fn is_peak_valley (lst : Vec < i32 >) -> (result : bool) requires is_peak_valley_precond (lst @) ensures is_peak_valley_postcond (lst @ , result) { if lst . len () <= 2 { return false ; } aux (& lst , 0 , true , false) }
+
+} // verus!
+
+================================================================================
+SAMPLE 69/90
+================================================================================
+ID: task_c_missing_requires_972d92a336d8
+Task: task_c
+Source: coq_translation
+Bug type: missing_requires
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn or_intro_left(p: bool, q: bool)
+    
+    ensures p || q
+{
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn or_intro_left(p: bool, q: bool)
+    requires p
+    ensures p || q
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn or_intro_left(p: bool, q: bool)
+    requires p
+    ensures p || q
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 70/90
+================================================================================
+ID: task_c_missing_decreases_c86a22101b3d
+Task: task_c
+Source: coq_translation
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn forall_tree(t: Tree, p: spec_fn(nat) -> bool) -> bool
+    {
+    match t {
+        Tree::E => true,
+        Tree::T { left, key, value: _, right } =>
+            p(key) && forall_tree(*left, p) && forall_tree(*right, p),
+    }
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn forall_tree(t: Tree, p: spec_fn(nat) -> bool) -> bool
+    decreases t
+{
+    match t {
+        Tree::E => true,
+        Tree::T { left, key, value: _, right } =>
+            p(key) && forall_tree(*left, p) && forall_tree(*right, p),
+    }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub enum Tree {
+    E,
+    T { left: Box<Tree>, key: nat, value: nat, right: Box<Tree> },
+}
+
+
+pub open spec fn forall_tree(t: Tree, p: spec_fn(nat) -> bool) -> bool
+    decreases t
+{
+    match t {
+        Tree::E => true,
+        Tree::T { left, key, value: _, right } =>
+            p(key) && forall_tree(*left, p) && forall_tree(*right, p),
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 71/90
+================================================================================
+ID: task_c_missing_decreases_faa7453635c0
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_even_at_even_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut idx = 0 ; while idx < arr . len () invariant 0 <= idx <= arr . len () , forall | i : int | 0 <= i < idx ==> ((i % 2) == (arr [i] % 2)) , { if (idx % 2) != (arr [idx] % 2) { return false ; } idx += 1 ; } true }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_even_at_even_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut idx = 0 ; while idx < arr . len () invariant 0 <= idx <= arr . len () , forall | i : int | 0 <= i < idx ==> ((i % 2) == (arr [i] % 2)) , decreases arr . len () - idx { if (idx % 2) != (arr [idx] % 2) { return false ; } idx += 1 ; } true }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_even_at_even_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut idx = 0 ; while idx < arr . len () invariant 0 <= idx <= arr . len () , forall | i : int | 0 <= i < idx ==> ((i % 2) == (arr [i] % 2)) , decreases arr . len () - idx { if (idx % 2) != (arr [idx] % 2) { return false ; } idx += 1 ; } true }
+
+} // verus!
+
+================================================================================
+SAMPLE 72/90
+================================================================================
+ID: task_c_missing_decreases_cdf3a797b9d5
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn count_sum_divisible_by_precond (n : nat , d : nat) -> bool { d > 0 }
+spec fn count_sum_divisible_by_spec (n : nat , d : nat) -> nat recommends d > 0 { if n == 0 { 0nat } else { let prev = (n - 1) as nat ; count_sum_divisible_by_spec (prev , d) + (if is_sum_divisible_by (prev , d) { 1nat } else { 0nat }) } }
+spec fn is_sum_divisible_by (x : nat , d : nat) -> bool recommends d > 0 { sum_of_digits (x) % d == 0 }
+spec fn sum_of_digits (x : nat) -> nat { if x == 0 { 0nat } else { (x % 10) + sum_of_digits (x / 10) } }
+fn is_sum_divisible_by_exec (x : u32 , d : u32) -> (result : bool) requires d > 0 ensures result == is_sum_divisible_by (x as nat , d as nat) { let sum = sum_of_digits_exec (x) ; sum % d == 0 }
+# [verifier :: external_body] fn sum_of_digits_exec (x : u32) -> (result : u32) ensures result == sum_of_digits (x as nat) { let mut n = x ; let mut sum = 0u32 ; while n > 0 { sum = sum + (n % 10) ; n = n / 10 ; } sum }
+# [verifier :: external_body] fn count_sum_divisible_by (n : u32 , d : u32) -> (result : u32) requires count_sum_divisible_by_precond (n as nat , d as nat) ensures result == count_sum_divisible_by_spec (n as nat , d as nat) { let mut count = 0u32 ; let mut i = 0u32 ; while i < n { if is_sum_divisible_by_exec (i , d) { count = count + 1 ; } i = i + 1 ; } count }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn count_sum_divisible_by_precond (n : nat , d : nat) -> bool { d > 0 }
+spec fn count_sum_divisible_by_spec (n : nat , d : nat) -> nat recommends d > 0 decreases n { if n == 0 { 0nat } else { let prev = (n - 1) as nat ; count_sum_divisible_by_spec (prev , d) + (if is_sum_divisible_by (prev , d) { 1nat } else { 0nat }) } }
+spec fn is_sum_divisible_by (x : nat , d : nat) -> bool recommends d > 0 { sum_of_digits (x) % d == 0 }
+spec fn sum_of_digits (x : nat) -> nat decreases x { if x == 0 { 0nat } else { (x % 10) + sum_of_digits (x / 10) } }
+fn is_sum_divisible_by_exec (x : u32 , d : u32) -> (result : bool) requires d > 0 ensures result == is_sum_divisible_by (x as nat , d as nat) { let sum = sum_of_digits_exec (x) ; sum % d == 0 }
+# [verifier :: external_body] fn sum_of_digits_exec (x : u32) -> (result : u32) ensures result == sum_of_digits (x as nat) { let mut n = x ; let mut sum = 0u32 ; while n > 0 { sum = sum + (n % 10) ; n = n / 10 ; } sum }
+# [verifier :: external_body] fn count_sum_divisible_by (n : u32 , d : u32) -> (result : u32) requires count_sum_divisible_by_precond (n as nat , d as nat) ensures result == count_sum_divisible_by_spec (n as nat , d as nat) { let mut count = 0u32 ; let mut i = 0u32 ; while i < n { if is_sum_divisible_by_exec (i , d) { count = count + 1 ; } i = i + 1 ; } count }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn count_sum_divisible_by_precond (n : nat , d : nat) -> bool { d > 0 }
+spec fn count_sum_divisible_by_spec (n : nat , d : nat) -> nat recommends d > 0 decreases n { if n == 0 { 0nat } else { let prev = (n - 1) as nat ; count_sum_divisible_by_spec (prev , d) + (if is_sum_divisible_by (prev , d) { 1nat } else { 0nat }) } }
+spec fn is_sum_divisible_by (x : nat , d : nat) -> bool recommends d > 0 { sum_of_digits (x) % d == 0 }
+spec fn sum_of_digits (x : nat) -> nat decreases x { if x == 0 { 0nat } else { (x % 10) + sum_of_digits (x / 10) } }
+fn is_sum_divisible_by_exec (x : u32 , d : u32) -> (result : bool) requires d > 0 ensures result == is_sum_divisible_by (x as nat , d as nat) { let sum = sum_of_digits_exec (x) ; sum % d == 0 }
+# [verifier :: external_body] fn sum_of_digits_exec (x : u32) -> (result : u32) ensures result == sum_of_digits (x as nat) { let mut n = x ; let mut sum = 0u32 ; while n > 0 { sum = sum + (n % 10) ; n = n / 10 ; } sum }
+# [verifier :: external_body] fn count_sum_divisible_by (n : u32 , d : u32) -> (result : u32) requires count_sum_divisible_by_precond (n as nat , d as nat) ensures result == count_sum_divisible_by_spec (n as nat , d as nat) { let mut count = 0u32 ; let mut i = 0u32 ; while i < n { if is_sum_divisible_by_exec (i , d) { count = count + 1 ; } i = i + 1 ; } count }
+
+} // verus!
+
+================================================================================
+SAMPLE 73/90
+================================================================================
+ID: task_c_missing_ensures_bcca45a68483
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn compare_bool (a : bool , b : bool) -> (eq : bool) requires true ,  { a == b }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn compare_bool (a : bool , b : bool) -> (eq : bool) requires true , ensures a == b ==> eq == true , a != b ==> eq == false , { a == b }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn compare_bool (a : bool , b : bool) -> (eq : bool) requires true , ensures a == b ==> eq == true , a != b ==> eq == false , { a == b }
+
+} // verus!
+
+================================================================================
+SAMPLE 74/90
+================================================================================
+ID: task_c_missing_decreases_8cedcbaff653
+Task: task_c
+Source: coq_translation
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn ty_size(t: Ty) -> nat
+    {
+    match t {
+        Ty::TBool => 1,
+        Ty::TArrow { t1, t2 } => 1 + ty_size(*t1) + ty_size(*t2),
+    }
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn ty_size(t: Ty) -> nat
+    decreases t
+{
+    match t {
+        Ty::TBool => 1,
+        Ty::TArrow { t1, t2 } => 1 + ty_size(*t1) + ty_size(*t2),
+    }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub enum Ty {
+    TBool,
+    TArrow { t1: Box<Ty>, t2: Box<Ty> },
+}
+
+
+pub open spec fn ty_size(t: Ty) -> nat
+    decreases t
+{
+    match t {
+        Ty::TBool => 1,
+        Ty::TArrow { t1, t2 } => 1 + ty_size(*t1) + ty_size(*t2),
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 75/90
+================================================================================
+ID: task_c_missing_ensures_c93368c267b1
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires old (a) . len () == N , old (sum) . len () == 1 , N > 0 ,  { sum . set (0 , 0) ; }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires old (a) . len () == N , old (sum) . len () == 1 , N > 0 , ensures sum [0] <= 4 * N , { sum . set (0 , 0) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires old (a) . len () == N , old (sum) . len () == 1 , N > 0 , ensures sum [0] <= 4 * N , { sum . set (0 , 0) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 76/90
+================================================================================
+ID: task_c_missing_assert_27d2755c5821
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_assert
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_divisible (n : int , divisor : int) -> bool { (n % divisor) == 0 }
+fn is_non_prime (n : u64) -> (result : bool) requires n >= 2 , ensures result == (exists | k : int | 2 <= k < n && is_divisible (n as int , k)) , { let mut i : u64 = 2 ; while i < n invariant 2 <= i <= n , forall | k : int | 2 <= k < i ==> ! is_divisible (n as int , k) , decreases n - i , { if n % i == 0 {   return true ; } i = i + 1 ; }  false }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_divisible (n : int , divisor : int) -> bool { (n % divisor) == 0 }
+fn is_non_prime (n : u64) -> (result : bool) requires n >= 2 , ensures result == (exists | k : int | 2 <= k < n && is_divisible (n as int , k)) , { let mut i : u64 = 2 ; while i < n invariant 2 <= i <= n , forall | k : int | 2 <= k < i ==> ! is_divisible (n as int , k) , decreases n - i , { if n % i == 0 { assert (is_divisible (n as int , i as int)) ; assert (2 <= i < n) ; return true ; } i = i + 1 ; } assert (forall | k : int | 2 <= k < n ==> ! is_divisible (n as int , k)) ; false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_divisible (n : int , divisor : int) -> bool { (n % divisor) == 0 }
+fn is_non_prime (n : u64) -> (result : bool) requires n >= 2 , ensures result == (exists | k : int | 2 <= k < n && is_divisible (n as int , k)) , { let mut i : u64 = 2 ; while i < n invariant 2 <= i <= n , forall | k : int | 2 <= k < i ==> ! is_divisible (n as int , k) , decreases n - i , { if n % i == 0 { assert (is_divisible (n as int , i as int)) ; assert (2 <= i < n) ; return true ; } i = i + 1 ; } assert (forall | k : int | 2 <= k < n ==> ! is_divisible (n as int , k)) ; false }
+
+} // verus!
+
+================================================================================
+SAMPLE 77/90
+================================================================================
+ID: task_c_missing_assert_verus_nonlinear_bitvec_be93ed075547
+Task: task_c
+Source: complex_repos
+Bug type: missing_assert
+
+--- input_text ---
+#[allow(unused_imports)]
+use verus_builtin::*;
+#[allow(unused_imports)]
+use verus_builtin_macros::*;
+
+verus! {
+
+// ANCHOR: bound_checking
+proof fn bound_check(x: u32, y: u32, z: u32)
+    requires
+        x <= 8,
+        y <= 8,
+{
+    assert(x * y <= 100) by (nonlinear_arith)
+        requires
+            x <= 10,
+            y <= 10;
+
+}
+// ANCHOR_END: bound_checking
+
+// ANCHOR: bound_checking_func
+proof fn bound_check2(x: u32, y: u32, z: u32) by (nonlinear_arith)
+    requires
+        x <= 8,
+        y <= 8,
+    ensures
+        x * y <= 64
+{ }
+// ANCHOR_END: bound_checking_func
+
+// ANCHOR: de_morgan
+proof fn de_morgan_auto()
+    by (bit_vector)
+    ensures
+        forall|a: u32, b: u32| #[trigger] (!(a & b)) == !a | !b,
+        forall|a: u32, b: u32| #[trigger] (!(a | b)) == !a & !b,
+{
+}
+// ANCHOR_END: de_morgan
+
+// ANCHOR: bitvector_easy
+fn test_passes(b: u32) {
+
+}
+// ANCHOR_END: bitvector_easy
+
+/*
+// ANCHOR: bitvector_fail
+fn test_fails(x: u32, y: u32)
+  requires x == y
+{
+    // Fails
+}
+// ANCHOR_END: bitvector_fail
+*/
+
+// ANCHOR: bitvector_success
+fn test_success(x: u32, y: u32)
+    requires
+        x == y,
+{
+    assert(x & 3 == y & 3) by (bit_vector)
+        requires
+            x == y,
+    ;  // now x == y is available for the bit_vector proof
+}
+// ANCHOR_END: bitvector_success
+
+// ANCHOR: bitvector_spec_fn
+spec fn get_bit(val: u32, index: u32) -> bool {
+    0x1u32 & (val >> index) == 1
+}
+
+fn test_get_bit() {
+
+}
+// ANCHOR_END: bitvector_spec_fn
+
+fn main() {
+}
+
+} // verus!
+
+
+--- target_text ---
+#[allow(unused_imports)]
+use verus_builtin::*;
+#[allow(unused_imports)]
+use verus_builtin_macros::*;
+
+verus! {
+
+// ANCHOR: bound_checking
+proof fn bound_check(x: u32, y: u32, z: u32)
+    requires
+        x <= 8,
+        y <= 8,
+{
+    assert(x * y <= 100) by (nonlinear_arith)
+        requires
+            x <= 10,
+            y <= 10;
+
+    assert(x * y <= 1000);
+}
+// ANCHOR_END: bound_checking
+
+// ANCHOR: bound_checking_func
+proof fn bound_check2(x: u32, y: u32, z: u32) by (nonlinear_arith)
+    requires
+        x <= 8,
+        y <= 8,
+    ensures
+        x * y <= 64
+{ }
+// ANCHOR_END: bound_checking_func
+
+// ANCHOR: de_morgan
+proof fn de_morgan_auto()
+    by (bit_vector)
+    ensures
+        forall|a: u32, b: u32| #[trigger] (!(a & b)) == !a | !b,
+        forall|a: u32, b: u32| #[trigger] (!(a | b)) == !a & !b,
+{
+}
+// ANCHOR_END: de_morgan
+
+// ANCHOR: bitvector_easy
+fn test_passes(b: u32) {
+    assert(b & 7 == b % 8) by (bit_vector);
+    assert(b & 0xff < 0x100) by (bit_vector);
+}
+// ANCHOR_END: bitvector_easy
+
+/*
+// ANCHOR: bitvector_fail
+fn test_fails(x: u32, y: u32)
+  requires x == y
+{
+  assert(x & 3 == y & 3) by(bit_vector);  // Fails
+}
+// ANCHOR_END: bitvector_fail
+*/
+
+// ANCHOR: bitvector_success
+fn test_success(x: u32, y: u32)
+    requires
+        x == y,
+{
+    assert(x & 3 == y & 3) by (bit_vector)
+        requires
+            x == y,
+    ;  // now x == y is available for the bit_vector proof
+}
+// ANCHOR_END: bitvector_success
+
+
+// ANCHOR: bitvector_spec_fn
+spec fn get_bit(val: u32, index: u32) -> bool {
+    0x1u32 & (val >> index) == 1
+}
+
+fn test_get_bit() {
+    assert(get_bit(128u32, 7)) by (bit_vector);
+}
+// ANCHOR_END: bitvector_spec_fn
+
+fn main() {
+}
+
+} // verus!
+
+
+--- full_verified_code ---
+#[allow(unused_imports)]
+use verus_builtin::*;
+#[allow(unused_imports)]
+use verus_builtin_macros::*;
+
+verus! {
+
+// ANCHOR: bound_checking
+proof fn bound_check(x: u32, y: u32, z: u32)
+    requires
+        x <= 8,
+        y <= 8,
+{
+    assert(x * y <= 100) by (nonlinear_arith)
+        requires
+            x <= 10,
+            y <= 10;
+
+    assert(x * y <= 1000);
+}
+// ANCHOR_END: bound_checking
+
+// ANCHOR: bound_checking_func
+proof fn bound_check2(x: u32, y: u32, z: u32) by (nonlinear_arith)
+    requires
+        x <= 8,
+        y <= 8,
+    ensures
+        x * y <= 64
+{ }
+// ANCHOR_END: bound_checking_func
+
+// ANCHOR: de_morgan
+proof fn de_morgan_auto()
+    by (bit_vector)
+    ensures
+        forall|a: u32, b: u32| #[trigger] (!(a & b)) == !a | !b,
+        forall|a: u32, b: u32| #[trigger] (!(a | b)) == !a & !b,
+{
+}
+// ANCHOR_END: de_morgan
+
+// ANCHOR: bitvector_easy
+fn test_passes(b: u32) {
+    assert(b & 7 == b % 8) by (bit_vector);
+    assert(b & 0xff < 0x100) by (bit_vector);
+}
+// ANCHOR_END: bitvector_easy
+
+/*
+// ANCHOR: bitvector_fail
+fn test_fails(x: u32, y: u32)
+  requires x == y
+{
+  assert(x & 3 == y & 3) by(bit_vector);  // Fails
+}
+// ANCHOR_END: bitvector_fail
+*/
+
+// ANCHOR: bitvector_success
+fn test_success(x: u32, y: u32)
+    requires
+        x == y,
+{
+    assert(x & 3 == y & 3) by (bit_vector)
+        requires
+            x == y,
+    ;  // now x == y is available for the bit_vector proof
+}
+// ANCHOR_END: bitvector_success
+
+
+// ANCHOR: bitvector_spec_fn
+spec fn get_bit(val: u32, index: u32) -> bool {
+    0x1u32 & (val >> index) == 1
+}
+
+fn test_get_bit() {
+    assert(get_bit(128u32, 7)) by (bit_vector);
+}
+// ANCHOR_END: bitvector_spec_fn
+
+fn main() {
+}
+
+} // verus!
+
+
+================================================================================
+SAMPLE 78/90
+================================================================================
+ID: task_c_missing_decreases_78bd1f99700b
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize) requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | (0 <= k < i as int) ==> a [k] != e , exists | j : int | (0 <= j < a . len () as int) && a [j] == e , { if a [i] == e { return i ; } i += 1 ; } proof { assert (i == a . len ()) ; assert (forall | k : int | (0 <= k < i as int) ==> a [k] != e) ; assert (exists | j : int | (0 <= j < a . len () as int) && a [j] == e) ; assert (false) ; } 0 }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize) requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | (0 <= k < i as int) ==> a [k] != e , exists | j : int | (0 <= j < a . len () as int) && a [j] == e , decreases a . len () - i { if a [i] == e { return i ; } i += 1 ; } proof { assert (i == a . len ()) ; assert (forall | k : int | (0 <= k < i as int) ==> a [k] != e) ; assert (exists | j : int | (0 <= j < a . len () as int) && a [j] == e) ; assert (false) ; } 0 }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn linear_search (a : & Vec < i32 > , e : i32) -> (n : usize) requires exists | i : int | (0 <= i < a . len () as int) && a [i] == e , ensures 0 <= n < a . len () , a [n as int] == e , forall | k : int | (0 <= k < n as int) ==> a [k] != e , { let mut i = 0 ; while i < a . len () invariant 0 <= i <= a . len () , forall | k : int | (0 <= k < i as int) ==> a [k] != e , exists | j : int | (0 <= j < a . len () as int) && a [j] == e , decreases a . len () - i { if a [i] == e { return i ; } i += 1 ; } proof { assert (i == a . len ()) ; assert (forall | k : int | (0 <= k < i as int) ==> a [k] != e) ; assert (exists | j : int | (0 <= j < a . len () as int) && a [j] == e) ; assert (false) ; } 0 }
+
+} // verus!
+
+================================================================================
+SAMPLE 79/90
+================================================================================
+ID: task_c_missing_ensures_7ac87adca802
+Task: task_c
+Source: coq_translation
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn expr_size_positive(e: Expr)
+    
+    decreases e
+{
+    match e {
+        Expr::Var { .. } => {}
+        Expr::Lam { body, .. } => expr_size_positive(*body),
+        Expr::App { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Tru => {}
+        Expr::Fls => {}
+        Expr::If { cond, then_br, else_br } => {
+            expr_size_positive(*cond);
+            expr_size_positive(*then_br);
+            expr_size_positive(*else_br);
+        }
+        Expr::Zero => {}
+        Expr::Succ { e } => expr_size_positive(*e),
+        Expr::Pred { e } => expr_size_positive(*e),
+        Expr::IsZero { e } => expr_size_positive(*e),
+        Expr::Add { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Not { e } => expr_size_positive(*e),
+    }
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn expr_size_positive(e: Expr)
+    ensures expr_size(e) >= 1
+    decreases e
+{
+    match e {
+        Expr::Var { .. } => {}
+        Expr::Lam { body, .. } => expr_size_positive(*body),
+        Expr::App { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Tru => {}
+        Expr::Fls => {}
+        Expr::If { cond, then_br, else_br } => {
+            expr_size_positive(*cond);
+            expr_size_positive(*then_br);
+            expr_size_positive(*else_br);
+        }
+        Expr::Zero => {}
+        Expr::Succ { e } => expr_size_positive(*e),
+        Expr::Pred { e } => expr_size_positive(*e),
+        Expr::IsZero { e } => expr_size_positive(*e),
+        Expr::Add { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Not { e } => expr_size_positive(*e),
+    }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn expr_size(e: Expr) -> nat
+    decreases e
+{
+    match e {
+        Expr::Var { .. } => 1,
+        Expr::Lam { body, .. } => 1 + expr_size(*body),
+        Expr::App { e1, e2 } => 1 + expr_size(*e1) + expr_size(*e2),
+        Expr::Tru => 1,
+        Expr::Fls => 1,
+        Expr::If { cond, then_br, else_br } =>
+            1 + expr_size(*cond) + expr_size(*then_br) + expr_size(*else_br),
+        Expr::Zero => 1,
+        Expr::Succ { e } => 1 + expr_size(*e),
+        Expr::Pred { e } => 1 + expr_size(*e),
+        Expr::IsZero { e } => 1 + expr_size(*e),
+        Expr::Add { e1, e2 } => 1 + expr_size(*e1) + expr_size(*e2),
+        Expr::Not { e } => 1 + expr_size(*e),
+    }
+}
+
+
+pub type Var = nat;
+
+pub enum Ty {
+    TBool,
+    TNat,
+    TArrow { t1: Box<Ty>, t2: Box<Ty> },
+}
+
+pub enum Expr {
+    Var { x: Var },
+    Lam { x: Var, ty: Ty, body: Box<Expr> },
+    App { e1: Box<Expr>, e2: Box<Expr> },
+    Tru,
+    Fls,
+    If { cond: Box<Expr>, then_br: Box<Expr>, else_br: Box<Expr> },
+    Zero,
+    Succ { e: Box<Expr> },
+    Pred { e: Box<Expr> },
+    IsZero { e: Box<Expr> },
+    Add { e1: Box<Expr>, e2: Box<Expr> },
+    Not { e: Box<Expr> },
+}
+
+
+pub proof fn expr_size_positive(e: Expr)
+    ensures expr_size(e) >= 1
+    decreases e
+{
+    match e {
+        Expr::Var { .. } => {}
+        Expr::Lam { body, .. } => expr_size_positive(*body),
+        Expr::App { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Tru => {}
+        Expr::Fls => {}
+        Expr::If { cond, then_br, else_br } => {
+            expr_size_positive(*cond);
+            expr_size_positive(*then_br);
+            expr_size_positive(*else_br);
+        }
+        Expr::Zero => {}
+        Expr::Succ { e } => expr_size_positive(*e),
+        Expr::Pred { e } => expr_size_positive(*e),
+        Expr::IsZero { e } => expr_size_positive(*e),
+        Expr::Add { e1, e2 } => {
+            expr_size_positive(*e1);
+            expr_size_positive(*e2);
+        }
+        Expr::Not { e } => expr_size_positive(*e),
+    }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 80/90
+================================================================================
+ID: task_c_missing_decreases_cbfdc10a023e
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn intersperse (numbers : & [i32] , delim : i32) -> (res : Vec < i32 >) ensures numbers . len () == 0 ==> res . len () == 0 , numbers . len () != 0 ==> res . len () == 2 * numbers . len () - 1 , forall | i : int | 0 <= i && i < res . len () && i % 2 == 0 ==> res [i] == numbers [i / 2] , forall | i : int | 0 <= i && i < res . len () && i % 2 == 1 ==> res [i] == delim { if numbers . len () == 0 { return Vec :: new () ; } let mut res = Vec :: new () ; let mut i = 0 ; while i < numbers . len () invariant 0 <= i <= numbers . len () , i == 0 ==> res . len () == 0 , i > 0 ==> res . len () == 2 * i - 1 , forall | j : int | 0 <= j && j < res . len () && j % 2 == 0 ==> res [j] == numbers [j / 2] , forall | j : int | 0 <= j && j < res . len () && j % 2 == 1 ==> res [j] == delim { if i > 0 { res . push (delim) ; } res . push (numbers [i]) ; i += 1 ; } res }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn intersperse (numbers : & [i32] , delim : i32) -> (res : Vec < i32 >) ensures numbers . len () == 0 ==> res . len () == 0 , numbers . len () != 0 ==> res . len () == 2 * numbers . len () - 1 , forall | i : int | 0 <= i && i < res . len () && i % 2 == 0 ==> res [i] == numbers [i / 2] , forall | i : int | 0 <= i && i < res . len () && i % 2 == 1 ==> res [i] == delim { if numbers . len () == 0 { return Vec :: new () ; } let mut res = Vec :: new () ; let mut i = 0 ; while i < numbers . len () invariant 0 <= i <= numbers . len () , i == 0 ==> res . len () == 0 , i > 0 ==> res . len () == 2 * i - 1 , forall | j : int | 0 <= j && j < res . len () && j % 2 == 0 ==> res [j] == numbers [j / 2] , forall | j : int | 0 <= j && j < res . len () && j % 2 == 1 ==> res [j] == delim decreases numbers . len () - i { if i > 0 { res . push (delim) ; } res . push (numbers [i]) ; i += 1 ; } res }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn intersperse (numbers : & [i32] , delim : i32) -> (res : Vec < i32 >) ensures numbers . len () == 0 ==> res . len () == 0 , numbers . len () != 0 ==> res . len () == 2 * numbers . len () - 1 , forall | i : int | 0 <= i && i < res . len () && i % 2 == 0 ==> res [i] == numbers [i / 2] , forall | i : int | 0 <= i && i < res . len () && i % 2 == 1 ==> res [i] == delim { if numbers . len () == 0 { return Vec :: new () ; } let mut res = Vec :: new () ; let mut i = 0 ; while i < numbers . len () invariant 0 <= i <= numbers . len () , i == 0 ==> res . len () == 0 , i > 0 ==> res . len () == 2 * i - 1 , forall | j : int | 0 <= j && j < res . len () && j % 2 == 0 ==> res [j] == numbers [j / 2] , forall | j : int | 0 <= j && j < res . len () && j % 2 == 1 ==> res [j] == delim decreases numbers . len () - i { if i > 0 { res . push (delim) ; } res . push (numbers [i]) ; i += 1 ; } res }
+
+} // verus!
+
+================================================================================
+SAMPLE 81/90
+================================================================================
+ID: task_c_missing_assert_06785d20d5f6
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_assert
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N <= MAX / 4 , ensures sum [0] == 4 * N , { let result = 4 * N ; sum . set (0 , result) ;  }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N <= MAX / 4 , ensures sum [0] == 4 * N , { let result = 4 * N ; sum . set (0 , result) ; assert (sum [0] == result) ; }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+pub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N <= MAX / 4 , ensures sum [0] == 4 * N , { let result = 4 * N ; sum . set (0 , result) ; assert (sum [0] == result) ; }
+
+} // verus!
+
+================================================================================
+SAMPLE 82/90
+================================================================================
+ID: task_c_missing_decreases_ac8b4ce12093
+Task: task_c
+Source: coq_translation
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn pow2(n: nat) -> nat
+    {
+    if n == 0 { 1 } else { 2 * pow2((n - 1) as nat) }
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn pow2(n: nat) -> nat
+    decreases n
+{
+    if n == 0 { 1 } else { 2 * pow2((n - 1) as nat) }
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn pow2(n: nat) -> nat
+    decreases n
+{
+    if n == 0 { 1 } else { 2 * pow2((n - 1) as nat) }
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 83/90
+================================================================================
+ID: task_c_missing_ensures_98c9513f870b
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn element_wise_module (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >) requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | i : int | (0 <= i < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [i] % arr2 [i]) <= MAX) ,  { let mut result = Vec :: new () ; let mut i = 0 ; while i < arr1 . len () invariant 0 <= i <= arr1 . len () , arr1 . len () == arr2 . len () , result @ . len () == i , forall | j : int | 0 <= j < arr2 . len () ==> arr2 [j] != 0 , forall | j : int | 0 <= j < i ==> result [j] == (arr1 [j] % arr2 [j]) , forall | j : int | (0 <= j < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [j] % arr2 [j]) <= MAX) , decreases arr1 . len () - i { let mod_result = arr1 [i] % arr2 [i] ; result . push (mod_result) ; i += 1 ; } result }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn element_wise_module (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >) requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | i : int | (0 <= i < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [i] % arr2 [i]) <= MAX) , ensures result @ . len () == arr1 @ . len () , forall | i : int | 0 <= i < result . len () ==> # [trigger] result [i] == # [trigger] (arr1 [i] % arr2 [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < arr1 . len () invariant 0 <= i <= arr1 . len () , arr1 . len () == arr2 . len () , result @ . len () == i , forall | j : int | 0 <= j < arr2 . len () ==> arr2 [j] != 0 , forall | j : int | 0 <= j < i ==> result [j] == (arr1 [j] % arr2 [j]) , forall | j : int | (0 <= j < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [j] % arr2 [j]) <= MAX) , decreases arr1 . len () - i { let mod_result = arr1 [i] % arr2 [i] ; result . push (mod_result) ; i += 1 ; } result }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn element_wise_module (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >) requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | i : int | (0 <= i < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [i] % arr2 [i]) <= MAX) , ensures result @ . len () == arr1 @ . len () , forall | i : int | 0 <= i < result . len () ==> # [trigger] result [i] == # [trigger] (arr1 [i] % arr2 [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < arr1 . len () invariant 0 <= i <= arr1 . len () , arr1 . len () == arr2 . len () , result @ . len () == i , forall | j : int | 0 <= j < arr2 . len () ==> arr2 [j] != 0 , forall | j : int | 0 <= j < i ==> result [j] == (arr1 [j] % arr2 [j]) , forall | j : int | (0 <= j < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [j] % arr2 [j]) <= MAX) , decreases arr1 . len () - i { let mod_result = arr1 [i] % arr2 [i] ; result . push (mod_result) ; i += 1 ; } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 84/90
+================================================================================
+ID: task_c_missing_ensures_882777b9bbf6
+Task: task_c
+Source: coq_translation
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn min_comm(a: nat, b: nat)
+    
+{
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn min_comm(a: nat, b: nat)
+    ensures min(a, b) == min(b, a)
+{
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn min(a: nat, b: nat) -> nat {
+    if a <= b { a } else { b }
+}
+
+
+pub proof fn min_comm(a: nat, b: nat)
+    ensures min(a, b) == min(b, a)
+{
+}
+
+} // verus!
+
+================================================================================
+SAMPLE 85/90
+================================================================================
+ID: task_c_missing_decreases_5d51a32c80a1
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_binary_digit (c : char) -> (ret : bool) { c == '0' || c == '1' }
+spec fn xor_char (a : char , b : char) -> (result : char) recommends is_binary_digit (a) , is_binary_digit (b) , { if a == b { '0' } else { '1' } }
+fn string_xor (a : & [char] , b : & [char]) -> (result : Vec < char >) requires a @ . len () == b @ . len () , forall | i : int | 0 <= i < a @ . len () as int ==> is_binary_digit (# [trigger] a [i]) , forall | i : int | 0 <= i < b @ . len () as int ==> is_binary_digit (# [trigger] b [i]) , ensures result . len () == a @ . len () , forall | i : int | 0 <= i < result . len () as int ==> # [trigger] result [i] == xor_char (a [i] , b [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < a . len () invariant 0 <= i <= a @ . len () , a @ . len () == b @ . len () , result . len () == i , forall | j : int | 0 <= j < i ==> # [trigger] result [j] == xor_char (a [j] , b [j]) , { let xor_result = if a [i] == b [i] { '0' } else { '1' } ; result . push (xor_result) ; i = i + 1 ; } result }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_binary_digit (c : char) -> (ret : bool) { c == '0' || c == '1' }
+spec fn xor_char (a : char , b : char) -> (result : char) recommends is_binary_digit (a) , is_binary_digit (b) , { if a == b { '0' } else { '1' } }
+fn string_xor (a : & [char] , b : & [char]) -> (result : Vec < char >) requires a @ . len () == b @ . len () , forall | i : int | 0 <= i < a @ . len () as int ==> is_binary_digit (# [trigger] a [i]) , forall | i : int | 0 <= i < b @ . len () as int ==> is_binary_digit (# [trigger] b [i]) , ensures result . len () == a @ . len () , forall | i : int | 0 <= i < result . len () as int ==> # [trigger] result [i] == xor_char (a [i] , b [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < a . len () invariant 0 <= i <= a @ . len () , a @ . len () == b @ . len () , result . len () == i , forall | j : int | 0 <= j < i ==> # [trigger] result [j] == xor_char (a [j] , b [j]) , decreases a @ . len () - i { let xor_result = if a [i] == b [i] { '0' } else { '1' } ; result . push (xor_result) ; i = i + 1 ; } result }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn is_binary_digit (c : char) -> (ret : bool) { c == '0' || c == '1' }
+spec fn xor_char (a : char , b : char) -> (result : char) recommends is_binary_digit (a) , is_binary_digit (b) , { if a == b { '0' } else { '1' } }
+fn string_xor (a : & [char] , b : & [char]) -> (result : Vec < char >) requires a @ . len () == b @ . len () , forall | i : int | 0 <= i < a @ . len () as int ==> is_binary_digit (# [trigger] a [i]) , forall | i : int | 0 <= i < b @ . len () as int ==> is_binary_digit (# [trigger] b [i]) , ensures result . len () == a @ . len () , forall | i : int | 0 <= i < result . len () as int ==> # [trigger] result [i] == xor_char (a [i] , b [i]) , { let mut result = Vec :: new () ; let mut i = 0 ; while i < a . len () invariant 0 <= i <= a @ . len () , a @ . len () == b @ . len () , result . len () == i , forall | j : int | 0 <= j < i ==> # [trigger] result [j] == xor_char (a [j] , b [j]) , decreases a @ . len () - i { let xor_result = if a [i] == b [i] { '0' } else { '1' } ; result . push (xor_result) ; i = i + 1 ; } result }
+
+} // verus!
+
+================================================================================
+SAMPLE 86/90
+================================================================================
+ID: task_c_missing_decreases_a356d66f5b81
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn max_dafny_lsp (a : & [i32]) -> (x : usize) requires a . len () > 0 , ensures 0 <= x < a . len () , forall | k : int | 0 <= k < a . len () ==> a [k] <= a [x as int] , { let mut max_idx = 0 ; let mut i = 1 ; while i < a . len () invariant 0 <= max_idx < a . len () , 1 <= i <= a . len () , forall | k : int | 0 <= k < i ==> a [k] <= a [max_idx as int] , { if a [i] > a [max_idx] { max_idx = i ; } i += 1 ; } max_idx }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn max_dafny_lsp (a : & [i32]) -> (x : usize) requires a . len () > 0 , ensures 0 <= x < a . len () , forall | k : int | 0 <= k < a . len () ==> a [k] <= a [x as int] , { let mut max_idx = 0 ; let mut i = 1 ; while i < a . len () invariant 0 <= max_idx < a . len () , 1 <= i <= a . len () , forall | k : int | 0 <= k < i ==> a [k] <= a [max_idx as int] , decreases a . len () - i , { if a [i] > a [max_idx] { max_idx = i ; } i += 1 ; } max_idx }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+# [verifier :: loop_isolation (false)] fn max_dafny_lsp (a : & [i32]) -> (x : usize) requires a . len () > 0 , ensures 0 <= x < a . len () , forall | k : int | 0 <= k < a . len () ==> a [k] <= a [x as int] , { let mut max_idx = 0 ; let mut i = 1 ; while i < a . len () invariant 0 <= max_idx < a . len () , 1 <= i <= a . len () , forall | k : int | 0 <= k < i ==> a [k] <= a [max_idx as int] , decreases a . len () - i , { if a [i] > a [max_idx] { max_idx = i ; } i += 1 ; } max_idx }
+
+} // verus!
+
+================================================================================
+SAMPLE 87/90
+================================================================================
+ID: task_c_missing_ensures_568c63b3821b
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains_z (text : & [u8]) -> (result : bool)  { for i in 0 .. text . len () invariant ! (exists | j : int | 0 <= j < i && (text [j] == 90 || text [j] == 122)) , { if text [i] == 90 || text [i] == 122 { return true ; } } false }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains_z (text : & [u8]) -> (result : bool) ensures result == (exists | i : int | 0 <= i < text . len () && (text [i] == 90 || text [i] == 122)) , { for i in 0 .. text . len () invariant ! (exists | j : int | 0 <= j < i && (text [j] == 90 || text [j] == 122)) , { if text [i] == 90 || text [i] == 122 { return true ; } } false }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn contains_z (text : & [u8]) -> (result : bool) ensures result == (exists | i : int | 0 <= i < text . len () && (text [i] == 90 || text [i] == 122)) , { for i in 0 .. text . len () invariant ! (exists | j : int | 0 <= j < i && (text [j] == 90 || text [j] == 122)) , { if text [i] == 90 || text [i] == 122 { return true ; } } false }
+
+} // verus!
+
+================================================================================
+SAMPLE 88/90
+================================================================================
+ID: task_c_missing_decreases_f5eb73065f36
+Task: task_c
+Source: vericoding_ast
+Bug type: missing_decreases
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_odd_at_odd_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut index = 0 ; while index < arr . len () invariant 0 <= index <= arr . len () , forall | i : int | 0 <= i < index ==> ((i % 2) == (arr [i] % 2)) , { if (index % 2) != (arr [index] % 2) { return false ; } index += 1 ; } true }
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_odd_at_odd_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut index = 0 ; while index < arr . len () invariant 0 <= index <= arr . len () , forall | i : int | 0 <= i < index ==> ((i % 2) == (arr [i] % 2)) , decreases arr . len () - index , { if (index % 2) != (arr [index] % 2) { return false ; } index += 1 ; } true }
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn is_odd_at_odd_index (arr : & Vec < usize >) -> (result : bool) ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) , { let mut index = 0 ; while index < arr . len () invariant 0 <= index <= arr . len () , forall | i : int | 0 <= i < index ==> ((i % 2) == (arr [i] % 2)) , decreases arr . len () - index , { if (index % 2) != (arr [index] % 2) { return false ; } index += 1 ; } true }
+
+} // verus!
+
+================================================================================
+SAMPLE 89/90
+================================================================================
+ID: task_c_missing_assert_verus_fun_ext_a3079e1a29d0
+Task: task_c
+Source: complex_repos
+Bug type: missing_assert
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+fn main() {
+}
+
+proof fn test_funext_specific_1(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+
+}
+
+proof fn test_funext_specific_1_alt(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+
+}
+
+proof fn test_funext_specific_2(f1: spec_fn(u8, u16) -> int, f2: spec_fn(u8, u16) -> int)
+    requires
+        forall|x, y| #[trigger] f1(x, y) == f2(x, y),
+    ensures
+        f1 == f2,
+{
+
+}
+
+} // verus!
+
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+fn main() {
+}
+
+proof fn test_funext_specific_1(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+proof fn test_funext_specific_1_alt(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+proof fn test_funext_specific_2(f1: spec_fn(u8, u16) -> int, f2: spec_fn(u8, u16) -> int)
+    requires
+        forall|x, y| #[trigger] f1(x, y) == f2(x, y),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+} // verus!
+
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+fn main() {
+}
+
+proof fn test_funext_specific_1(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+proof fn test_funext_specific_1_alt(f1: spec_fn(u8) -> int, f2: spec_fn(u8) -> int)
+    requires
+        forall|x: u8| #[trigger] f1(x) == f2(x),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+proof fn test_funext_specific_2(f1: spec_fn(u8, u16) -> int, f2: spec_fn(u8, u16) -> int)
+    requires
+        forall|x, y| #[trigger] f1(x, y) == f2(x, y),
+    ensures
+        f1 == f2,
+{
+    assert(f1 =~= f2);
+}
+
+} // verus!
+
+
+================================================================================
+SAMPLE 90/90
+================================================================================
+ID: task_c_missing_ensures_916dc54cfc27
+Task: task_c
+Source: coq_translation
+Bug type: missing_ensures
+
+--- input_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn shrink_bool_law()
+    
+{
+    assert(shrink_bool(false) =~= Seq::empty());
+    assert(shrink_bool(true) =~= seq![false]);
+}
+
+} // verus!
+
+--- target_text ---
+use vstd::prelude::*;
+
+verus! {
+
+pub proof fn shrink_bool_law()
+    ensures shrink_bool(false).len() == 0,
+            shrink_bool(true).len() == 1,
+            shrink_bool(true)[0] == false
+{
+    assert(shrink_bool(false) =~= Seq::empty());
+    assert(shrink_bool(true) =~= seq![false]);
+}
+
+} // verus!
+
+--- full_verified_code ---
+use vstd::prelude::*;
+
+verus! {
+
+pub open spec fn shrink_bool(b: bool) -> Seq<bool> {
+    if b {
+        seq![false]  // true shrinks to false
+    } else {
+        Seq::empty()  // false doesn't shrink
+    }
+}
+
+
+pub proof fn shrink_bool_law()
+    ensures shrink_bool(false).len() == 0,
+            shrink_bool(true).len() == 1,
+            shrink_bool(true)[0] == false
+{
+    assert(shrink_bool(false) =~= Seq::empty());
+    assert(shrink_bool(true) =~= seq![false]);
+}
+
+} // verus!
+
