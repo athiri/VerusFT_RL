@@ -60,10 +60,18 @@ To mimic real-world deployment scenarios:
 
 ### Specification Evaluation
 
-We evaluate generated specifications using an executable proxy:
+We evaluate generated specifications using an executable proxy to scale checks beyond manual proof inspection and to approximate spec soundness/completeness with concrete behaviors:
 
-1. Generate positive and negative input/output pairs from code.
-2. Check whether the generated `requires` / `ensures` formulas:
+1. Generate positive and negative input/output pairs from code (see `data/coq-translation/extraction_verus.rs` for the `triangle` / `loop_triangle` source used below).
+   - **Pair-generation plan**:
+     1. Choose a target function and extract its `requires`/`ensures` plus any referenced `spec fn` definitions.
+     2. Sample inputs that satisfy the `requires` clauses (use small bounded domains first; expand with random or symbolic sampling).
+     3. Execute the implementation (or trusted reference spec) to obtain outputs for those inputs and record them as positive pairs.
+     4. Create negative pairs by (a) mutating outputs for valid inputs or (b) sampling inputs that violate the `requires` clause.
+     5. Deduplicate and label pairs, then feed them into the executable-proxy check.
+   - **Positive pairs**: Inputs and outputs that satisfy the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `6`, matching `ensures sum == triangle(n as nat)`).
+   - **Negative pairs**: Inputs and outputs that violate the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `5`, or inputs that violate `requires triangle(n as nat) < 0x1_0000_0000`).
+2. Check whether the generated `requires` / `ensures` formulas (note that precondition and postcondition evaluation can use different pair sets or criteria because preconditions filter valid inputs, while postconditions validate outputs for those valid inputs):
    - Accept valid behaviors (soundness).
    - Reject invalid behaviors (completeness).
 3. Aggregate results into quantitative metrics.
