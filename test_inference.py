@@ -5,15 +5,19 @@ Simple inference script to test the fine-tuned Verus code generation model.
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
+BASE_MODEL_NAME = "Qwen/Qwen2.5-72B"
+
 def load_model(model_path="./sft_output"):
     """Load the fine-tuned model with LoRA adapter."""
     print(f"Loading model from {model_path}...")
     
     # Load base model
-    base_model = AutoModelForCausalLM.from_pretrained("gpt2")
+    base_model = AutoModelForCausalLM.from_pretrained(BASE_MODEL_NAME)
     
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     
     # Load LoRA adapter
     model = PeftModel.from_pretrained(base_model, model_path)
@@ -76,6 +80,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
