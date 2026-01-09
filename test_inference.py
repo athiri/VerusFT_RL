@@ -2,11 +2,14 @@
 Simple inference script to test the fine-tuned Verus code generation model.
 """
 
+import os
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.utils import is_accelerate_available
 from peft import PeftModel
 
-BASE_MODEL_NAME = "Qwen/Qwen2.5-Coder-7B"
+BASE_MODEL_NAME = os.getenv("VERUS_BASE_MODEL", "Qwen/Qwen2.5-Coder-7B")
+# Override with VERUS_BASE_MODEL to point at larger checkpoints (ensure enough VRAM).
 
 def load_model(model_path="./sft_output"):
     """Load the fine-tuned model with LoRA adapter."""
@@ -88,5 +91,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
