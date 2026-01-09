@@ -62,7 +62,9 @@ To mimic real-world deployment scenarios:
 
 We evaluate generated specifications using an executable proxy:
 
-1. Generate positive and negative input/output pairs from code.
+1. Generate positive and negative input/output pairs from code (see `data/coq-translation/extraction_verus.rs` for the `triangle` / `loop_triangle` source used below).
+   - **Positive pairs**: Inputs and outputs that satisfy the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `6`, matching `ensures sum == triangle(n as nat)`).
+   - **Negative pairs**: Inputs and outputs that violate the intended behavior (e.g., for `loop_triangle(n)`, input `n = 3` with output `5`, or inputs that violate `requires triangle(n as nat) < 0x1_0000_0000`).
 2. Check whether the generated `requires` / `ensures` formulas:
    - Accept valid behaviors (soundness).
    - Reject invalid behaviors (completeness).
