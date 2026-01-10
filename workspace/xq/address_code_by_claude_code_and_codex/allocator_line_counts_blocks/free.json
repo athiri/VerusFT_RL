@@ -1,0 +1,65 @@
+{
+  "kinds": [
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ]
+  ],
+  "files": {
+    "free.rs": {
+      "exec": 43,
+      "proof": 51,
+      "proof,exec": 20,
+      "": 34,
+      "spec": 53,
+      "comment": 290,
+      "layout": 123
+    }
+  },
+  "total": {
+    "layout": 123,
+    "spec": 53,
+    "proof,exec": 20,
+    "proof": 51,
+    "": 34,
+    "exec": 43,
+    "comment": 290
+  }
+}

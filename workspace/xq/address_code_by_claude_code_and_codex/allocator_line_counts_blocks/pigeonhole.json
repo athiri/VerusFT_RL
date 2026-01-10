@@ -1,0 +1,48 @@
+{
+  "kinds": [
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ]
+  ],
+  "files": {
+    "pigeonhole.rs": {
+      "proof": 76,
+      "spec": 65,
+      "layout": 24,
+      "comment": 9,
+      "": 39
+    }
+  },
+  "total": {
+    "spec": 65,
+    "comment": 9,
+    "": 39,
+    "layout": 24,
+    "proof": 76
+  }
+}

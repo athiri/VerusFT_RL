@@ -1,0 +1,65 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ]
+  ],
+  "files": {
+    "os_commit.rs": {
+      "proof": 43,
+      "": 35,
+      "layout": 38,
+      "comment": 20,
+      "spec": 62,
+      "exec": 33,
+      "proof,exec": 7
+    }
+  },
+  "total": {
+    "layout": 38,
+    "": 35,
+    "spec": 62,
+    "comment": 20,
+    "proof": 43,
+    "exec": 33,
+    "proof,exec": 7
+  }
+}

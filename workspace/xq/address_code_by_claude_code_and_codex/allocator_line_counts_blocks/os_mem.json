@@ -1,0 +1,40 @@
+{
+  "kinds": [
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Trusted"
+      ],
+      "trusted"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ]
+  ],
+  "files": {
+    "os_mem.rs": {
+      "trusted": 154,
+      "layout": 37,
+      "": 96,
+      "comment": 13
+    }
+  },
+  "total": {
+    "trusted": 154,
+    "layout": 37,
+    "": 96,
+    "comment": 13
+  }
+}

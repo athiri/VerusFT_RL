@@ -1,0 +1,64 @@
+{
+  "kinds": [
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ]
+  ],
+  "files": {
+    "flags.rs": {
+      "layout": 39,
+      "exec": 29,
+      "proof": 40,
+      "": 53,
+      "directives": 14,
+      "spec": 46,
+      "comment": 3
+    }
+  },
+  "total": {
+    "directives": 14,
+    "proof": 40,
+    "": 53,
+    "comment": 3,
+    "exec": 29,
+    "layout": 39,
+    "spec": 46
+  }
+}

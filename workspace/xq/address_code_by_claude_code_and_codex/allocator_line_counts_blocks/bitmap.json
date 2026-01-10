@@ -1,0 +1,32 @@
+{
+  "kinds": [
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ]
+  ],
+  "files": {
+    "bitmap.rs": {
+      "comment": 221,
+      "layout": 81,
+      "": 28
+    }
+  },
+  "total": {
+    "comment": 221,
+    "": 28,
+    "layout": 81
+  }
+}

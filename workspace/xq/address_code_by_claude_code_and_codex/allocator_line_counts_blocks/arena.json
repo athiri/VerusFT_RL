@@ -1,0 +1,56 @@
+{
+  "kinds": [
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ]
+  ],
+  "files": {
+    "arena.rs": {
+      "exec": 14,
+      "spec": 17,
+      "": 38,
+      "proof": 3,
+      "layout": 30,
+      "comment": 71
+    }
+  },
+  "total": {
+    "layout": 30,
+    "exec": 14,
+    "proof": 3,
+    "": 38,
+    "comment": 71,
+    "spec": 17
+  }
+}

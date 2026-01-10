@@ -1,0 +1,32 @@
+{
+  "kinds": [
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ]
+  ],
+  "files": {
+    "realloc.rs": {
+      "comment": 50,
+      "": 36,
+      "layout": 14
+    }
+  },
+  "total": {
+    "comment": 50,
+    "layout": 14,
+    "": 36
+  }
+}

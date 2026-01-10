@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ]
+  ],
+  "files": {
+    "segment.rs": {
+      "spec": 269,
+      "proof,exec": 87,
+      "proof": 397,
+      "": 69,
+      "exec": 503,
+      "comment": 565,
+      "directives": 10,
+      "layout": 404
+    }
+  },
+  "total": {
+    "": 69,
+    "directives": 10,
+    "layout": 404,
+    "proof,exec": 87,
+    "proof": 397,
+    "comment": 565,
+    "spec": 269,
+    "exec": 503
+  }
+}
