@@ -152,21 +152,24 @@ def has_stub_patterns(content: str) -> bool:
 
 def has_dafny_syntax(content: str) -> bool:
     """
-    Check if content contains Dafny-specific syntax.
+    Check if content contains Dafny-specific syntax in actual code (not comments/strings).
     This indicates the LLM generated code in the wrong verification language.
     NOT suitable for Verus verification.
+    
+    Strips comments and strings first to avoid false positives from comments like:
+    // In Dafny: var x := 5
     """
-    import re
+    clean_content = strip_comments_and_strings(content)
     for pattern in DAFNY_PATTERNS:
         # Use MULTILINE flag for patterns with ^ and $ anchors
-        if re.search(pattern, content, re.MULTILINE):
+        if re.search(pattern, clean_content, re.MULTILINE):
             return True
     return False
 
 
 def has_invalid_verus_syntax(content: str) -> bool:
     """
-    Check if content contains invalid Verus syntax patterns.
+    Check if content contains invalid Verus syntax patterns in actual code (not comments/strings).
     
     Common LLM mistakes:
     - Using requires(), ensures(), decreases() as function calls inside the function body
@@ -176,10 +179,12 @@ def has_invalid_verus_syntax(content: str) -> bool:
     or loop headers, not as function calls.
     
     NOT suitable for Verus verification.
+    
+    Strips comments and strings first to avoid false positives.
     """
-    import re
+    clean_content = strip_comments_and_strings(content)
     for pattern in INVALID_VERUS_PATTERNS:
-        if re.search(pattern, content, re.MULTILINE):
+        if re.search(pattern, clean_content, re.MULTILINE):
             return True
     return False
 
