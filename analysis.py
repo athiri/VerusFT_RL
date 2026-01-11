@@ -218,11 +218,12 @@ def strip_comments_and_strings(content: str) -> str:
     - Line comments (//)
     - Block comments (/* */)
     - String literals with escaped quotes (\") and escaped backslashes (\\)
+    - Character literals ('a', '\\n', '\\x41', '\\u{1234}')
+    - Lifetime annotations ('a, 'static) - these are NOT strings
     """
     result = []
     i = 0
     in_string = False
-    string_char = None
     
     while i < len(content):
         # Check for line comment
@@ -241,14 +242,49 @@ def strip_comments_and_strings(content: str) -> str:
             i += 2
             continue
         
-        # Check for string start/end
-        if content[i] in '"\'':
+        # Handle single quote: could be char literal ('x') or lifetime annotation ('a)
+        if not in_string and content[i] == "'":
+            # Look ahead to determine if this is a character literal or lifetime
+            # Character literals: 'c', '\n', '\x41', '\u{1234}'
+            # Lifetimes: 'a, 'static, '_
+            
+            j = i + 1
+            if j < len(content) and content[j] == '\\':
+                # Escape sequence in char literal
+                j += 1
+                if j < len(content):
+                    if content[j] == 'x':
+                        j += 3  # \xNN
+                    elif content[j] == 'u' and j + 1 < len(content) and content[j+1] == '{':
+                        # \u{NNNN}
+                        j += 2
+                        while j < len(content) and content[j] != '}':
+                            j += 1
+                        j += 1
+                    else:
+                        j += 1  # \n, \t, \', \\, etc.
+            elif j < len(content):
+                j += 1  # Single character
+            
+            # Check if there's a closing quote
+            if j < len(content) and content[j] == "'":
+                # It's a character literal - skip the whole thing
+                i = j + 1
+                continue
+            else:
+                # It's a lifetime annotation - skip ' and identifier
+                i += 1  # Skip the '
+                while i < len(content) and (content[i].isalnum() or content[i] == '_'):
+                    i += 1
+                continue
+        
+        # Check for double-quote string start/end
+        if content[i] == '"':
             if not in_string:
                 in_string = True
-                string_char = content[i]
                 i += 1
                 continue
-            elif content[i] == string_char:
+            else:
                 # Count consecutive backslashes before the quote
                 # An even number means the quote is NOT escaped (e.g., "test\\" ends here)
                 # An odd number means the quote IS escaped (e.g., "test\"" continues)
@@ -261,7 +297,6 @@ def strip_comments_and_strings(content: str) -> str:
                 if num_backslashes % 2 == 0:
                     # Even backslashes (including 0) - quote terminates string
                     in_string = False
-                    string_char = None
                 i += 1
                 continue
         

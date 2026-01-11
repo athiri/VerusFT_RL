@@ -244,6 +244,17 @@ def verify_with_verus(
     # Extract code from markdown if present
     extracted_code = extract_code_from_markdown(code)
 
+    # If extraction failed (empty string), return failure immediately
+    # This prevents wrapping invalid/non-code content in verus! block
+    if not extracted_code:
+        return {
+            "success": False,
+            "errors": ["Failed to extract valid Verus code from input"],
+            "error_type": "extraction_failed",
+            "output": "",
+            "code_extracted": "",
+        }
+
     # Wrap in minimal Verus boilerplate if needed
     if not extracted_code.startswith("use ") and "verus!" not in extracted_code:
         wrapped_code = f"""use vstd::prelude::*;
