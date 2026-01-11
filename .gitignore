@@ -96,3 +96,48 @@ workspace/*.py
 create_final_dataset.py
 verus_minimizer_extraction.py
 
+sft_output_extracted/
+sft_output_1.5b_extracted/
+sft_output_7b/
+
+# Compiled artifacts
+*.rlib
+discovered_snippets/*.rlib
+
+# Old/duplicate directories
+extracted_examples/
+identified_snippets/
+discovered_snippets/snippets/
+
+# Old scripts (superseded)
+extract_from_examples.py
+identify_minimal_snippets.py
+discover_verus_files.py
+verus_code_extraction.py
+verus_verification.py
+
+# Old documentation
+IDENTIFIED_MINIMAL_SNIPPETS.md
+MINIMAL_VERIFIABLE_SNIPPETS.md
+
+# Test/training scripts (not needed for dataset)
+test_*.py
+train_*.py
+baseline_evaluation.py
+sft_example.py
+cleanup_analysis.sh
+
+# Verus solver logs
+.verus-solver-log/
+
+# Trash/temp
+.trash/
+
+# Generated output (reproducible via run_pipeline.sh)
+verus_metrics.json
+
+# Archived non-meaningful examples
+archived/
+minimized_examples/
+minimized_examples_scaled/
+repaired_examples/
