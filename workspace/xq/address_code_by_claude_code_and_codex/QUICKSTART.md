@@ -1,68 +1,68 @@
 # Quick Start Guide
 
-## 快速使用
+## Quick Usage
 
-### 方法 1：使用 Shell 包装脚本（推荐）
+### Method 1: Using Shell Wrapper Script (Recommended)
 
 ```bash
 cd /home/chuyue/verus/tests
 
-# 使用命令行传入 API key
+# Pass API key via command line
 ./run_allocator_processing.sh YOUR_API_KEY
 
-# 或者使用环境变量
+# Or use environment variable
 export ANTHROPIC_API_KEY="your-api-key-here"
 ./run_allocator_processing.sh
 ```
 
-### 方法 2：直接使用 Python 脚本
+### Method 2: Using Python Script Directly
 
 ```bash
 cd /home/chuyue/verus/tests
 
-# 确保已安装依赖
+# Ensure dependencies are installed
 pip3 install anthropic
 
-# 运行脚本
+# Run the script
 ./process_allocator_project.py --api-key YOUR_API_KEY --verbose
 ```
 
-## 输出位置
+## Output Location
 
-处理后的文件将保存在：
+Processed files will be saved to:
 ```
 /home/chuyue/verus/tests/split_allocator/
 ```
 
-查看汇总报告：
+View the summary report:
 ```bash
 cat /home/chuyue/verus/tests/split_allocator/SUMMARY.md
 ```
 
-## 工作流程
+## Workflow
 
-脚本会自动完成以下任务：
+The script will automatically complete the following tasks:
 
-1. ✅ 分析 `/home/chuyue/verified-memory-allocator` 项目
-2. ✅ 调用 Claude API 生成拆分策略
-3. ✅ 创建较小的自包含 Rust 文件
-4. ✅ 使用 `inline-crate` 消除依赖
-5. ✅ 使用 `line_count` 标注代码类型
-6. ✅ 生成汇总报告
+1. ✅ Analyze the `/home/chuyue/verified-memory-allocator` project
+2. ✅ Call Claude API to generate splitting strategy
+3. ✅ Create smaller self-contained Rust files
+4. ✅ Use `inline-crate` to eliminate dependencies
+5. ✅ Use `line_count` to annotate code types
+6. ✅ Generate summary report
 
-## 预计处理时间
+## Estimated Processing Time
 
-- 分析项目：~30 秒
-- Claude API 调用：~10-20 秒
-- 文件处理：~5-10 分钟（取决于文件数量）
+- Project analysis: ~30 seconds
+- Claude API call: ~10-20 seconds
+- File processing: ~5-10 minutes (depends on number of files)
 
-## 详细文档
+## Detailed Documentation
 
-查看完整文档：
+View complete documentation:
 ```bash
 cat /home/chuyue/verus/tests/ALLOCATOR_PROCESSING_README.md
 ```
 
-## 获取 API Key
+## Get API Key
 
-访问 [Anthropic Console](https://console.anthropic.com/) 获取 API key。
+Visit [Anthropic Console](https://console.anthropic.com/) to get an API key.

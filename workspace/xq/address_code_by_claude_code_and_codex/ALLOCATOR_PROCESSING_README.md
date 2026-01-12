@@ -1,179 +1,179 @@
 # Allocator Project Processing Script
 
-这个脚本自动化处理 `verified-memory-allocator` 项目，将其拆分成较小的自包含 Rust 文件用于测试。
+This script automates the processing of the `verified-memory-allocator` project, splitting it into smaller self-contained Rust files for testing.
 
-## 功能
+## Features
 
-该脚本执行以下步骤：
+The script performs the following steps:
 
-1. **调用 Claude API** - 使用 Claude 分析项目结构并生成拆分策略
-2. **拆分文件** - 根据 Claude 的建议将大型文件拆分成较小的文件（目标约 400 行/文件）
-3. **内联依赖** - 使用 `inline-crate` 工具消除包依赖
-4. **代码标注** - 使用 `line_count` 工具标记代码类型（exec/spec/proof 等）
-5. **生成报告** - 创建处理结果的汇总报告
+1. **Call Claude API** - Use Claude to analyze project structure and generate splitting strategy
+2. **Split Files** - Split large files into smaller files based on Claude's recommendations (target ~400 lines/file)
+3. **Inline Dependencies** - Use the `inline-crate` tool to eliminate package dependencies
+4. **Code Annotation** - Use the `line_count` tool to label code types (exec/spec/proof, etc.)
+5. **Generate Report** - Create a summary report of processing results
 
-## 前置要求
+## Prerequisites
 
-### 1. Python 依赖
+### 1. Python Dependencies
 
-安装 Anthropic Python SDK：
+Install the Anthropic Python SDK:
 
 ```bash
 pip install anthropic
 ```
 
-### 2. 构建必要工具
+### 2. Build Required Tools
 
-确保以下工具已构建：
+Ensure the following tools are built:
 
 ```bash
-# 构建 line_count 工具
+# Build the line_count tool
 cd /home/chuyue/verus/source/tools/line_count
 cargo build
 
-# 确保 inline-crate 可用
+# Ensure inline-crate is available
 cd /home/chuyue/inline-crate
 cargo build
 ```
 
 ### 3. Anthropic API Key
 
-你需要一个 Anthropic API key。可以从 [Anthropic Console](https://console.anthropic.com/) 获取。
+You need an Anthropic API key. You can obtain one from [Anthropic Console](https://console.anthropic.com/).
 
-## 使用方法
+## Usage
 
-### 基本用法
+### Basic Usage
 
 ```bash
 cd /home/chuyue/verus
 ./process_allocator_project.py --api-key YOUR_API_KEY
 ```
 
-### 使用环境变量
+### Using Environment Variables
 
 ```bash
 export ANTHROPIC_API_KEY="your-api-key-here"
 ./process_allocator_project.py --api-key $ANTHROPIC_API_KEY
 ```
 
-### 详细输出模式
+### Verbose Output Mode
 
 ```bash
 ./process_allocator_project.py --api-key YOUR_API_KEY --verbose
 ```
 
-### 查看帮助
+### View Help
 
 ```bash
 ./process_allocator_project.py --help
 ```
 
-## 输出
+## Output
 
-### 输出目录
+### Output Directory
 
-所有处理后的文件将保存到：
+All processed files will be saved to:
 ```
 /home/chuyue/verus/tests/split_allocator/
 ```
 
-### 输出文件
+### Output Files
 
-- **`*.rs`** - 拆分和处理后的 Rust 文件
-- **`SUMMARY.md`** - 包含所有文件统计信息的汇总报告
+- **`*.rs`** - Split and processed Rust files
+- **`SUMMARY.md`** - Summary report containing statistics for all files
 
-### 汇总报告内容
+### Summary Report Contents
 
-报告包含：
-- 源项目信息
-- 创建的文件列表
-- 每个文件的描述
-- 代码统计（exec/spec/proof 等行数）
+The report includes:
+- Source project information
+- List of created files
+- Description of each file
+- Code statistics (exec/spec/proof line counts, etc.)
 
-## 处理流程详解
+## Processing Flow Details
 
-### 步骤 1: 项目分析
+### Step 1: Project Analysis
 
-脚本首先读取 `/home/chuyue/verified-memory-allocator/verus-mimalloc/` 中的所有 Rust 文件：
+The script first reads all Rust files in `/home/chuyue/verified-memory-allocator/verus-mimalloc/`:
 
-- 统计每个文件的行数
-- 收集文件结构信息
+- Count lines for each file
+- Collect file structure information
 
-### 步骤 2: Claude 规划
+### Step 2: Claude Planning
 
-向 Claude API 发送请求，要求其：
-- 分析项目结构
-- 提出将大文件拆分成小文件的策略
-- 考虑功能相关性和自包含性
-- 目标：每个文件约 400 行
+Send a request to the Claude API asking it to:
+- Analyze the project structure
+- Propose a strategy for splitting large files into smaller ones
+- Consider functional relevance and self-containment
+- Target: approximately 400 lines per file
 
-### 步骤 3: 文件拆分
+### Step 3: File Splitting
 
-根据 Claude 的规划：
-- 合并相关的源文件
-- 创建新的拆分文件
-- 保留原始注释和文档
+Based on Claude's plan:
+- Merge related source files
+- Create new split files
+- Preserve original comments and documentation
 
-### 步骤 4: 依赖内联
+### Step 4: Dependency Inlining
 
-对每个拆分文件：
-- 使用 `inline-crate` 工具
-- 消除外部 crate 依赖
-- 创建自包含的单文件
+For each split file:
+- Use the `inline-crate` tool
+- Eliminate external crate dependencies
+- Create self-contained single files
 
-### 步骤 5: 代码标注
+### Step 5: Code Annotation
 
-使用 Verus 的 `line_count` 工具：
-- 分析每一行代码
-- 标记为不同类型：
-  - **exec** - 可执行代码
-  - **spec** - 规范代码
-  - **proof** - 证明代码
-  - **trusted** - 受信任代码
-  - **comment** - 注释
-  - **layout** - 布局/格式
+Using Verus's `line_count` tool:
+- Analyze each line of code
+- Label as different types:
+  - **exec** - Executable code
+  - **spec** - Specification code
+  - **proof** - Proof code
+  - **trusted** - Trusted code
+  - **comment** - Comments
+  - **layout** - Layout/formatting
 
-### 步骤 6: 生成报告
+### Step 6: Generate Report
 
-创建 Markdown 格式的汇总报告，包含统计信息。
+Create a Markdown format summary report with statistics.
 
-## 配置选项
+## Configuration Options
 
-可以在脚本开头修改以下配置：
+The following configurations can be modified at the beginning of the script:
 
 ```python
 SOURCE_PROJECT = "/home/chuyue/verified-memory-allocator"
 OUTPUT_DIR = f"{VERUS_DIR}/tests/split_allocator"
-TARGET_LINES_PER_FILE = 400  # 每个文件的目标行数
+TARGET_LINES_PER_FILE = 400  # Target lines per file
 ```
 
-## 故障排除
+## Troubleshooting
 
-### 问题：API key 无效
+### Issue: Invalid API key
 
-确保你的 API key 是有效的 Anthropic API key。
+Ensure your API key is a valid Anthropic API key.
 
-### 问题：line_count 工具未找到
+### Issue: line_count tool not found
 
-运行：
+Run:
 ```bash
 cd /home/chuyue/verus/source/tools/line_count
 cargo build
 ```
 
-### 问题：inline-crate 失败
+### Issue: inline-crate fails
 
-如果 inline-crate 对某些文件失败，脚本会自动回退到使用原始文件。
+If inline-crate fails for certain files, the script will automatically fall back to using the original file.
 
-### 问题：输出目录权限
+### Issue: Output directory permissions
 
-确保你有权限写入输出目录：
+Ensure you have write permissions to the output directory:
 ```bash
 mkdir -p /home/chuyue/verus/tests/split_allocator
 chmod 755 /home/chuyue/verus/tests/split_allocator
 ```
 
-## 示例输出
+## Example Output
 
 ```
 === Allocator Project Processor ===
@@ -201,62 +201,62 @@ Output directory: /home/chuyue/verus/tests/split_allocator
 Files created: 18
 ```
 
-## 高级用法
+## Advanced Usage
 
-### 只处理特定文件
+### Process Only Specific Files
 
-修改脚本中的 `read_project_files()` 方法来过滤文件：
+Modify the `read_project_files()` method in the script to filter files:
 
 ```python
 def read_project_files(self):
     verus_mimalloc_dir = f"{SOURCE_PROJECT}/verus-mimalloc"
     files_info = []
 
-    # 只处理特定文件
+    # Process only specific files
     target_files = ["page.rs", "segment.rs", "types.rs"]
 
     for file_name in target_files:
         file_path = Path(verus_mimalloc_dir) / file_name
         if file_path.exists():
-            # ... 处理文件
+            # ... process file
 ```
 
-### 调整拆分粒度
+### Adjust Split Granularity
 
-修改 `TARGET_LINES_PER_FILE` 来改变目标文件大小：
+Modify `TARGET_LINES_PER_FILE` to change target file size:
 
 ```python
-TARGET_LINES_PER_FILE = 600  # 更大的文件
-# 或
-TARGET_LINES_PER_FILE = 200  # 更小的文件
+TARGET_LINES_PER_FILE = 600  # Larger files
+# or
+TARGET_LINES_PER_FILE = 200  # Smaller files
 ```
 
-## 技术细节
+## Technical Details
 
-### Claude API 使用
+### Claude API Usage
 
-- 模型：`claude-sonnet-4-20250514`
-- Max tokens：8000
-- 输出格式：JSON
+- Model: `claude-sonnet-4-20250514`
+- Max tokens: 8000
+- Output format: JSON
 
-### inline-crate 工具
+### inline-crate Tool
 
-- 创建临时 crate 结构
-- 超时时间：60 秒
-- 失败时回退到原始文件
+- Creates temporary crate structure
+- Timeout: 60 seconds
+- Falls back to original file on failure
 
-### line_count 工具
+### line_count Tool
 
-- 使用 `--one-file` 模式处理单个文件
-- 输出 JSON 格式统计
-- 超时时间：120 秒
+- Uses `--one-file` mode to process single files
+- Outputs JSON format statistics
+- Timeout: 120 seconds
 
-## 许可证
+## License
 
-该脚本与 Verus 项目使用相同的许可证（MIT）。
+This script uses the same license as the Verus project (MIT).
 
-## 支持
+## Support
 
-如有问题或建议，请查看：
-- Verus 文档：`/home/chuyue/verus/README.md`
-- inline-crate 文档：`/home/chuyue/inline-crate/README.md`
+For questions or suggestions, please refer to:
+- Verus documentation: `/home/chuyue/verus/README.md`
+- inline-crate documentation: `/home/chuyue/inline-crate/README.md`
