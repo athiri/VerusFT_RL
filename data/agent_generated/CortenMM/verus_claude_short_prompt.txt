@@ -1,0 +1,23 @@
+I am trying to generate a dataset for training an LLM to solve the following Verus tasks:
+Task A — Code → Specifications
+Input: Rust+Verus function body (no specs or minimal specs). Output:
+
+requires / ensures
+relevant Views / ghost arguments
+invariant / decreases clauses if loops are present
+Task B — Specifications → Verified Code
+Input: full specification (pre/postconditions, Views) and function signature. Output: executable + ghost + proof code that verifies under Verus.
+
+I will construct a dataset for this using the current repository.
+
+For each and every Verus code in this repo, generate all minimized Verus examples into a new verus_claude_final folder. This must be a comprehensive and diverse set of minimized Verus examples. Each generated Verus example must be minimal, containing a specific concept, and standalone.
+
+Each example file MUST contain EXACTLY 1 spec AND 1 executable code block. Generate 3 such files. Do not use static python code to generate the files. Instead, directly generate each and every Verus minimized example yourself.
+
+For each generated file, add a comment explaining which files (or files) in this repo that generated file was made from, what parts of the files/files the code was taken from, the idea behind the generated file, etc.
+
+For each generated minimized file, run ~/Downloads/verus/verus binary to confirm that the file actually succeeds compilation. For example, previously I tried to run ~/Downloads/verus/verus verus_claude/fn_injective_on.rs, and saw "verification results:: 0 verified, 0 errors". Nothing was actually run. Make sure anything you generate passes compilation and the file is actually verified. There should be at least 1 verified item.
+
+Try not to change the original code if possible. Do not remove or add lines, don't add extra comments, try to keep everything as close to the original as possible. Each spec block must be used in at least one other block. The executable code must nontrivially use the other blocks. There should be no spec block that is unused. Use the spec block EXACTLY as it appears in the original source code.
+
+Do NOT use proof blocks at all. Do NOT use the verus_claude_long/ folder.
