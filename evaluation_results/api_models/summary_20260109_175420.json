@@ -1,0 +1,43 @@
+{
+  "gpt-4o": {
+    "C": {
+      "model": "gpt-4o",
+      "task": "C",
+      "total_samples": 5,
+      "verified_count": 3,
+      "verification_rate": 0.6,
+      "avg_api_latency": 5.150389194488525,
+      "avg_verification_time": 0.2504617214202881,
+      "error_breakdown": {
+        "postcondition_error": 1,
+        "unknown_error": 1
+      },
+      "timestamp": "2026-01-09T17:53:47.359746",
+      "total_input_tokens": 1117,
+      "total_output_tokens": 1687,
+      "total_tokens": 2804,
+      "avg_input_tokens": 223.4,
+      "avg_output_tokens": 337.4
+    }
+  },
+  "claude-sonnet": {
+    "C": {
+      "model": "claude-sonnet",
+      "task": "C",
+      "total_samples": 5,
+      "verified_count": 3,
+      "verification_rate": 0.6,
+      "avg_api_latency": 6.390570974349975,
+      "avg_verification_time": 0.2618541717529297,
+      "error_breakdown": {
+        "postcondition_error": 2
+      },
+      "timestamp": "2026-01-09T17:54:20.625310",
+      "total_input_tokens": 1289,
+      "total_output_tokens": 2129,
+      "total_tokens": 3418,
+      "avg_input_tokens": 257.8,
+      "avg_output_tokens": 425.8
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "gpt-4o-mini": {
+    "B": {
+      "model": "gpt-4o-mini",
+      "task": "B",
+      "total_samples": 30,
+      "verified_count": 3,
+      "verification_rate": 0.1,
+      "avg_api_latency": 8.022574337323507,
+      "avg_verification_time": 0.21594378153483074,
+      "error_breakdown": {
+        "unknown_error": 5,
+        "type_error": 1,
+        "syntax_error": 13,
+        "precondition_error": 5,
+        "mode_error": 1,
+        "postcondition_error": 2
+      },
+      "timestamp": "2026-01-09T16:31:09.123652"
+    },
+    "C": {
+      "model": "gpt-4o-mini",
+      "task": "C",
+      "total_samples": 30,
+      "verified_count": 9,
+      "verification_rate": 0.3,
+      "avg_api_latency": 7.358847999572754,
+      "avg_verification_time": 0.22586487929026286,
+      "error_breakdown": {
+        "syntax_error": 6,
+        "postcondition_error": 5,
+        "precondition_error": 3,
+        "unknown_error": 3,
+        "termination_error": 3,
+        "vc_failure": 1
+      },
+      "timestamp": "2026-01-09T16:34:56.672550"
+    }
+  }
+}

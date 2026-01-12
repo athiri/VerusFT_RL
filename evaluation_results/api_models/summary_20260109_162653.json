@@ -1,0 +1,30 @@
+{
+  "o1-mini": {
+    "B": {
+      "model": "o1-mini",
+      "task": "B",
+      "total_samples": 30,
+      "verified_count": 0,
+      "verification_rate": 0.0,
+      "avg_api_latency": 0.0,
+      "avg_verification_time": 0.0,
+      "error_breakdown": {
+        "api_error": 30
+      },
+      "timestamp": "2026-01-09T16:26:51.492810"
+    },
+    "C": {
+      "model": "o1-mini",
+      "task": "C",
+      "total_samples": 30,
+      "verified_count": 0,
+      "verification_rate": 0.0,
+      "avg_api_latency": 0.0,
+      "avg_verification_time": 0.0,
+      "error_breakdown": {
+        "api_error": 30
+      },
+      "timestamp": "2026-01-09T16:26:53.867985"
+    }
+  }
+}

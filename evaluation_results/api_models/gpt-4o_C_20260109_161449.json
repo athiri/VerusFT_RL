@@ -1,0 +1,225 @@
+{
+  "metrics": {
+    "model": "gpt-4o",
+    "task": "C",
+    "total_samples": 10,
+    "verified_count": 0,
+    "verification_rate": 0.0,
+    "avg_api_latency": 6.181166577339172,
+    "avg_verification_time": 0.2261286735534668,
+    "error_breakdown": {},
+    "timestamp": "2026-01-09T16:14:49.016072"
+  },
+  "results": [
+    {
+      "sample_id": "task_c_missing_decreases_75c75f5ef6d8",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing termination measure (decreases clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn find_first_occurrence (arr : & Vec < i32 > , target : i32) -> (index : Option < usize >) requires forall | i : int , j : int | 0 <= i < j < arr . len () ==> arr [i] <= arr [j] , ensures if l...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn find_first_occurrence (arr : & Vec < i32 > , target : i32) -> (index : Option < usize >) requires forall | i : int , j : int | 0 <= i < j < arr . len () ==> arr [i] <= arr [j] , ensures if let Some (idx) = index { idx < arr . len () && arr [idx as int] == target && forall | k : int | 0 <= k < idx ==> arr [k] != target } else { forall | k : int | 0 <= k < arr . len () ==> arr ...",
+      "generated": "To fix the verification error related to the missing termination measure (decreases clause), we need to add a `decreases` clause to the `while` loop. This clause helps the verifier understand that the loop will eventually terminate. In this case, the loop iterates over the indices of the array, so the natural choice for the `decreases` clause is the difference between the length of the array and the current index.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\nfn find_first_occurrence(arr: &Vec<i32>, target: i32) -> (index: Option<usize>)\n    requires\n        forall |i: int, j: int| 0 <= i < j < arr.len() ==> arr[i] <= arr[j],\n    ensures\n        if let Some(idx) = index {\n            idx < arr.len() && arr[idx as int] == target &&\n            forall |k: int| 0 <= k < idx ==> arr[k] != target\n        } else {\n            forall |k: int| 0 <= k < arr.len() ==> arr[k] != target\n        },\n{\n    let mut index = 0;\n    while index < arr.len()\n        invariant\n            forall |k: int| 0 <= k < index ==> arr[k] != target,\n            index <= arr.len(),\n        decreases arr.len() - index,\n    {\n        if arr[index] == target {\n            return Some(index);\n        }\n        index += 1;\n    }\n    None\n}\n\n} // verus!\n```\n\nIn this fixed version, the `decreases arr.len() - index` clause is added to the `while` loop. This clause indicates that the loop is making progress towards termination because the expression `arr.len() - index` is decreasing with each iteration of the loop.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 7.24374794960022,
+      "verification_time": 0.27111101150512695,
+      "timestamp": "2026-01-09T16:13:52.457250",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 310,
+          "completion_tokens": 411
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_decreases_d29ad2b3aa22",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing termination measure (decreases clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn inner_expr_replace_with_colon (str1 : & Vec < char > , k : int) -> (result : char) { if is_space_comma_dot_spec (str1 [k]) { ':' } else { str1 [k] } }\nspec fn is_space_comma_dot_spec (c...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn inner_expr_replace_with_colon (str1 : & Vec < char > , k : int) -> (result : char) { if is_space_comma_dot_spec (str1 [k]) { ':' } else { str1 [k] } }\nspec fn is_space_comma_dot_spec (c : char) -> (result : bool) { (c == ' ') || (c == ',') || (c == '.') }\nfn is_space_comma_dot (c : char) -> (result : bool) ensures result == is_space_comma_dot_spec (c) { (c == ' ') || (c ...",
+      "generated": "To fix the verification error related to the missing termination measure (decreases clause), we need to specify a measure that decreases with each iteration of the loop. In this case, the measure is the length of the vector minus the current index `i`, which ensures that the loop will eventually terminate as `i` increases.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\nspec fn inner_expr_replace_with_colon(str1: &Vec<char>, k: int) -> char {\n    if is_space_comma_dot_spec(str1[k]) { ':' } else { str1[k] }\n}\n\nspec fn is_space_comma_dot_spec(c: char) -> bool {\n    (c == ' ') || (c == ',') || (c == '.')\n}\n\nfn is_space_comma_dot(c: char) -> bool\n    ensures result == is_space_comma_dot_spec(c)\n{\n    (c == ' ') || (c == ',') || (c == '.')\n}\n\nfn replace_with_colon(str1: &Vec<char>) -> Vec<char>\n    ensures\n        str1@.len() == result@.len(),\n        forall |k: int| 0 <= k < result.len() ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),\n{\n    let mut result = Vec::new();\n    let mut i = 0;\n    while i < str1.len()\n        invariant\n            0 <= i <= str1.len(),\n            result.len() == i,\n            forall |k: int| 0 <= k < i ==> #[trigger] result[k] == inner_expr_replace_with_colon(str1, k),\n        decreases str1.len() - i\n    {\n        let c = str1[i];\n        if is_space_comma_dot(c) {\n            result.push(':');\n        } else {\n            result.push(c);\n        }\n        i += 1;\n    }\n    result\n}\n\n} // verus!\n```\n\nIn this fixed code, the `decreases` clause is added to the `while` loop, specifying `str1.len() - i` as the measure that decreases with each iteration, ensuring termination.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 5.119412183761597,
+      "verification_time": 0.19010710716247559,
+      "timestamp": "2026-01-09T16:13:57.766866",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 448,
+          "completion_tokens": 486
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_requires_47ee998accef",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing precondition (requires clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn gen_option_bind_none<T, U>(outputs: Set<Option<T>>, f: spec_fn(T) -> Set<Option<U>>)\n    \n    ensures gen_option_bind(outputs, f).contains(Option::None)\n{\n}\n\n} // verus!\n```\n\n### Fixed code:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn gen_option_bind_none<T, U>(outputs: Set<Option<T>>, f: spec_fn(T) -> Set<Option<U>>)\n    requires outputs.contains(Option::None)\n    ensures gen_option_bind(outputs, f).contains(Option::None)\n{\n}\n\n} // verus!...",
+      "generated": "To fix the verification error related to the missing precondition (requires clause), we need to ensure that the function `gen_option_bind_none` has the necessary preconditions to guarantee that the `gen_option_bind` function can be called safely. Typically, this involves specifying conditions under which the function is expected to operate correctly.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn gen_option_bind_none<T, U>(outputs: Set<Option<T>>, f: spec_fn(T) -> Set<Option<U>>)\n    requires\n        // Add any necessary preconditions here\n        // For example, if `gen_option_bind` requires certain properties of `outputs` or `f`,\n        // those should be specified here.\n        // Assuming `gen_option_bind` requires `outputs` to contain `Option::None`:\n        outputs.contains(Option::None),\n    ensures\n        gen_option_bind(outputs, f).contains(Option::None)\n{\n    // Proof logic goes here\n    // You may need to provide a proof that `gen_option_bind(outputs, f)` indeed contains `Option::None`\n    // based on the preconditions and the logic of `gen_option_bind`.\n}\n\n} // verus!\n```\n\nIn this fixed version, I've added a `requires` clause to specify that the set `outputs` must contain `Option::None`. This is a common precondition when dealing with operations that involve optional values, ensuring that the function `gen_option_bind` can operate correctly. You may need to adjust the precondition based on the actual requirements of the `gen_option_bind` function, which is not provided here.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 13.951092958450317,
+      "verification_time": 0.16409802436828613,
+      "timestamp": "2026-01-09T16:14:11.882125",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 127,
+          "completion_tokens": 341
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_ensures_d637c54f03b0",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing postcondition (ensures clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn choose_nonempty(lo: nat, hi: nat)\n    requires lo < hi\n    \n{\n}\n\n} // verus!\n```\n\n### Fixed code:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn choose_nonempty(lo: nat, hi: nat)\n    requires lo < hi\n    ensures choose_outputs(lo, hi).contains(lo)\n{\n}\n\n} // verus!...",
+      "generated": "To fix the verification error, we need to add an `ensures` clause to the function. The purpose of the function `choose_nonempty` seems to be to select a value between `lo` and `hi`, given that `lo < hi`. We can ensure that the function returns a value within this range.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn choose_nonempty(lo: nat, hi: nat) -> (result: nat)\n    requires lo < hi\n    ensures lo <= result && result < hi\n{\n    // Since lo < hi, we can safely choose lo as a valid result.\n    result = lo;\n}\n\n} // verus!\n```\n\nIn this fixed version, the function returns a `nat` (natural number) and ensures that the result is within the specified range `[lo, hi)`. The simplest choice for a valid result is `lo`, which satisfies the postcondition `lo <= result && result < hi`.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 4.6024181842803955,
+      "verification_time": 0.17754173278808594,
+      "timestamp": "2026-01-09T16:14:16.662164",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 103,
+          "completion_tokens": 210
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_ensures_b7a077e84932",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing postcondition (ensures clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn bool_value_has_bool_type(t: Tm)\n    requires bvalue(t)\n    \n{\n    match t {\n        Tm::Tru => {}\n        Tm::Fls => {}\n        _ => {}\n    }\n}\n\n} // verus!\n```\n\n### Fixed code:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn bool_value_has_bool_type(t: Tm)\n    requires bvalue(t)\n    ensures has_type(t, Ty::TBool)\n{\n    match t {\n        Tm::Tru => {}\n        Tm::Fls => {}\n        _ => {}\n    }\n}\n\n} // verus!...",
+      "generated": "To fix the verification error, we need to add an `ensures` clause that specifies the postcondition of the `bool_value_has_bool_type` function. Since the function is dealing with boolean values, the postcondition should reflect that the term `t` is indeed a boolean value. Here's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn bool_value_has_bool_type(t: Tm)\n    requires bvalue(t)\n    ensures matches!(t, Tm::Tru | Tm::Fls)\n{\n    match t {\n        Tm::Tru => {}\n        Tm::Fls => {}\n        _ => {}\n    }\n}\n\n} // verus!\n```\n\nIn this fixed code, the `ensures` clause uses the `matches!` macro to specify that the term `t` must be either `Tm::Tru` or `Tm::Fls`, which are the boolean values. This ensures that the function's postcondition is satisfied, and the code should now verify correctly.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 4.8797478675842285,
+      "verification_time": 0.1756291389465332,
+      "timestamp": "2026-01-09T16:14:21.717617",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 129,
+          "completion_tokens": 218
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_requires_733f0ff599ae",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing precondition (requires clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n# [verifier :: loop_isolation (false)] fn remove_element (a : & [i32] , pos : usize) -> (result : Vec < i32 >)  ensures result . len () == a . len () - 1 , forall | i : int | 0 <= i < pos ==> result [i...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n# [verifier :: loop_isolation (false)] fn remove_element (a : & [i32] , pos : usize) -> (result : Vec < i32 >) requires 0 <= pos < a . len () , ensures result . len () == a . len () - 1 , forall | i : int | 0 <= i < pos ==> result [i] == a [i] , forall | i : int | pos <= i < result . len () ==> result [i] == a [i + 1] , { let mut result = Vec :: new () ; let mut i = 0 ; while i ...",
+      "generated": "To fix the verification error related to the missing precondition, we need to ensure that the position `pos` is within the bounds of the array `a`. Specifically, `pos` should be a valid index in `a`, which means `0 <= pos < a.len()`. We need to add this as a `requires` clause in the function signature. Here's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\n#[verifier::loop_isolation(false)]\nfn remove_element(a: &[i32], pos: usize) -> (result: Vec<i32>)\n    requires 0 <= pos < a.len(),\n    ensures result.len() == a.len() - 1,\n    ensures forall |i: int| 0 <= i < pos ==> result[i] == a[i],\n    ensures forall |i: int| pos <= i < result.len() ==> result[i] == a[i + 1],\n{\n    let mut result = Vec::new();\n    let mut i = 0;\n    while i < pos\n        invariant 0 <= i <= pos,\n        invariant result.len() == i,\n        invariant forall |j: int| 0 <= j < i ==> result[j] == a[j],\n        decreases pos - i,\n    {\n        result.push(a[i]);\n        i += 1;\n    }\n    let mut j = pos + 1;\n    while j < a.len()\n        invariant pos < j <= a.len(),\n        invariant result.len() == pos + (j - pos - 1),\n        invariant forall |k: int| 0 <= k < pos ==> result[k] == a[k],\n        invariant forall |k: int| pos <= k < result.len() ==> result[k] == a[k + 1],\n        decreases a.len() - j,\n    {\n        result.push(a[j]);\n        j += 1;\n    }\n    result\n}\n\n} // verus!\n```\n\nIn this fixed code, the `requires` clause `0 <= pos < a.len()` ensures that the position `pos` is a valid index in the array `a`, which resolves the verification error.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 5.5004189014434814,
+      "verification_time": 0.1716780662536621,
+      "timestamp": "2026-01-09T16:14:27.389793",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 410,
+          "completion_tokens": 474
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_decreases_d6570104686d",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing termination measure (decreases clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn intersperse (numbers : & [i32] , delim : i32) -> (res : Vec < i32 >) ensures numbers . len () == 0 ==> res . len () == 0 , numbers . len () != 0 ==> res . len () == 2 * numbers . len () - 1 ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn intersperse (numbers : & [i32] , delim : i32) -> (res : Vec < i32 >) ensures numbers . len () == 0 ==> res . len () == 0 , numbers . len () != 0 ==> res . len () == 2 * numbers . len () - 1 , forall | i : int | 0 <= i && i < res . len () && i % 2 == 0 ==> res [i] == numbers [i / 2] , forall | i : int | 0 <= i && i < res . len () && i % 2 == 1 ==> res [i] == delim { if numbers...",
+      "generated": "To fix the verification error related to the missing termination measure, we need to add a `decreases` clause to the `while` loop. This clause helps the verifier understand that the loop will eventually terminate. In this case, the loop iterates over the elements of the `numbers` array, so the natural choice for the `decreases` clause is the length of the array minus the current index `i`, which decreases with each iteration.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\nfn intersperse(numbers: &[i32], delim: i32) -> (res: Vec<i32>)\n    ensures\n        numbers.len() == 0 ==> res.len() == 0,\n        numbers.len() != 0 ==> res.len() == 2 * numbers.len() - 1,\n        forall |i: int| 0 <= i && i < res.len() && i % 2 == 0 ==> res[i] == numbers[i / 2],\n        forall |i: int| 0 <= i && i < res.len() && i % 2 == 1 ==> res[i] == delim\n{\n    if numbers.len() == 0 {\n        return Vec::new();\n    }\n    let mut res = Vec::new();\n    let mut i = 0;\n    while i < numbers.len()\n        invariant\n            0 <= i <= numbers.len(),\n            i == 0 ==> res.len() == 0,\n            i > 0 ==> res.len() == 2 * i - 1,\n            forall |j: int| 0 <= j < res.len() && j % 2 == 0 ==> res[j] == numbers[j / 2],\n            forall |j: int| 0 <= j < res.len() && j % 2 == 1 ==> res[j] == delim\n        decreases numbers.len() - i\n    {\n        if i > 0 {\n            res.push(delim);\n        }\n        res.push(numbers[i]);\n        i += 1;\n    }\n    res\n}\n\n} // verus!\n```\n\nIn this fixed code, the `decreases numbers.len() - i` clause is added to the `while` loop. This indicates that the loop will terminate because the expression `numbers.len() - i` is strictly decreasing with each iteration and will eventually reach zero, at which point the loop condition `i < numbers.len()` will no longer hold.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 8.739141941070557,
+      "verification_time": 0.30354881286621094,
+      "timestamp": "2026-01-09T16:14:36.432555",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 432,
+          "completion_tokens": 541
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_decreases_7bd15a9f2d14",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing termination measure (decreases clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn max_strength_postcond (nums : Seq < i64 > , result : i64) -> bool { nums . len () > 0 && exists | i : int | 0 <= i < nums . len () && nums [i] == result && forall | j : int | 0 <= j < n...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn max_strength_postcond (nums : Seq < i64 > , result : i64) -> bool { nums . len () > 0 && exists | i : int | 0 <= i < nums . len () && nums [i] == result && forall | j : int | 0 <= j < nums . len () ==> nums [j] <= result }\nspec fn max_strength_precond (nums : Seq < i64 >) -> bool { nums . len () > 0 }\nfn max_strength (nums : Vec < i64 >) -> (result : i64) requires max_st...",
+      "generated": "To fix the verification error related to the missing termination measure (decreases clause), we need to specify a measure that decreases with each iteration of the loop, ensuring that the loop will eventually terminate. In this case, the measure can be the difference between the length of the sequence and the current index `i`, which decreases as `i` increases.\n\nHere's the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\nspec fn max_strength_postcond(nums: Seq<i64>, result: i64) -> bool {\n    nums.len() > 0 &&\n    exists |i: int| 0 <= i < nums.len() && nums[i] == result &&\n    forall |j: int| 0 <= j < nums.len() ==> nums[j] <= result\n}\n\nspec fn max_strength_precond(nums: Seq<i64>) -> bool {\n    nums.len() > 0\n}\n\nfn max_strength(nums: Vec<i64>) -> (result: i64)\n    requires\n        max_strength_precond(nums@),\n    ensures\n        max_strength_postcond(nums@, result)\n{\n    let mut max_val = nums[0];\n    let mut i = 1;\n    while i < nums.len()\n        invariant\n            0 <= i <= nums.len(),\n            exists |k: int| 0 <= k < i && nums@[k] == max_val,\n            forall |j: int| 0 <= j < i ==> nums@[j] <= max_val,\n        decreases nums.len() - i\n    {\n        if nums[i] > max_val {\n            max_val = nums[i];\n        }\n        i += 1;\n    }\n    max_val\n}\n\n} // verus!\n```\n\nIn this fixed code, the `decreases` clause is added to the `while` loop, specifying `nums.len() - i` as the measure that decreases with each iteration. This ensures that the loop will terminate, as `i` increases until it equals `nums.len()`.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 6.406235933303833,
+      "verification_time": 0.3090698719024658,
+      "timestamp": "2026-01-09T16:14:43.147931",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 358,
+          "completion_tokens": 444
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_ensures_849aa2fc577e",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing postcondition (ensures clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains (arr : & Vec < i32 > , key : i32) -> (result : bool)  { for i in 0 .. arr . len () invariant forall | j : int | 0 <= j < i ==> arr [j] != key , { if arr [i] == key { return true ; } } false...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains (arr : & Vec < i32 > , key : i32) -> (result : bool) ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) , { for i in 0 .. arr . len () invariant forall | j : int | 0 <= j < i ==> arr [j] != key , { if arr [i] == key { return true ; } } false }\n\n} // verus!...",
+      "generated": "```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n\nfn contains(arr: &Vec<i32>, key: i32) -> (result: bool)\n    ensures result == exists |i: int| 0 <= i < arr.len() && arr[i] == key\n{\n    for i in 0..arr.len()\n        invariant forall |j: int| 0 <= j < i ==> arr[j] != key,\n    {\n        if arr[i] == key {\n            return true;\n        }\n    }\n    false\n}\n\n} // verus!\n```\n\nIn this fixed code, I've added an `ensures` clause to the `contains` function. The `ensures` clause specifies that the function will return `true` if and only if there exists an index `i` such that `0 <= i < arr.len()` and `arr[i] == key`. This postcondition accurately reflects the behavior of the `contains` function.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 2.5574300289154053,
+      "verification_time": 0.33515286445617676,
+      "timestamp": "2026-01-09T16:14:46.040573",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 181,
+          "completion_tokens": 227
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_c_missing_decreases_26842855e1dd",
+      "task": "C",
+      "model": "gpt-4o",
+      "prompt": "The following Verus code has a verification error: missing termination measure (decreases clause).\n\nFix the code so it verifies. Output the COMPLETE fixed code.\n\n### Broken code:\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub open spec fn contains(k: nat, t: Tree) -> bool\n    {\n    match t {\n        Tree::E => false,\n        Tree::T { left, key, value: _, right } =>\n            if k < key {\n                contains(k, *left)\n            } else if k > key {\n                contains(k, *right)\n    ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub open spec fn contains(k: nat, t: Tree) -> bool\n    decreases t\n{\n    match t {\n        Tree::E => false,\n        Tree::T { left, key, value: _, right } =>\n            if k < key {\n                contains(k, *left)\n            } else if k > key {\n                contains(k, *right)\n            } else {\n                true\n            }\n    }\n}\n\n} // verus!...",
+      "generated": "To fix the verification error related to the missing termination measure (decreases clause), we need to provide a measure that decreases with each recursive call. In this case, a suitable measure is the height or size of the tree, which decreases as we traverse down the tree. Here is the complete fixed code:\n\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub open spec fn contains(k: nat, t: Tree) -> bool\n    decreases t\n{\n    match t {\n        Tree::E => false,\n        Tree::T { left, key, value: _, right } =>\n            if k < key {\n                contains(k, *left)\n            } else if k > key {\n                contains(k, *right)\n            } else {\n                true\n            }\n    }\n}\n\n} // verus!\n```\n\nIn this fixed code, the `decreases t` clause is added to the `contains` function to indicate that the tree `t` is the measure that decreases with each recursive call, ensuring termination.",
+      "verified": false,
+      "error_type": null,
+      "api_latency": 2.8120198249816895,
+      "verification_time": 0.16335010528564453,
+      "timestamp": "2026-01-09T16:14:49.016022",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 165,
+          "completion_tokens": 211
+        },
+        "finish_reason": "stop"
+      }
+    }
+  ]
+}

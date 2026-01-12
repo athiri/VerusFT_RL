@@ -1,0 +1,650 @@
+{
+  "metrics": {
+    "model": "o1",
+    "task": "B",
+    "total_samples": 30,
+    "verified_count": 8,
+    "verification_rate": 0.26666666666666666,
+    "avg_api_latency": 13.674783690770466,
+    "avg_verification_time": 0.2144098202387492,
+    "error_breakdown": {
+      "unknown_error": 17,
+      "type_error": 2,
+      "syntax_error": 2,
+      "precondition_error": 1
+    },
+    "timestamp": "2026-01-09T16:51:30.890005"
+  },
+  "results": [
+    {
+      "sample_id": "task_b_e0e141c91d8f",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn odd_exec (n : u32) -> (result : bool)\nensures result == odd (n as int)\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn odd (n : int) -> bool { n % 2 == 1 }\nfn odd_exec (n : u32) -> (result : bool) ensures result == odd (n as int) { n % 2 == 1 }\n\n} // verus!...",
+      "generated": "```rust\nuse vstd::prelude::*;\nverus! {\n\n    /// Returns true exactly when 'n' is an odd number.\n    ///\n    /// Specification:\n    /// ensures result == odd(n as int)\n    ///\n    fn odd_exec(n: u32) -> (result: bool)\n        ensures\n            result == odd(n as int),\n    {\n        // Since 'n % 2 == 1' precisely indicates that 'n' is odd, \n        // Verus can prove that this returned value meets the \n        // postcondition 'odd(n as int)'.\n        n % 2 == 1\n    }\n}\n```",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 10.001420736312866,
+      "verification_time": 0.17209911346435547,
+      "timestamp": "2026-01-09T16:44:44.385270",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 98,
+          "completion_tokens": 1385
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_ab3a4ad53cd7",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn to_uppercase (str1 : & Vec < char >) -> (result : Vec < char >)\nensures result == is_lower_case (c), str1 @ . len () == result @ . len () , forall | i : int | 0 <= i < ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn inner_expr_to_uppercase (str1 : & Vec < char > , i : int) -> (result : char) { if is_lower_case (# [trigger] str1 [i]) { shift_minus_32_spec (str1 [i]) } else { str1 [i] } }\nspec fn is_lower_case (c : char) -> (result : bool) { c >= 'a' && c <= 'z' }\nspec fn shift_minus_32_spec (c : char) -> (result : char) { ((c as u8) - 32) as char }\nfn is_lower_case_exec (c : char) ->...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n    /// A spec-level helper function that maps a character to its uppercase equivalent\n    /// (assuming ASCII letters for simplicity; other Unicode cases would require a more complete mapping).\n    #[verifier::spec]\n    fn uppercase_spec(c: char) -> char {\n        if 'a' <= c && c <= 'z' {\n            // Shift 'a'..'z' to 'A'..'Z'.\n            ((c as u32) + ('A' as u32) - ('a' as u32)) as char\n        } else {\n            c\n        }\n    }\n\n    /// A spec-level helper function as required by the specification, referring to how\n    /// we transform the i-th character of `str1`.\n    #[verifier::spec]\n    fn inner_expr_to_uppercase(str1: &Vec<char>, i: int) -> char {\n        // We assume 0 <= i < str1.len() by the calling context.\n        uppercase_spec(str1[i as usize])\n    }\n\n    /// Transforms all characters of the input vector into uppercase, returning a new vector.\n    ///\n    /// Specification requires:\n    /// 1. result.len() == str1.len()\n    /// 2. For each valid index i, result[i] == inner_expr_to_uppercase(str1, i)\n    fn to_uppercase(str1: &Vec<char>) -> (result: Vec<char>)\n        ensures\n            result.len() == str1.len(),\n            forall |i: int| 0 <= i && i < str1.len() ==> \n                result[i as usize] == inner_expr_to_uppercase(str1, i)\n    {\n        let mut r = Vec::new();\n        r.reserve(str1.len());\n\n        // Actual executable transformation: ASCII-based uppercase\n        for c in str1.iter() {\n            r.push(c.to_ascii_uppercase());\n        }\n\n        r\n    }\n\n}",
+      "verified": false,
+      "error_type": "type_error",
+      "api_latency": 14.626948833465576,
+      "verification_time": 0.2475731372833252,
+      "timestamp": "2026-01-09T16:44:59.259875",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 154,
+          "completion_tokens": 2211
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_5aff9921717a",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn longest_common_prefix (str1 : & Vec < char > , str2 : & Vec < char >) -> (result : Vec < char >)\nrequires longest_common_prefix_precond (str1 @ , str2 @)\nensures longes...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn longest_common_prefix_precond (str1 : Seq < char > , str2 : Seq < char >) -> bool { true }\nspec fn longest_common_prefix_postcond (str1 : Seq < char > , str2 : Seq < char > , result : Seq < char >) -> bool { &&& result . len () <= str1 . len () &&& result == str1 . subrange (0 , result . len () as int) &&& result . len () <= str2 . len () &&& result == str2 . subrange (0...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n#[verifier::spec]\npub fn longest_common_prefix_precond(_s1: Seq<char>, _s2: Seq<char>) -> bool {\n    // You can add any specific input requirements here if desired.\n    // For simplicity, we'll allow all inputs.\n    true\n}\n\n#[verifier::spec]\npub fn is_prefix_of(p: Seq<char>, s: Seq<char>) -> bool {\n    p.len() <= s.len() && forall |i: nat| i < p.len() ==> p[i] == s[i]\n}\n\n#[verifier::spec]\npub fn longest_common_prefix_postcond(s1: Seq<char>, s2: Seq<char>, result: Seq<char>) -> bool {\n    // 1. result is a prefix of s1\n    // 2. result is a prefix of s2\n    // 3. The character immediately after the result, if any, differs in s1 and s2\n    //    (or we reached the end of one string, meaning it's indeed the longest possible common prefix).\n    is_prefix_of(result, s1)\n    && is_prefix_of(result, s2)\n    && (result.len() == s1.len() \n        || result.len() == s2.len() \n        || s1.index(result.len()) != s2.index(result.len()))\n}\n\npub fn longest_common_prefix(str1: &Vec<char>, str2: &Vec<char>) -> Vec<char>\n    requires\n        longest_common_prefix_precond(str1@, str2@),\n    ensures\n        longest_common_prefix_postcond(str1@, str2@, result@)\n{\n    let mut idx = 0usize;\n    let min_len = if str1.len() < str2.len() { str1.len() } else { str2.len() };\n\n    // Find the index up to which str1 and str2 match\n    while idx < min_len && str1[idx] == str2[idx]\n        decreases (min_len - idx)\n        invariant\n            0 <= idx <= min_len,\n            // Invariant: up to idx, all matching chars are equal\n            forall |i: nat| i < idx ==> str1[i] == str2[i]\n    {\n        idx += 1;\n    }\n\n    // Build the resulting prefix up to idx\n    let mut result = Vec::new();\n    let mut i = 0usize;\n    while i < idx\n        decreases (idx - i)\n        invariant\n            i <= idx,\n            result@.len() == i,\n            // Invariant: for all j < i, result is copying chars from str1\n            forall |j: nat| j < i ==> result@.index(j) ==...",
+      "verified": false,
+      "error_type": "syntax_error",
+      "api_latency": 36.551527976989746,
+      "verification_time": 0.15724802017211914,
+      "timestamp": "2026-01-09T16:45:35.968727",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 139,
+          "completion_tokens": 4072
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_16300e4e7930",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)\nrequires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 \nensures sum [0] == 5 * N\n...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 5 * N , { sum [0] = 5 * N ; }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)\n        requires\n            N > 0,\n            old(a).len() == N,\n            old(sum).len() == 1,\n            N < 1000,\n        ensures\n            sum[0] == 5 * N\n    {\n        sum[0] = 5 * N;\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 9.224269151687622,
+      "verification_time": 0.31374216079711914,
+      "timestamp": "2026-01-09T16:45:45.506812",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 147,
+          "completion_tokens": 1268
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_f46c513abc42",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn match_strings (s : Vec < char > , p : Vec < char >) -> (b : bool)\nrequires s . len () == p . len () \nensures b <==> forall | n : int | 0 <= n < s . len () ==> s [n] == ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn match_strings (s : Vec < char > , p : Vec < char >) -> (b : bool) requires s . len () == p . len () , ensures b <==> forall | n : int | 0 <= n < s . len () ==> s [n] == p [n] || p [n] == '?' { let mut i = 0 ; while i < s . len () invariant 0 <= i <= s . len () , s . len () == p . len () , forall | n : int | 0 <= n < i ==> s [n] == p [n] || p [n] == '?' decreases s . len () - ...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    pub fn match_strings(s: Vec<char>, p: Vec<char>) -> (b: bool)\n        requires\n            s.len() == p.len(),\n        ensures\n            b <==> (forall|i: int| 0 <= i < s.len() ==> s[i] == p[i] || p[i] == '?'),\n    {\n        let mut result = true;\n        let mut i = 0;\n        while i < s.len()\n            invariant\n                0 <= i <= s.len(),\n                // If 'result' is still true, then it holds up to all indices visited so far.\n                result ==> (forall|j: int| 0 <= j < i ==> s[j] == p[j] || p[j] == '?'),\n            decreases (s.len() - i),\n        {\n            if s[i] != p[i] && p[i] != '?' {\n                result = false;\n            }\n            i += 1;\n        }\n        result\n    }\n}",
+      "verified": false,
+      "error_type": "precondition_error",
+      "api_latency": 20.815531969070435,
+      "verification_time": 0.30873894691467285,
+      "timestamp": "2026-01-09T16:46:06.631147",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 147,
+          "completion_tokens": 2854
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_dae8ee4d4fc0",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn option_map_preserves_is_none<T, U>(opt: Option<T>, f: spec_fn(T) -> U)\n    ensures dec_to_bool(dec_is_none(opt)) == dec_to_bool(dec_is_none(option_map(opt, f)...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn option_map_preserves_is_none<T, U>(opt: Option<T>, f: spec_fn(T) -> U)\n    ensures dec_to_bool(dec_is_none(opt)) == dec_to_bool(dec_is_none(option_map(opt, f)))\n{\n}\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// This proof shows that mapping over an Option preserves whether it is None or not.\n    pub proof fn option_map_preserves_is_none<T, U>(\n        opt: Option<T>,\n        f: spec_fn(T) -> U\n    ) \n        ensures\n            // First specification requirement\n            dec_to_bool(dec_is_none(opt)) == dec_to_bool(dec_is_none(option_map(opt, f))),\n            // Repeated specification requirement (as given)\n            dec_to_bool(dec_is_none(opt)) == dec_to_bool(dec_is_none(option_map(opt, f)))\n    {\n        match opt {\n            None => {\n                // If opt is None, mapping must also yield None.\n                assert(option_map(opt, f) == None);\n            }\n            Some(t) => {\n                // If opt is Some, mapping yields Some(f(t)).\n                assert(option_map(opt, f) == Some(f(t)));\n            }\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 12.3678879737854,
+      "verification_time": 0.1262197494506836,
+      "timestamp": "2026-01-09T16:46:19.125333",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 146,
+          "completion_tokens": 1649
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_c8c74e93671f",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn dec_xor_sound(d1: Dec, d2: Dec)\nensures dec_to_bool(dec_xor(d1, d2)) == (dec_to_bool(d1) != dec_to_bool(d2))\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn dec_xor_sound(d1: Dec, d2: Dec)\n    ensures dec_to_bool(dec_xor(d1, d2)) == (dec_to_bool(d1) != dec_to_bool(d2))\n{\n}\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n    /// A simple decidable type with two values.\n    #[verifier::spec]\n    pub enum Dec {\n        True,\n        False,\n    }\n\n    /// Converts a `Dec` to its corresponding boolean value.\n    #[verifier::spec]\n    pub fn dec_to_bool(d: Dec) -> bool {\n        match d {\n            Dec::True => true,\n            Dec::False => false,\n        }\n    }\n\n    /// Returns the XOR of two `Dec` values as a `Dec`.\n    #[verifier::spec]\n    pub fn dec_xor(d1: Dec, d2: Dec) -> Dec {\n        if dec_to_bool(d1) ^ dec_to_bool(d2) {\n            Dec::True\n        } else {\n            Dec::False\n        }\n    }\n\n    /// Proves that `dec_xor` corresponds to boolean XOR.\n    /// That is, dec_to_bool(dec_xor(d1, d2))\n    /// equals the boolean comparison of \"not equal\" for dec_to_bool(d1) and dec_to_bool(d2).\n    pub proof fn dec_xor_sound(d1: Dec, d2: Dec)\n        ensures\n            dec_to_bool(dec_xor(d1, d2)) == (dec_to_bool(d1) != dec_to_bool(d2))\n    {\n        // Direct reasoning:\n        //  dec_xor(d1, d2) is defined as Dec::True exactly when\n        //  dec_to_bool(d1) ^ dec_to_bool(d2) is true, which is logically\n        //  the same as dec_to_bool(d1) != dec_to_bool(d2).\n        //\n        // Hence the ensures clause follows from the definition above.\n\n        assert(dec_to_bool(dec_xor(d1, d2))\n            == (dec_to_bool(d1) ^ dec_to_bool(d2)));\n        assert((dec_to_bool(d1) ^ dec_to_bool(d2))\n            == (dec_to_bool(d1) != dec_to_bool(d2)));\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 21.168832063674927,
+      "verification_time": 0.2623410224914551,
+      "timestamp": "2026-01-09T16:46:40.556592",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 119,
+          "completion_tokens": 2898
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_07a415573335",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn abs_diff (a : i32 , b : i32) -> (result : i32)\nrequires a >= - 1000000 && a <= 1000000 , b >= - 1000000 && b <= 1000000 \nensures result >= 0\n```\n\n### Complete implement...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn abs_diff (a : i32 , b : i32) -> (result : i32) requires a >= - 1000000 && a <= 1000000 , b >= - 1000000 && b <= 1000000 , ensures result >= 0 , { return 0 ; }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    fn abs_diff(a: i32, b: i32) -> (result: i32)\n        requires\n            a >= -1000000, a <= 1000000,\n            b >= -1000000, b <= 1000000,\n        ensures\n            result >= 0,\n    {\n        let diff = a - b;\n        if diff >= 0 {\n            diff\n        } else {\n            -diff\n        }\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 8.28178882598877,
+      "verification_time": 0.29525208473205566,
+      "timestamp": "2026-01-09T16:46:49.133710",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 132,
+          "completion_tokens": 761
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_b5dcdc870050",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn longest_increasing_streak_aux (nums : & Vec < i32 > , idx : usize , prev : Option < i32 > , curr_len : usize , max_len : usize) -> (result : usize)\nrequires idx <= nums...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn longest_increasing_streak_aux (nums : & Vec < i32 > , idx : usize , prev : Option < i32 > , curr_len : usize , max_len : usize) -> (result : usize) requires idx <= nums . len () , curr_len <= nums . len () , max_len <= nums . len () ensures result <= nums . len () decreases nums . len () - idx { return 0 ; }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    /// Returns the length of the longest strictly-increasing streak in `nums` starting at index `idx`,\n    /// given the current streak length `curr_len`, the global maximum streak found so far `max_len`,\n    /// and the previous value `prev`.\n    ///\n    /// The function meets the given Verus specifications:\n    ///  \u2022 It terminates (the \"decreases\" clause).\n    ///  \u2022 All required preconditions are respected (the \"requires\" clause).\n    ///  \u2022 The result satisfies the specified postconditions (the \"ensures\" clause).\n    fn longest_increasing_streak_aux(\n        nums: &Vec<i32>,\n        idx: usize,\n        prev: Option<i32>,\n        curr_len: usize,\n        max_len: usize\n    ) -> (result: usize)\n        requires\n            idx <= nums.len(),\n            curr_len <= nums.len(),\n            max_len <= nums.len(),\n        ensures\n            result <= nums.len(),\n            result <= nums.len(), // duplicated per the signature requirement\n        decreases nums.len() - idx\n    {\n        if idx == nums.len() {\n            max_len\n        } else {\n            let new_curr_len = match prev {\n                None => {\n                    // Start a new streak (extend curr_len by 1, clamped to nums.len())\n                    if curr_len < nums.len() { curr_len + 1 } else { nums.len() }\n                }\n                Some(p) => {\n                    if nums[idx] > p {\n                        // Extend existing streak (clamp to nums.len())\n                        if curr_len < nums.len() { curr_len + 1 } else { nums.len() }\n                    } else {\n                        // Restart streak from here\n                        1\n                    }\n                }\n            };\n            let new_max_len = if new_curr_len > max_len { new_curr_len } else { max_len };\n            longest_increasing_streak_aux(nums, idx + 1, Some(nums[idx]), new_curr_len, new_max_len)\n        }\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 17.049939155578613,
+      "verification_time": 0.3036060333251953,
+      "timestamp": "2026-01-09T16:47:06.487333",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 163,
+          "completion_tokens": 2551
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_80e5ff8a1c6b",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn contains (arr : & Vec < i32 > , key : i32) -> (result : bool)\nensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key))\n```\n\n### Complete impleme...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains (arr : & Vec < i32 > , key : i32) -> (result : bool) ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) , { for i in 0 .. arr . len () invariant forall | j : int | 0 <= j < i ==> arr [j] != key , { if arr [i] == key { return true ; } } false }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    /// Returns true exactly when `key` appears in `arr`.\n    ///\n    /// Ensures: result == (exists | i: int | 0 <= i < arr.len() && arr[i] == key).\n    ///\n    fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)\n        ensures\n            result == (exists | i: int | 0 <= i < arr.len() && arr[i] == key),\n    {\n        let mut found = false;\n        let mut i = 0;\n        while i < arr.len()\n            invariant\n                0 <= i <= arr.len(),\n                // The 'found' flag precisely tracks whether we've seen 'key' so far.\n                found == (exists | j: int | 0 <= j < i && arr[j] == key),\n            decreases (arr.len() - i)\n        {\n            if arr[i] == key {\n                found = true;\n            }\n            i += 1;\n        }\n        found\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 15.108901023864746,
+      "verification_time": 0.3053560256958008,
+      "timestamp": "2026-01-09T16:47:21.901671",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 125,
+          "completion_tokens": 2201
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_f0757364b3b9",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn contains_z (text : & [u8]) -> (result : bool)\nensures result == (exists | i : int | 0 <= i < text . len () && (text [i] == 90 || text [i] == 122))\n```\n\n### Complete imp...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains_z (text : & [u8]) -> (result : bool) ensures result == (exists | i : int | 0 <= i < text . len () && (text [i] == 90 || text [i] == 122)) , { let mut i = 0 ; while i < text . len () invariant 0 <= i <= text . len () , forall | j : int | 0 <= j < i ==> ! (text [j] == 90 || text [j] == 122) , decreases text . len () - i , { if text [i] == 90 || text [i] == 122 { return...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    /// Returns true if and only if there is some byte in `text` equal to ASCII 'Z' (90) or 'z' (122).\n    fn contains_z(text: &[u8]) -> bool\n        ensures\n            // The function's result must match the condition that there exists an index i in [0..len),\n            // such that text[i] == 90 (ASCII 'Z') or text[i] == 122 (ASCII 'z').\n            result == (exists | i: int | 0 <= i < text.len() && (text[i] == 90 || text[i] == 122)),\n    {\n        let mut i: usize = 0;\n        while i < text.len()\n            // Loop invariant:\n            invariant\n                // i is always between 0 and text.len().\n                0 <= i <= text.len(),\n                // If we haven't halted with \"true\" yet, it must be that every byte examined so far\n                // (indices < i) was neither 90 nor 122, or we would have returned.\n                forall |j: int| 0 <= j < i ==> text[j] != 90 && text[j] != 122\n        {\n            if text[i] == 90 || text[i] == 122 {\n                // We found a byte that is 'Z' or 'z'. We can return true.\n                proof {\n                    // Here we establish the existance of i for the ensures clause.\n                    assert(0 <= i < text.len());\n                }\n                return true;\n            }\n            i = i + 1;\n        }\n\n        // If we exit the loop, there is no index i for which text[i] is 90 or 122\n        proof {\n            // We can conclude that the \"exists\" condition is false,\n            // so the final result is false in accordance with the ensures clause.\n        }\n        false\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 24.525744199752808,
+      "verification_time": 0.17832684516906738,
+      "timestamp": "2026-01-09T16:47:46.605824",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 128,
+          "completion_tokens": 3047
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_fef94c2f1dde",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn has_common_element (list1 : & Vec < i32 > , list2 : & Vec < i32 >) -> (result : bool)\nensures result == (exists | i : int , j : int | 0 <= i < list1 . len () && 0 <= j ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn has_common_element (list1 : & Vec < i32 > , list2 : & Vec < i32 >) -> (result : bool) ensures result == (exists | i : int , j : int | 0 <= i < list1 . len () && 0 <= j < list2 . len () && (list1 [i] == list2 [j])) , { let mut i : usize = 0 ; while i < list1 . len () invariant forall | ii : int , jj : int | 0 <= ii < i && 0 <= jj < list2 . len () ==> list1 [ii] != list2 [jj] ,...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// Returns true if and only if there is some element that appears in both `list1` and `list2`.\n    /// \n    /// Ensures that the result is true exactly when there exist indices `i, j`\n    /// with `0 <= i < list1.len()` and `0 <= j < list2.len()`, such that `list1[i] == list2[j]`.\n    pub fn has_common_element(list1: &Vec<i32>, list2: &Vec<i32>) -> (result: bool)\n        ensures\n            result == (exists | i: int, j: int |\n                0 <= i < list1.len() as int\n                && 0 <= j < list2.len() as int\n                && list1[i as usize] == list2[j as usize]\n            )\n    {\n        // A straightforward nested loop to check for a common element\n        for i in 0..list1.len() {\n            for j in 0..list2.len() {\n                if list1[i] == list2[j] {\n                    return true;\n                }\n            }\n        }\n        false\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 10.53905200958252,
+      "verification_time": 0.1703660488128662,
+      "timestamp": "2026-01-09T16:47:57.315328",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 153,
+          "completion_tokens": 1318
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_d9822a02ebd6",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn main_method (n : i32 , k : i32) -> (k_out : i32)\nrequires n > 0 , k > n , n <= 100 , k <= 200 \nensures k_out >= 0\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn main_method (n : i32 , k : i32) -> (k_out : i32) requires n > 0 , k > n , n <= 100 , k <= 200 , ensures k_out >= 0 , { return 0 ; }\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    fn main_method(n: i32, k: i32) -> (k_out: i32)\n        requires\n            n > 0,\n            k > n,\n            n <= 100,\n            k <= 200,\n        ensures\n            k_out >= 0,\n    {\n        let k_out = k - n;\n        k_out\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 6.282093048095703,
+      "verification_time": 0.16860008239746094,
+      "timestamp": "2026-01-09T16:48:03.766102",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 123,
+          "completion_tokens": 809
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_97935a732bc5",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn ring_power_one_int(base: int)\nensures ring_power_int(base, 1) == base\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn ring_power_one_int(base: int)\n    ensures ring_power_int(base, 1) == base\n{\n    // ring_power_int(base, 1) = ring_mul_int(base, ring_power_int(base, 0))\n    //                        = ring_mul_int(base, 1)\n    //                        = base\n    assert(ring_power_int(base, 0) == 1);\n    assert(ring_power_int(base, 1) == ring_mul_int(base, ring_power_int(base, 0)));\n    assert(ring_mul_int(base, 1) == base);\n}\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n    // A simple specification-level definition of ring_power_int.\n    // It computes \"base^exp\" for an integer base and natural exponent.\n    #[verifier::spec]\n    pub fn ring_power_int(base: int, exp: nat) -> int {\n        if exp == 0 {\n            1\n        } else {\n            base * ring_power_int(base, exp - 1)\n        }\n    }\n\n    // Proves that ring_power_int(base, 1) = base.\n    pub proof fn ring_power_one_int(base: int)\n        ensures\n            ring_power_int(base, 1) == base\n    {\n        // By definition expansion:\n        assert(ring_power_int(base, 1) == if 1 == 0 { 1 } else { base * ring_power_int(base, 0) });\n        assert(ring_power_int(base, 0) == 1);\n\n        // Therefore:\n        assert(ring_power_int(base, 1) == base);\n    }\n}",
+      "verified": false,
+      "error_type": "type_error",
+      "api_latency": 13.945349931716919,
+      "verification_time": 0.23707294464111328,
+      "timestamp": "2026-01-09T16:48:17.948603",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 97,
+          "completion_tokens": 2023
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_f0c7978ce6d2",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)\nrequires N > 0 , N <= MAX / 2 , old (a) . len () == N , old (sum) . len () == 1 \nensures sum [0] =...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\npub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32) requires N > 0 , N <= MAX / 2 , old (a) . len () == N , old (sum) . len () == 1 , ensures sum [0] == 2 * N , { sum . set (0 , 2 * N) ; }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    /// A function that doubles N and places it in sum[0].\n    /// \n    /// Requirements:\n    /// \u2022 N > 0\n    /// \u2022 N <= MAX / 2\n    /// \u2022 old(a).len() == N\n    /// \u2022 old(sum).len() == 1\n    /// \n    /// Ensures:\n    /// \u2022 sum[0] == 2 * N\n    pub fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: i32)\n        requires\n            N > 0,\n            N <= i32::MAX / 2,  // or another appropriate 'MAX', per project context\n            old(a).len() == N,\n            old(sum).len() == 1\n        ensures\n            sum[0] == 2 * N\n    {\n        sum[0] = 2 * N;\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 8.084716081619263,
+      "verification_time": 0.31215620040893555,
+      "timestamp": "2026-01-09T16:48:26.345553",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 149,
+          "completion_tokens": 1559
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_d3b7977762fe",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn ex3_app_assoc(xs: NatList, ys: NatList, zs: NatList)\nensures app(app(xs, ys), zs) =~= app(xs, app(ys, zs))\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn ex3_app_assoc(xs: NatList, ys: NatList, zs: NatList)\n    ensures app(app(xs, ys), zs) =~= app(xs, app(ys, zs))\n{\n    lemma_concat_associative(xs, ys, zs);\n    assert(xs.add(ys).add(zs) =~= xs.add(ys.add(zs)));\n}\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// Proves that list concatenation (app) is associative:\n    ///   app(app(xs, ys), zs) =~= app(xs, app(ys, zs))\n    ///\n    /// Proof Strategy:\n    ///   Structural induction on xs.\n    ///\n    ///   Case xs = Nil:\n    ///       app(app(Nil, ys), zs) = app(ys, zs)\n    ///       app(Nil, app(ys, zs)) = app(ys, zs)\n    ///       So both sides are equal.\n    ///\n    ///   Case xs = Cons(x, xs'):\n    ///       By definition: app(app(Cons(x, xs'), ys), zs)\n    ///         = app(Cons(x, app(xs', ys)), zs)\n    ///         = Cons(x, app(app(xs', ys), zs))\n    ///       By inductive hypothesis: app(app(xs', ys), zs) =~= app(xs', app(ys, zs))\n    ///       So: Cons(x, app(app(xs', ys), zs)) =~= Cons(x, app(xs', app(ys, zs)))\n    ///         = app(Cons(x, xs'), app(ys, zs))\n    ///\n    /// Therefore, app(app(xs, ys), zs) =~= app(xs, app(ys, zs)) for all xs, ys, zs.\n    ///\n    pub proof fn ex3_app_assoc(xs: NatList, ys: NatList, zs: NatList)\n        ensures app(app(xs, ys), zs) =~= app(xs, app(ys, zs))\n    {\n        match xs {\n            NatList::Nil => {\n                // Base case: trivial\n            }\n            NatList::Cons(_, tail) => {\n                // Inductive step: invoke the hypothesis on the tail\n                ex3_app_assoc(tail, ys, zs);\n            }\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 8.208303213119507,
+      "verification_time": 0.17030882835388184,
+      "timestamp": "2026-01-09T16:48:34.724253",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 116,
+          "completion_tokens": 1726
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_d5a297a84b1d",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn create_all_state (increment : i32 , total_number : i32 , level : i32 , current_list : & mut Vec < i32 > , total_list : & mut Vec < Vec < i32 > > ,)\nrequires increment >...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn create_all_state (increment : i32 , total_number : i32 , level : i32 , current_list : & mut Vec < i32 > , total_list : & mut Vec < Vec < i32 > > ,) requires increment >= 1 , 0 <= level <= total_number , total_number + 1 <= MAX , { }\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    // You may define some upper bound as MAX if needed. \n    // For illustrative purposes, we'll just pick a large constant:\n    const MAX: i32 = 1_000_000_000;\n\n    /// Creates \"all states\" by enumerating all sequences of length `total_number`,\n    /// where each element in the sequence is one of { 0, increment, 2*increment, \u2026, total_number*increment }.\n    ///\n    /// - `increment` is the step size (\u2265 1).\n    /// - `total_number` is the length of the sequences to generate.\n    /// - `level` tracks the current position in the recursion (0 \u2264 level \u2264 total_number).\n    /// - `current_list` builds the sequence in a backtracking manner.\n    /// - `total_list` collects all sequences once they reach length `total_number`.\n    ///\n    /// The specification requires:\n    ///   increment >= 1\n    ///   0 <= level <= total_number\n    ///   total_number + 1 <= MAX\n    fn create_all_state(\n        increment: i32,\n        total_number: i32,\n        level: i32,\n        current_list: &mut Vec<i32>,\n        total_list: &mut Vec<Vec<i32>>,\n    )\n        requires\n            increment >= 1,\n            0 <= level <= total_number,\n            total_number + 1 <= MAX\n    {\n        // When we've chosen `total_number` elements, record the current sequence\n        if level == total_number {\n            total_list.push(current_list.clone());\n        } else {\n            // Otherwise, try all possible multiples of `increment` from 0 up to total_number\n            for i in 0 ..= total_number {\n                current_list.push(i * increment);\n                create_all_state(increment, total_number, level + 1, current_list, total_list);\n                current_list.pop();\n            }\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 25.312069177627563,
+      "verification_time": 0.16573190689086914,
+      "timestamp": "2026-01-09T16:49:00.202148",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 142,
+          "completion_tokens": 4010
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_9544cdceed4d",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn find_single_number (nums : & Vec < i32 >) -> (result : i32)\nrequires nums . len () > 0\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn find_single_number (nums : & Vec < i32 >) -> (result : i32) requires nums . len () > 0 , { return 0 ; }\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    fn find_single_number(nums: &Vec<i32>) -> (result: i32)\n        requires\n            nums.len() > 0,\n    {\n        let mut r: i32 = 0;\n        let mut i: usize = 0;\n\n        while i < nums.len()\n            invariant\n                i <= nums.len(),\n            decreases nums.len() - i\n        {\n            r ^= nums[i];\n            i += 1;\n        }\n\n        r\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 10.363203048706055,
+      "verification_time": 0.17620587348937988,
+      "timestamp": "2026-01-09T16:49:10.741641",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 103,
+          "completion_tokens": 1472
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_cd7c9155e3c0",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn add_zero_right(a: nat)\nensures a + 0 == a\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn add_zero_right(a: nat)\n    ensures a + 0 == a\n{\n}\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    pub proof fn add_zero_right(a: nat)\n        ensures\n            a + 0 == a\n    {\n        // Since 0 is the additive identity, this equality holds by definition.\n        assert(a + 0 == a);\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 4.583531141281128,
+      "verification_time": 0.16108107566833496,
+      "timestamp": "2026-01-09T16:49:15.486336",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 92,
+          "completion_tokens": 589
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_ce57ac099e11",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn min_le_right(a: nat, b: nat)\nensures min(a, b) <= b\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn min_le_right(a: nat, b: nat)\n    ensures min(a, b) <= b\n{\n}\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// Proves that the minimum of a and b is always less than or equal to b.\n    pub proof fn min_le_right(a: nat, b: nat)\n        ensures\n            min(a, b) <= b,\n    {\n        if a <= b {\n            // In this branch, min(a, b) == a, and clearly a <= b.\n            assert(min(a, b) == a);\n            assert(a <= b);\n        } else {\n            // In this branch, a > b, so min(a, b) == b, which trivially satisfies min(a, b) <= b.\n            assert(min(a, b) == b);\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 12.198827981948853,
+      "verification_time": 0.16988706588745117,
+      "timestamp": "2026-01-09T16:49:27.855148",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 97,
+          "completion_tokens": 1685
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_5d99f488f836",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize)\nrequires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 \nensures sum [0] == 4 * ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize) requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 , ensures sum [0] == 4 * N , { sum [0] = 4 * (N as i32) ; }\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    fn myfun(a: &mut Vec<i32>, sum: &mut Vec<i32>, N: usize)\n        requires\n            N > 0,\n            old(a).len() == N,\n            old(sum).len() == 1,\n            N < 1000,\n        ensures\n            sum[0] == 4 * N\n    {\n        sum[0] = 4 * (N as i32);\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 8.412044048309326,
+      "verification_time": 0.30579590797424316,
+      "timestamp": "2026-01-09T16:49:36.573065",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 146,
+          "completion_tokens": 1333
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_7a9ffd58a947",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub fn myfun4 (x : & Vec < u64 > , y : & mut Vec < u64 >)\nrequires old (y) . len () == 0 \nensures forall | k : int | 0 <= k < y . len () ==> y [k] % 3 == 0 && x @ . contai...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\npub fn myfun4 (x : & Vec < u64 > , y : & mut Vec < u64 >) requires old (y) . len () == 0 , ensures forall | k : int | 0 <= k < y . len () ==> y [k] % 3 == 0 && x @ . contains (y @ [k]) , { let mut i = 0 ; while i < x . len () invariant 0 <= i <= x . len () , forall | k : int | 0 <= k < y . len () ==> y [k] % 3 == 0 && x @ . contains (y @ [k]) , decreases x . len () - i { if x [i...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// Takes all multiples of 3 from x and appends them to y.\n    /// Since y is initially empty, the resulting y will only contain elements\n    /// that are multiples of 3 and that originally came from x.\n    pub fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)\n        requires\n            old(y).len() == 0,\n        ensures\n            forall |k: int| 0 <= k < y.len() ==> y[k] % 3 == 0 && x@.contains(y@[k])\n    {\n        for &elem in x {\n            if elem % 3 == 0 {\n                y.push(elem);\n            }\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 13.287197828292847,
+      "verification_time": 0.17018890380859375,
+      "timestamp": "2026-01-09T16:49:50.030536",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 149,
+          "completion_tokens": 1520
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_6d83f1c8cca4",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn element_wise_module (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >)\nrequires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 ....",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn element_wise_module (arr1 : & Vec < u32 > , arr2 : & Vec < u32 >) -> (result : Vec < u32 >) requires arr1 . len () == arr2 . len () , forall | i : int | 0 <= i < arr2 . len () ==> arr2 [i] != 0 , forall | i : int | (0 <= i < arr1 . len ()) ==> (MIN <= # [trigger] (arr1 [i] % arr2 [i]) <= MAX) , ensures result @ . len () == arr1 @ . len () , forall | i : int | 0 <= i < result ...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n    /// Returns a new vector where each element is `arr1[i] % arr2[i]`.\n    /// \n    /// Specifications:\n    /// \u2022 Requires that both input vectors have the same length.\n    /// \u2022 Requires that no element of `arr2` is 0.\n    /// \u2022 Requires that each computed `%` value lies between MIN and MAX (assumed in scope).\n    /// \u2022 Ensures the result has the same length as the inputs.\n    /// \u2022 Ensures each result element is exactly `arr1[i] % arr2[i]`.\n    fn element_wise_module(arr1: &Vec<u32>, arr2: &Vec<u32>) -> (result: Vec<u32>)\n        requires\n            arr1.len() == arr2.len(),\n            forall|i: int| 0 <= i < arr2.len() ==> arr2[i] != 0,\n            forall|i: int| 0 <= i < arr1.len() ==> (MIN <= #[trigger](arr1[i] % arr2[i]) <= MAX),\n        ensures\n            result@.len() == arr1@.len(),\n            forall|i: int| 0 <= i < result.len() ==> #[trigger]result[i] == #[trigger](arr1[i] % arr2[i])\n    {\n        let mut temp = Vec::with_capacity(arr1.len());\n        for i in 0..arr1.len() {\n            temp.push(arr1[i] % arr2[i]);\n        }\n        temp\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 12.914308071136475,
+      "verification_time": 0.16878795623779297,
+      "timestamp": "2026-01-09T16:50:03.113712",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 244,
+          "completion_tokens": 2643
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_826b70672971",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn abs (i : i32) -> (res : i32)\nrequires i != MIN \nensures i < 0 ==> res == - i , i >= 0 ==> res == i\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn abs (i : i32) -> (res : i32) requires i != MIN , ensures i < 0 ==> res == - i , i >= 0 ==> res == i { if i < 0 { - i } else { i } }\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    fn abs(i: i32) -> (res: i32)\n        requires\n            i != i32::MIN,\n        ensures\n            i < 0 ==> res == -i,\n            i >= 0 ==> res == i,\n    {\n        if i >= 0 {\n            i\n        } else {\n            -i\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 3.7968640327453613,
+      "verification_time": 0.17104220390319824,
+      "timestamp": "2026-01-09T16:50:07.081702",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 114,
+          "completion_tokens": 548
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_3e18ee679b08",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn list_deep_clone (arr : & Vec < u64 >) -> (copied : Vec < u64 >)\nensures arr @ . len () == copied @ . len () , forall | i : int | (0 <= i < arr . len ()) ==> arr [i] == ...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn list_deep_clone (arr : & Vec < u64 >) -> (copied : Vec < u64 >) ensures arr @ . len () == copied @ . len () , forall | i : int | (0 <= i < arr . len ()) ==> arr [i] == copied [i] , { let mut copied = Vec :: new () ; let mut i = 0 ; while i < arr . len () invariant i <= arr . len () , copied @ . len () == i , forall | j : int | (0 <= j < i) ==> arr [j] == copied [j] , decrease...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    fn list_deep_clone(arr: &Vec<u64>) -> (copied: Vec<u64>)\n        ensures\n            arr@.len() == copied@.len(),\n            forall|i: int| 0 <= i < arr@.len() ==> arr@[i] == copied@[i]\n    {\n        arr.clone()\n    }\n}",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 6.494530916213989,
+      "verification_time": 0.31182003021240234,
+      "timestamp": "2026-01-09T16:50:13.888130",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 138,
+          "completion_tokens": 1202
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_805cf9d728c8",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn state_fresh_id_not_in_state(st: State)\nrequires forall|x: Id| state_contains(st, x) ==> x < st.next_id\n    ensures !state_contains(st, st.next_id)\nensures !st...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn state_fresh_id_not_in_state(st: State)\n    requires forall|x: Id| state_contains(st, x) ==> x < st.next_id\n    ensures !state_contains(st, st.next_id)\n{\n}\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n\n    // For illustration, we'll define Id as a natural number.\n    pub type Id = nat;\n\n    // A simple State struct with a single field next_id\n    // (In real usage, State may have more fields as needed.)\n    #[verifier(external_body)] // Mark as external_body to allow any actual implementation in real code\n    pub struct State {\n        pub next_id: Id,\n    }\n\n    // A placeholder specification function for whether the state \"contains\" an Id.\n    // In actual usage, replace this with the real definition of how the state stores/contains an Id.\n    pub open spec fn state_contains(_st: State, _x: Id) -> bool {\n        // For completeness, we provide an arbitrary spec body.\n        // In a real system, this would specify the actual condition.\n        arbitrary()\n    }\n\n    /// Proves that the fresh Id (st.next_id) is not in the state,\n    /// given that all Ids in the state are strictly less than st.next_id.\n    pub proof fn state_fresh_id_not_in_state(st: State)\n        requires\n            // Precondition: For every x, if x is contained in st, then x < st.next_id.\n            forall|x: Id| state_contains(st, x) ==> x < st.next_id,\n\n        // Ensures: st.next_id is not contained in st (st.next_id is \"fresh\").\n        ensures\n            !state_contains(st, st.next_id),\n            // (Repeated ensures clause as in the question\u2014this is the same requirement stated again.)\n            !state_contains(st, st.next_id)\n    {\n        // We proceed by contradiction: assume st.next_id is in the state.\n        if state_contains(st, st.next_id) {\n            // From the precondition, we would then have st.next_id < st.next_id, which is impossible.\n            assert(st.next_id < st.next_id);\n            // Contradiction: no smaller relation can hold for an Id with itself.\n            assert(false);\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 20.57690978050232,
+      "verification_time": 0.2477099895477295,
+      "timestamp": "2026-01-09T16:50:34.712827",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 129,
+          "completion_tokens": 3712
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_d0f34a60a070",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn peek_first<T>(q: Queue<T>)\nrequires !queue_is_empty(q)\n    ensures queue_peek(q) == Some(queue_to_seq(q)[0])\nensures queue_peek(q) == Some(queue_to_seq(q)[0])...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn peek_first<T>(q: Queue<T>)\n    requires !queue_is_empty(q)\n    ensures queue_peek(q) == Some(queue_to_seq(q)[0])\n{\n    let nq = queue_normalize(q);\n    if q.front.len() == 0 {\n        // front was empty, now has reversed back\n        assert(nq.front =~= seq_reverse(q.back));\n        assert(nq.front[0] == q.back[q.back.len() - 1]);\n    }\n}\n\n} // verus!...",
+      "generated": "use vstd::prelude::*;\n\nverus! {\n    /// A proof function demonstrating that if the queue is non-empty,\n    /// then the peek value is the first element of the queue's sequence.\n    pub proof fn peek_first<T>(q: Queue<T>)\n        requires\n            !queue_is_empty(q),\n        ensures\n            queue_peek(q) == Some(queue_to_seq(q)[0]),\n        ensures\n            // Repeated ensures clause as given in the problem statement:\n            queue_peek(q) == Some(queue_to_seq(q)[0])\n    {\n        // Because q is non-empty, queue_peek(q) must be Some(...).\n        assert(queue_peek(q).is_Some());\n\n        // Extract the actual value from the Option.\n        let first_val = queue_peek(q).get_Some_0();\n\n        // Prove that it is indeed the first element of the sequence representation.\n        assert(first_val == queue_to_seq(q)[0]);\n    }\n}",
+      "verified": false,
+      "error_type": "syntax_error",
+      "api_latency": 20.030055284500122,
+      "verification_time": 0.16780710220336914,
+      "timestamp": "2026-01-09T16:50:54.910773",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 124,
+          "completion_tokens": 3094
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_c405f9ffc80a",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn insert_all_lt(k: nat, v: nat, t: Tree, bound: nat)\nrequires all_lt(t, bound), k < bound\n    ensures all_lt(insert(k, v, t), bound)\n    decreases t\nensures all...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn insert_all_lt(k: nat, v: nat, t: Tree, bound: nat)\n    requires all_lt(t, bound), k < bound\n    ensures all_lt(insert(k, v, t), bound)\n    decreases t\n{\n    reveal_with_fuel(forall_tree, 3);\n    match t {\n        Tree::E => {}\n        Tree::T { left, key, value: _, right } => {\n            if k < key {\n                insert_all_lt(k, v, *left, bound);\n            } else if k > key {\n                insert_all_lt(k, v, *right, bound);\n            }\n ...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// A simple binary tree definition with natural-number keys and values.\n    #[derive(Clone, PartialEq, Eq)]\n    pub enum Tree {\n        Empty,\n        Node {\n            key: nat,\n            value: nat,\n            left: Box<Tree>,\n            right: Box<Tree>,\n        }\n    }\n\n    /// Predicate stating that all keys in the tree are strictly less than 'bound'.\n    pub open spec fn all_lt(t: Tree, bound: nat) -> bool {\n        match t {\n            Tree::Empty => true,\n            Tree::Node { key, left, right, .. } => \n                key < bound\n                && all_lt(*left, bound)\n                && all_lt(*right, bound),\n        }\n    }\n\n    /// Returns a new tree with the pair (k, v) inserted (or updated if k is already present).\n    pub open spec fn insert(k: nat, v: nat, t: Tree) -> Tree {\n        match t {\n            Tree::Empty => {\n                Tree::Node {\n                    key: k,\n                    value: v,\n                    left:  Box::new(Tree::Empty),\n                    right: Box::new(Tree::Empty),\n                }\n            }\n            Tree::Node { key, value, left, right } => {\n                if k < key {\n                    Tree::Node {\n                        key,\n                        value,\n                        left:  Box::new(insert(k, v, *left)),\n                        right,\n                    }\n                } else if k > key {\n                    Tree::Node {\n                        key,\n                        value,\n                        left,\n                        right: Box::new(insert(k, v, *right)),\n                    }\n                } else {\n                    // k == key: update the value\n                    Tree::Node {\n                        key,\n                        value: v,\n                        left,\n                        right,\n                    }\n                }\n            }\n        }\n    }\n\n    /// Proof function showing that insert...",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 14.064643144607544,
+      "verification_time": 0.16708111763000488,
+      "timestamp": "2026-01-09T16:51:09.142601",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 144,
+          "completion_tokens": 2863
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_e3ea3ba5f840",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\nfn max (a : i32 , b : i32) -> (c : i32)\nensures c >= a && c >= b\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn max (a : i32 , b : i32) -> (c : i32) ensures c >= a && c >= b { if a >= b { a } else { b } }\n\n} // verus!...",
+      "generated": "verus! {\n    use vstd::prelude::*;\n\n    /// Returns the maximum of two i32 values\n    /// Ensures that the returned value is at least as large as each argument\n    fn max(a: i32, b: i32) -> (c: i32)\n        ensures\n            c >= a,\n            c >= b\n    {\n        if a >= b {\n            a\n        } else {\n            b\n        }\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 7.377814054489136,
+      "verification_time": 0.1792430877685547,
+      "timestamp": "2026-01-09T16:51:16.699750",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 103,
+          "completion_tokens": 762
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_b_3ccfcadca9d5",
+      "task": "B",
+      "model": "o1-2024-12-17",
+      "prompt": "Given the following Verus function signature with specifications, write the COMPLETE implementation that satisfies all requirements.\n\nOutput the FULL verifiable code including imports (use vstd::prelude::*;), the verus! { } wrapper, and the complete function implementation.\n\n### Function signature with specifications:\n```verus\npub proof fn example_unit_type()\nensures has_type(empty_store_typing(), Tm::Unit, Ty::TUnit)\n```\n\n### Complete implementation:...",
+      "expected": "use vstd::prelude::*;\n\nverus! {\n\npub proof fn example_unit_type()\n    ensures has_type(empty_store_typing(), Tm::Unit, Ty::TUnit)\n{\n}\n\n} // verus!...",
+      "generated": "verus! {\n    #![allow(unused_imports)]\n    use vstd::prelude::*;\n\n    // A minimal set of definitions to make the proof verifiable:\n\n    /// A term in our (very simple) language.\n    #[verifier::spec]\n    pub enum Tm {\n        Unit,\n    }\n\n    /// A type in our (very simple) type system.\n    #[verifier::spec]\n    pub enum Ty {\n        TUnit,\n    }\n\n    /// Represents an empty store typing context.\n    #[verifier::spec]\n    pub struct StoreTyping {}\n\n    /// Returns an empty store typing context.\n    #[verifier::spec]\n    pub fn empty_store_typing() -> StoreTyping {\n        StoreTyping {}\n    }\n\n    /// `has_type(store, term, ty)` holds iff `term` has type `ty` under the typing `store`.\n    #[verifier::spec]\n    pub fn has_type(_store: StoreTyping, term: Tm, ty: Ty) -> bool {\n        match (term, ty) {\n            (Tm::Unit, Ty::TUnit) => true,\n            _ => false,\n        }\n    }\n\n    // The requested proof function:\n    pub proof fn example_unit_type()\n        ensures\n            has_type(empty_store_typing(), Tm::Unit, Ty::TUnit)\n    {\n        // Proof is trivial by definition of `has_type`.\n    }\n}",
+      "verified": false,
+      "error_type": "unknown_error",
+      "api_latency": 14.049206018447876,
+      "verification_time": 0.14090514183044434,
+      "timestamp": "2026-01-09T16:51:30.889931",
+      "raw_response": {
+        "model": "o1-2024-12-17",
+        "usage": {
+          "prompt_tokens": 99,
+          "completion_tokens": 2098
+        },
+        "finish_reason": "stop"
+      }
+    }
+  ]
+}

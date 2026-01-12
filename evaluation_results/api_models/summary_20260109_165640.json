@@ -1,0 +1,37 @@
+{
+  "o1": {
+    "B": {
+      "model": "o1",
+      "task": "B",
+      "total_samples": 30,
+      "verified_count": 8,
+      "verification_rate": 0.26666666666666666,
+      "avg_api_latency": 13.674783690770466,
+      "avg_verification_time": 0.2144098202387492,
+      "error_breakdown": {
+        "unknown_error": 17,
+        "type_error": 2,
+        "syntax_error": 2,
+        "precondition_error": 1
+      },
+      "timestamp": "2026-01-09T16:51:30.890005"
+    },
+    "C": {
+      "model": "o1",
+      "task": "C",
+      "total_samples": 30,
+      "verified_count": 12,
+      "verification_rate": 0.4,
+      "avg_api_latency": 10.080987977981568,
+      "avg_verification_time": 0.23182868162790934,
+      "error_breakdown": {
+        "unknown_error": 9,
+        "vc_failure": 1,
+        "syntax_error": 5,
+        "termination_error": 2,
+        "precondition_error": 1
+      },
+      "timestamp": "2026-01-09T16:56:40.280891"
+    }
+  }
+}

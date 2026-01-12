@@ -1,0 +1,20 @@
+{
+  "gpt-4o": {
+    "C": {
+      "model": "gpt-4o",
+      "task": "C",
+      "total_samples": 3,
+      "verified_count": 0,
+      "verification_rate": 0.0,
+      "avg_api_latency": 0.0,
+      "avg_verification_time": 0.0,
+      "error_breakdown": {},
+      "timestamp": "2026-01-09T17:53:03.837143",
+      "total_input_tokens": 0,
+      "total_output_tokens": 0,
+      "total_tokens": 0,
+      "avg_input_tokens": 0.0,
+      "avg_output_tokens": 0.0
+    }
+  }
+}

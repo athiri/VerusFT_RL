@@ -1,0 +1,49 @@
+{
+  "gpt-4o": {
+    "A": {
+      "model": "gpt-4o",
+      "task": "A",
+      "total_samples": 30,
+      "verified_count": 30,
+      "verification_rate": 1.0,
+      "avg_api_latency": 2.1939499457677205,
+      "avg_verification_time": 0.3309459368387858,
+      "error_breakdown": {},
+      "timestamp": "2026-01-09T16:18:58.055012"
+    },
+    "B": {
+      "model": "gpt-4o",
+      "task": "B",
+      "total_samples": 30,
+      "verified_count": 6,
+      "verification_rate": 0.2,
+      "avg_api_latency": 9.46932303905487,
+      "avg_verification_time": 0.2185918092727661,
+      "error_breakdown": {
+        "postcondition_error": 8,
+        "unknown_error": 11,
+        "syntax_error": 1,
+        "precondition_error": 3,
+        "type_error": 1
+      },
+      "timestamp": "2026-01-09T16:23:48.698703"
+    },
+    "C": {
+      "model": "gpt-4o",
+      "task": "C",
+      "total_samples": 30,
+      "verified_count": 14,
+      "verification_rate": 0.4666666666666667,
+      "avg_api_latency": 5.405194107691447,
+      "avg_verification_time": 0.24290253321329752,
+      "error_breakdown": {
+        "unknown_error": 6,
+        "precondition_error": 2,
+        "syntax_error": 4,
+        "termination_error": 3,
+        "vc_failure": 1
+      },
+      "timestamp": "2026-01-09T16:26:38.148270"
+    }
+  }
+}

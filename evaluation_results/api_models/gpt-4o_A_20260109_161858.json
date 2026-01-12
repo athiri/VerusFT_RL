@@ -1,0 +1,645 @@
+{
+  "metrics": {
+    "model": "gpt-4o",
+    "task": "A",
+    "total_samples": 30,
+    "verified_count": 30,
+    "verification_rate": 1.0,
+    "avg_api_latency": 2.1939499457677205,
+    "avg_verification_time": 0.3309459368387858,
+    "error_breakdown": {},
+    "timestamp": "2026-01-09T16:18:58.055012"
+  },
+  "results": [
+    {
+      "sample_id": "task_a_edd154a6f606",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn and_decidable(p: bool, q: bool)\n    \n{\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "ensures decidable(p && q)...",
+      "generated": "```verus\nrequires(true)\nensures(result == (p && q))\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.7639977931976318,
+      "verification_time": 0.2750399112701416,
+      "timestamp": "2026-01-09T16:17:43.344938",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 105,
+          "completion_tokens": 17
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_940481c9fa20",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn ring_product_empty_int()\n    \n{\n    // Trivially true\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "ensures ring_product_int(Seq::empty()) == ring_one_int()...",
+      "generated": "```verus\nrequires(true)\nensures(true)\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.6808156967163086,
+      "verification_time": 0.2917666435241699,
+      "timestamp": "2026-01-09T16:17:44.317603",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 106,
+          "completion_tokens": 12
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_a0fb92500874",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn saturating_add_in_bounds(a: nat, b: nat)\n\n{\n    clamp_in_bounds((a + b) as int);\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "requires in_bounds_u8(a) && in_bounds_u8(b)\n    ensures in_bounds_u8(saturating_add_u8(a, b))\nensures in_bounds_u8(saturating_add_u8(a, b))...",
+      "generated": "```verus\nrequires([\n    a <= usize::MAX,\n    b <= usize::MAX,\n    a + b <= usize::MAX\n])\nensures([\n    (a + b) as int <= usize::MAX as int\n])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.8948802947998047,
+      "verification_time": 0.28690576553344727,
+      "timestamp": "2026-01-09T16:17:45.499464",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 118,
+          "completion_tokens": 50
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_e22bfd31b40d",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn double_array_elements_postcond (s : Vec < i32 > , result : Vec < i32 >) -> bool { result . len () == s . len () && forall | i : in...",
+      "expected": "requires s . len () == s_old . len () , i <= s . len () , double_array_elements_precond (s_old) , forall | j : int | # ! [auto] 0 <= j < i ==> s [j] == 2 * s_old [j] , forall | j : int | # ! [auto] i <= j < s . len () ==> s [j] == s_old [j] , double_array_elements_precond (s) \nensures result . len () == s . len () , forall | j : int | # ! [auto] 0 <= j < s . len () ==> result [j] == 2 * s_old [j] , double_array_elements_postcond (s , result) , result . len () == s . len () , forall | j : int | #...",
+      "generated": "```rust\nrequires(double_array_elements_precond(s))\nensures(double_array_elements_postcond(s, result))\n\nrequires(double_array_elements_precond(s_old))\nensures(double_array_elements_postcond(s_old, result))\ndecreases(s.len() - i)\ninvariant(0 <= i <= s.len())\ninvariant(forall | j: int | 0 <= j < i ==> result[j] == 2 * s_old[j])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 2.5287680625915527,
+      "verification_time": 0.3314530849456787,
+      "timestamp": "2026-01-09T16:17:48.359753",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 389,
+          "completion_tokens": 89
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_394efe356e29",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn find_smallest_postcond (s : Seq < u32 > , result : Option < u32 >) -> bool { match result { None => s . len () == 0 , Some (r) => ...",
+      "expected": "requires find_smallest_precond (s @) \nensures find_smallest_postcond (s @ , result) \ndecreases s . len () - i \ninvariant 0 < s . len () , 1 <= i <= s . len () , s @ . contains (min) , forall | j : int | 0 <= j < i ==> min <= s @ [j] ...",
+      "generated": "```verus\nrequires(find_smallest_precond(s.to_seq()))\nensures(find_smallest_postcond(s.to_seq(), result))\ndecreases(s.len() - i)\ninvariant([\n    0 <= i <= s.len(),\n    forall |j: int| 0 <= j < i ==> min <= s[j],\n    exists |j: int| 0 <= j < s.len() && min == s[j]\n])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.5816209316253662,
+      "verification_time": 0.31525421142578125,
+      "timestamp": "2026-01-09T16:17:50.256709",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 303,
+          "completion_tokens": 89
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_d196e324da0e",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn bubble_sort_precond (a : Seq < i32 >) -> bool { true }\nfn bubble_outer (a : & mut Vec < i32 > , i : usize)   { if i > 0 { bubble_i...",
+      "expected": "requires i + 1 < old (a) . len () , j <= i , i + 1 < old (a) . len () , i < old (a) . len () , j < old (a) . len () , bubble_sort_precond (a @) \nensures a . len () == old (a) . len () , a . len () == old (a) . len () , a . len () == old (a) . len () , a [i as int] == old (a) [j as int] , a [j as int] == old (a) [i as int] , forall | k : int | 0 <= k < a . len () && k != i && k != j ==> a [k] == old (a) [k] , result . len () == a . len () , a . len () == old (a) . len () , decreases i , a . len (...",
+      "generated": "```rust\nrequires(bubble_sort_precond(a))\nensures(result.len() == a.len() && result.is_sorted())\ndecreases(a.len())\n\nrequires(i < a.len())\nensures(forall(|k: usize| k < i ==> a[k] <= a[k + 1]))\ndecreases(i)\n\nrequires(j < i && i < a.len())\nensures(forall(|k: usize| k < j ==> a[k] <= a[k + 1]))\ndecreases(i - j)\n\nrequires(i < a.len() && j < a.len())\nensures(a[i] == old(a[j]) && a[j] == old(a[i]))\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 3.0117671489715576,
+      "verification_time": 0.3227040767669678,
+      "timestamp": "2026-01-09T16:17:53.591260",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 371,
+          "completion_tokens": 134
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_6f4211a7a9e5",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn contains_dec_correct(s: Seq<nat>, x: nat)\n    \n    {\n    reveal_with_fuel(seq_contains_dec, 2);\n    if s.len() > 0 && s[0] != x {\n        contains_dec_correct(s.skip(1), x);\n    }\n    assume(seq_contains_dec(s, ...",
+      "expected": "ensures seq_contains_dec(s, x) <==> exists|i: int| 0 <= i < s.len() as int && s[i] == x\n    decreases s.len()\ndecreases s.len()...",
+      "generated": "```verus\nrequires(s.len() >= 0)\nensures(seq_contains_dec(s, x) <==> exists|i: int| 0 <= i < s.len() as int && s[i] == x)\ndecreases(s.len())\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 7.728464841842651,
+      "verification_time": 0.29990291595458984,
+      "timestamp": "2026-01-09T16:18:01.619701",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 184,
+          "completion_tokens": 53
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_a660af60b652",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn implies_decidable(p: bool, q: bool)\n    \n{\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "ensures decidable(p ==> q)...",
+      "generated": "```verus\nrequires(true)\nensures(result == (p ==> q))\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.6623179912567139,
+      "verification_time": 0.27890872955322266,
+      "timestamp": "2026-01-09T16:18:02.560986",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 105,
+          "completion_tokens": 17
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_f95c1362d71d",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn is_even (n : u32) -> bool { (n % 2) == 0 }\nfn is_product_even (arr : & Vec < u32 >) -> (result : bool)  { for i in 0 .. arr . len ...",
+      "expected": "ensures result <==> (exists | k : int | 0 <= k < arr . len () && is_even (# [trigger] arr [k])) \ninvariant forall | k : int | 0 <= k < i ==> ! is_even (arr [k]) ...",
+      "generated": "```verus\nrequires arr.len() <= MAX as usize,\nensures result == exists|i: nat| i < arr.len() && is_even(arr[i] as u32),\ndecreases arr.len() - i,\ninvariant 0 <= i <= arr.len(),\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.0872282981872559,
+      "verification_time": 0.3427889347076416,
+      "timestamp": "2026-01-09T16:18:03.991080",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 193,
+          "completion_tokens": 57
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_8f02b90892eb",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains_z (text : & Vec < char >) -> (result : bool)  { for i in 0 .. text . len ()  { if text [i] == 'Z' || text [i] == 'z' { return ...",
+      "expected": "ensures result == (exists | i : int | 0 <= i < text . len () && (text [i] == 'Z' || text [i] == 'z')) \ninvariant forall | j : int | 0 <= j < i ==> text [j] != 'Z' && text [j] != 'z'...",
+      "generated": "```verus\nrequires text.len() <= MAX\nensures result == true <==> exists|i: nat| i < text.len() && (text[i] == 'Z' || text[i] == 'z')\ndecreases text.len() - i\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.1293108463287354,
+      "verification_time": 0.33071160316467285,
+      "timestamp": "2026-01-09T16:18:05.451165",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 174,
+          "completion_tokens": 56
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_382c27bf63f9",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n# [allow (unused_imports)] use vstd :: prelude :: * ;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn linear_search (nums : Vec < i32 > , target : i32) -> (ret : i32)   { let mut i = ...",
+      "expected": "requires nums @ . len () < 0x8000_0000 \nensures ret < nums @ . len () , ret >= 0 ==> nums @ [ret as int] == target , ret >= 0 ==> forall | i : int | 0 <= i < ret as int ==> # [trigger] nums @ [i] != target , ret < 0 ==> forall | i : int | 0 <= i < nums @ . len () as int ==> # [trigger] nums @ [i] != target \ndecreases nums @ . len () - i\ninvariant 0 <= i <= nums @ . len () , forall | j : int | 0 <= j < i ==> # [trigger] nums @ [j] != target , i <= nums @ . len () && nums @ . len () < 0x8000_0000 ...",
+      "generated": "```rust\nrequires(nums.len() <= MAX as nat)\nensures(\n    (exists(|i: nat| i < nums.len() && nums[i] == target) ==> (ret >= 0 && ret < nums.len() && nums[ret as nat] == target)) &&\n    (!exists(|i: nat| i < nums.len() && nums[i] == target) ==> ret == -1)\n)\ndecreases(nums.len() - i)\ninvariant(0 <= i && i <= nums.len())\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.5769188404083252,
+      "verification_time": 0.3211982250213623,
+      "timestamp": "2026-01-09T16:18:07.349355",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 204,
+          "completion_tokens": 106
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_01b0e8384b49",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn difference_min_max_precond (a : & Vec < i32 >) -> bool { a . len () > 0 }\nfn difference_min_max (a : & Vec < i32 >) -> (result : i...",
+      "expected": "requires difference_min_max_precond (a)...",
+      "generated": "```verus\nrequires(difference_min_max_precond(a))\nensures(result == *a.iter().max().unwrap() - *a.iter().min().unwrap())\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.9565660953521729,
+      "verification_time": 0.30223584175109863,
+      "timestamp": "2026-01-09T16:18:08.608231",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 172,
+          "completion_tokens": 35
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_3bffcefab762",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn replace_last_element (first : & Vec < i32 > , second : & Vec < i32 >) -> (replaced_list : Vec < i32 >)   { let mut result = Vec :: new ...",
+      "expected": "requires first . len () > 0 \nensures replaced_list @ == first @ . subrange (0 , first . len () - 1) . add (second @) \ndecreases first . len () - 1 - i, second . len () - j\ninvariant 0 <= i <= first . len () - 1 , result @ == first @ . subrange (0 , i as int) , 0 <= j <= second . len () , result @ == first @ . subrange (0 , first . len () - 1) . add (second @ . subrange (0 , j as int)) ...",
+      "generated": "```verus\nrequires [\n    first.len() > 0,\n    first.len() < MAX,\n    second.len() < MAX,\n]\n\nensures [\n    replaced_list.len() == first.len() - 1 + second.len(),\n    forall |k: int| 0 <= k < first.len() - 1 ==> replaced_list[k] == first[k],\n    forall |k: int| 0 <= k < second.len() ==> replaced_list[first.len() - 1 + k] == second[k],\n]\n\ndecreases [\n    first.len() - 1 - i,\n    second.len() - j,\n]\n\ninvariants [\n    0 <= i <= first.len() - 1,\n    0 <= j <= second.len(),\n    result.len() == i + j,\n    forall |k: int| 0 <= k < i ==> result[k] == first[k],\n    forall |k: int| 0 <= k < j ==> result[i + k] == second[k],\n]\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 3.2070887088775635,
+      "verification_time": 0.3202841281890869,
+      "timestamp": "2026-01-09T16:18:12.135686",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 229,
+          "completion_tokens": 208
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_9954dce0f34e",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n# [verifier :: loop_isolation (false)] fn replace (a : & mut Vec < i32 > , x : i32 , y : i32)  { let mut i = 0 ; while i < a . len ()  { i...",
+      "expected": "ensures a . len () == old (a) . len () , forall | k : int | 0 <= k < old (a) . len () && old (a) [k] == x ==> a [k] == y , forall | k : int | 0 <= k < old (a) . len () && old (a) [k] != x ==> a [k] == old (a) [k] \ndecreases a . len () - i\ninvariant 0 <= i <= a . len () , a . len () == old (a) . len () , forall | k : int | 0 <= k < i && old (a) [k] == x ==> a [k] == y , forall | k : int | 0 <= k < i && old (a) [k] != x ==> a [k] == old (a) [k] , forall | k : int | i <= k < a . len () ==> a [k] ==...",
+      "generated": "```verus\nrequires([\n    forall|j: int| 0 <= j < a.len() ==> MIN <= a[j] <= MAX,\n    MIN <= x <= MAX,\n    MIN <= y <= MAX\n])\nensures([\n    forall|j: int| 0 <= j < a.len() ==> (a[j] == y <==> old(a[j]) == x) || (a[j] == old(a[j]) && old(a[j]) != x)\n])\ndecreases(a.len() - i)\ninvariants([\n    0 <= i <= a.len(),\n    forall|j: int| 0 <= j < i ==> (a[j] == y <==> old(a[j]) == x) || (a[j] == old(a[j]) && old(a[j]) != x)\n])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 2.9401793479919434,
+      "verification_time": 0.31301021575927734,
+      "timestamp": "2026-01-09T16:18:15.388955",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 193,
+          "completion_tokens": 169
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_f30ee42b689d",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn unique_product_precond (arr : & Vec < i32 >) -> bool { true }\nfn unique_product (arr : & Vec < i32 >) -> (result : i32)   { return...",
+      "expected": "requires unique_product_precond (arr)\nensures true...",
+      "generated": "```rust\nrequires([\n    unique_product_precond(arr),\n    arr.len() > 0,\n    forall|i: int, j: int| 0 <= i < j < arr.len() ==> arr[i] != arr[j],\n    forall|i: int| 0 <= i < arr.len() ==> MIN <= arr[i] <= MAX,\n]);\n\nensures([\n    MIN <= result <= MAX,\n    exists|prod: int| prod == result && forall|i: int| 0 <= i < arr.len() ==> prod % arr[i] == 0,\n]);\n\ndecreases(arr.len());\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 2.376628875732422,
+      "verification_time": 0.29573798179626465,
+      "timestamp": "2026-01-09T16:18:18.061391",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 164,
+          "completion_tokens": 126
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_ed45023dc6e4",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\n# [verifier :: loop_isolation (false)] fn array_copy (a : Vec < i32 >) -> (result : Vec < i32 >)  { a . clone () }\n\n} // verus!\n```\n\n### S...",
+      "expected": "ensures result . len () == a . len () , forall | i : int | 0 <= i && i < a . len () ==> result [i] == a [i] ...",
+      "generated": "```verus\nrequires([\n    a.len() <= MAX as nat, // Ensure the length of the array is within bounds\n]);\n\nensures([\n    result.len() == a.len(), // Ensure the result has the same length as the input\n    forall|i: nat| i < a.len() ==> result[i] == a[i], // Ensure each element is copied correctly\n]);\n\ndecreases([]); // No specific measure needed for termination\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 3.7222049236297607,
+      "verification_time": 0.3182201385498047,
+      "timestamp": "2026-01-09T16:18:22.101896",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 156,
+          "completion_tokens": 92
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_verus_doubly_linked_xor_034d7a0db0a4",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\nuse vstd::simple_pptr::*;\nuse vstd::*;\n\n// \"XOR Linked List\". This is a sorta-cute (if not usually practical) folk data structure:\n// A doubly-linked list which saves memory by having each node store the XOR of the two\n// pointers to i...",
+      "expected": "requires old(self).wf(),\n            old(self).ptrs@.len() == 0, old(self).wf(), old(self).wf(),\n            old(self)@.len() > 0, old(self).wf(),\n            old(self)@.len() > 0, old(self).wf()\nensures x as usize as u64 == x, s.wf(),\n            s@.len() == 0, self.wf(),\n            self@ == old(self)@.push(v), self.wf(),\n            self@ == old(self)@.push(v), self.wf(),\n            self@ == old(self)@.drop_last(),\n            v == old(self)@[old(self)@.len() - 1], self.wf(),\n            sel...",
+      "generated": "```rust\n    requires(true)\n    ensures(result.wf() && result.view() == Seq::<V>::empty())\n\n    requires(self.wf())\n    ensures(self.wf() && self.view() == old(self.view()).add(v))\n\n    requires(self.wf())\n    ensures(self.wf() && self.view() == old(self.view()).add(v))\n\n    requires(self.wf() && self.view().len() > 0)\n    ensures(self.wf() && self.view() == old(self.view()).sub(0) && result == old(self.view())[0])\n\n    requires(self.wf() && self.view().len() > 0)\n    ensures(self.wf() && self.view() == old(self.view()).sub(old(self.view()).len() - 1) && result == old(self.view())[old(self.view()).len() - 1])\n\n    requires(self.wf())\n    ensures(self.wf() && self.view() == old(self.view()).insert(0, v))\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 4.968750953674316,
+      "verification_time": 0.9323210716247559,
+      "timestamp": "2026-01-09T16:18:28.003046",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 2180,
+          "completion_tokens": 203
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_verus_extensionality_b096ad3afeb9",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\n#![allow(unused_imports)]\n\nuse verus_builtin::*;\nuse verus_builtin_macros::*;\nuse vstd::{map::*, seq::*, seq_lib::*, set::*, set_lib::*};\n\nverus! {\n\n// Sequence extensionality\nproof fn test_seqs(s1: Seq<u64>, s2: Seq<u64>)\n\n{\n    assert_seqs_equal!(s1, s2);...",
+      "expected": "requires s1.len() == 3,\n        s1[0] == 0,\n        s1[1] == 4,\n        s1[2] == 8,\n        s2.len() == 3,\n        s2[0] == 0,\n        s2[1] == 4,\n        s2[2] == 8, s.len() >= 1, 0 <= i <= s.len(), s.len() == t.len(),\n        forall|i| 0 <= i < s.len() as int ==> are_equal(s, t, i), m.contains_pair(5, 17), forall|i| maps_are_equal_on(m, q, i)...",
+      "generated": "```rust\nproof fn test_seqs(s1: Seq<u64>, s2: Seq<u64>)\n    requires\n        s1.len() == s2.len(),\n        forall|i: int| 0 <= i < s1.len() ==> s1[i] == s2[i],\n    ensures\n        s1 == s2\n{\n    assert_seqs_equal!(s1, s2);\n}\n\nproof fn pop_and_push(s: Seq<u64>)\n    requires\n        s.len() > 0,\n    ensures\n        s == s.subrange(0, s.len() as int - 1).push(s[s.len() as int - 1])\n{\n    let t = s.subrange(0, s.len() as int - 1).push(s[s.len() as int - 1]);\n    assert_seqs_equal!(s, t);\n}\n\nproof fn subrange_concat(s: Seq<u64>, i: int)\n    requires\n        0 <= i <= s.len(),\n    ensures\n        s == s.subrange(0, i).add(s.subrange(i, s.len() as int))\n{\n    let t1 = s.subrange(0, i);\n    let t2 = s.subrange(i, s.len() as int);\n    let t = t1.add(t2);\n    assert_seqs_equal!(s, t);\n}\n\nproof fn assert_seqs_equal_with_proof(s: Seq<u64>, t: Seq<u64>)\n    requires\n        s.len() == t.len(),\n        forall|i: int| 0 <= i < s.len() ==> s[i] == t[i],\n    ensures\n        s == t\n{\n    assert_seqs_equal!(s, t, i => {\n         // trigger\n    });\n}\n\nproof fn test_map(m: Map<int, int>)\n    requires\n        m.dom().contains(5),\n    ensures\n        m == m.remove(5).insert(5, 17)\n{\n    let q = m.remove(5).insert(5, 17);\n    assert_maps_equal!(m, q);\n}\n\nproof fn assert_maps_equal_with_proof(m: Map<int, int>, q: Map<int, int>)\n    requires\n        forall|i: int| maps_are_equal_on(m, q, i),\n    ensures\n        m == q\n{\n    assert_maps_equal!(m, q, i => {\n         // trigger\n    });\n}\n\nproof fn assert_maps_equal_with_proof2()\n    ensures\n        Map::<u64, u64>::total(|t: u64| t & 184) == Map::<u64, u64>::new(|t: u64| t ^ t == 0, |t: u64| 184 & t)\n{\n    let m = Map::<u64, u64>::total(|t: u64| t & 184);\n    let q = Map::<u64, u64>::new(|t: u64| t ^ t == 0, |t: u64| 184 & t);\n    assert_maps_equal!(m, q, t => {\n        // show that the `q` map is total:\n        assert_bit_vector(t ^ t == 0);\n\n        // show that the values are equal:\n        assert_bit_vector(t & 184 == 184 & t);\n    });\n}\n\npr...",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 7.832772970199585,
+      "verification_time": 0.38835811614990234,
+      "timestamp": "2026-01-09T16:18:36.224258",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 762,
+          "completion_tokens": 876
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_3fb35852a0d6",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nspec fn square_root_precond (n : nat) -> bool { true }\nfn square_root (n : u32) -> (result : u32)  { return 0 ; }\n\n} // verus!\n```\n\n### Sp...",
+      "expected": "requires square_root_precond (n as nat) , n <= 100 ...",
+      "generated": "```verus\nrequires(square_root_precond(n as nat))\nensures(result as int * result as int <= n as int < (result as int + 1) * (result as int + 1))\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.3151049613952637,
+      "verification_time": 0.2903437614440918,
+      "timestamp": "2026-01-09T16:18:37.829780",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 155,
+          "completion_tokens": 45
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_74e74503ed04",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn is_even_at_even_index (arr : & Vec < usize >) -> (result : bool)  { let mut idx = 0 ; while idx < arr . len ()  { if (idx % 2) != (arr ...",
+      "expected": "ensures result == forall | i : int | 0 <= i < arr . len () ==> ((i % 2) == (arr [i] % 2)) \ndecreases arr . len () - idx \ninvariant 0 <= idx <= arr . len () , forall | i : int | 0 <= i < idx ==> ((i % 2) == (arr [i] % 2)) ...",
+      "generated": "```rust\nrequires(arr.len() <= MAX),\nensures(result == forall|i: nat| i < arr.len() && i % 2 == 0 ==> arr[i] % 2 == 0),\ndecreases(arr.len() - idx),\ninvariant(0 <= idx <= arr.len()),\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.9987080097198486,
+      "verification_time": 0.30881381034851074,
+      "timestamp": "2026-01-09T16:18:40.137381",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 185,
+          "completion_tokens": 63
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_1608f835c367",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn contains (arr : & Vec < i32 > , key : i32) -> (result : bool)  { for i in 0 .. arr . len ()  { if arr [i] == key { return true ; } } fa...",
+      "expected": "ensures result == (exists | i : int | 0 <= i < arr . len () && (arr [i] == key)) \ninvariant forall | j : int | 0 <= j < i ==> arr [j] != key ...",
+      "generated": "```verus\nrequires arr.len() <= MAX\nensures result == (exists|i: int| 0 <= i < arr.len() && arr[i] == key)\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.9457581043243408,
+      "verification_time": 0.34081006050109863,
+      "timestamp": "2026-01-09T16:18:41.424024",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 168,
+          "completion_tokens": 38
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_ee38ecd64eff",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn ex5_calc_assoc(a: nat, b: nat, c: nat)\n    \n{\n    calc! {\n        (==)\n        add(add(a, b), c);\n        { ex4_add_assoc(a, b, c); }\n        add(a, add(b, c));\n    }\n}\n\n} // verus!\n```\n\n### Specifications to ad...",
+      "expected": "ensures add(add(a, b), c) == add(a, add(b, c))...",
+      "generated": "```verus\nrequires([\n    // No specific preconditions are needed as the function operates on natural numbers\n])\n\nensures([\n    // The function ensures that the associative property holds for addition\n    add(add(a, b), c) == add(a, add(b, c))\n])\n\ndecreases([\n    // No specific decreases clause is needed as this is a proof function\n])\n\ninvariants([\n    // No loop invariants are needed as there are no loops in this function\n])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.6743569374084473,
+      "verification_time": 0.2905879020690918,
+      "timestamp": "2026-01-09T16:18:43.389032",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 151,
+          "completion_tokens": 99
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_805e9284b8ad",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)   { sum . set (0 , 2 * N) ; }\n\n} // verus!\n```\n\n### Specifications to...",
+      "expected": "requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 \nensures sum [0] == 2 * N ...",
+      "generated": "```verus\nrequires([\n    a.len() > 0,\n    sum.len() > 0,\n    0 <= N,\n    N <= MAX / 2, // To prevent overflow in 2 * N\n])\n\nensures([\n    sum[0] == 2 * N,\n    sum.len() == old(sum.len()), // Ensures the length of sum is unchanged\n    a.len() == old(a.len()),     // Ensures the length of a is unchanged\n])\n\ndecreases([]) // No recursive calls, so no decreases clause needed\n\ninvariants([]) // No loop invariants needed as there are no loops\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 2.4296772480010986,
+      "verification_time": 0.3006010055541992,
+      "timestamp": "2026-01-09T16:18:46.119384",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 160,
+          "completion_tokens": 133
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_0c638a9dec4c",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\npub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : usize)   { sum . set (0 , 2 * N as i32) ; }\n\n} // verus!\n```\n\n### Spec...",
+      "expected": "requires N > 0 , old (a) . len () == N , old (sum) . len () == 1 , N < 1000 \nensures sum [0] == 2 * N ...",
+      "generated": "```rust\nrequires([\n    a.len() > 0,\n    sum.len() > 0,\n    N <= usize::MAX / 2, // To ensure 2 * N as i32 does not overflow\n]);\n\nensures([\n    sum[0] == 2 * N as i32,\n]);\n\ndecreases([]);\n\ninvariants([]);\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.517914056777954,
+      "verification_time": 0.3112308979034424,
+      "timestamp": "2026-01-09T16:18:47.948607",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 163,
+          "completion_tokens": 71
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_07b52fe58792",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn lemma_and_elim_right(a: bool, b: bool)\n\n{\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "requires a && b,\n    ensures b\nensures b...",
+      "generated": "```verus\nrequires(a && b)\nensures(b)\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.7525780200958252,
+      "verification_time": 0.2863271236419678,
+      "timestamp": "2026-01-09T16:18:48.987584",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 106,
+          "completion_tokens": 14
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_89cba3ffddbc",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub open spec fn count_classified_passing_helper<C>(props: Seq<ClassifiedProp<C>>, idx: int) -> nat\n    {\n    if idx >= props.len() {\n        0\n    } else {\n        let count = if props[idx].passed { 1 as nat } else { 0 as n...",
+      "expected": "decreases props.len() - idx...",
+      "generated": "```verus\nrequires\n    idx >= 0 && idx <= props.len(),\nensures\n    result <= props.len() - idx,\ndecreases\n    props.len() - idx,\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.5772571563720703,
+      "verification_time": 0.29743385314941406,
+      "timestamp": "2026-01-09T16:18:50.862356",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 174,
+          "completion_tokens": 40
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_dd7ca91f442d",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\npub fn myfun (a : & mut Vec < i32 > , sum : & mut Vec < i32 > , N : i32)   { sum . set (0 , 0) ; }\n\n} // verus!\n```\n\n### Specifications to...",
+      "expected": "requires old (a) . len () == N , old (sum) . len () == 1 , N > 0 \nensures sum [0] <= 4 * N ...",
+      "generated": "```rust\nrequires([\n    a.len() > 0,\n    sum.len() > 0,\n    0 <= N <= MAX,\n]);\n\nensures([\n    sum[0] == 0,\n]);\n\ndecreases(N);\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 1.175873041152954,
+      "verification_time": 0.31473207473754883,
+      "timestamp": "2026-01-09T16:18:52.353040",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 159,
+          "completion_tokens": 48
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_be8112c0bae7",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub spec const MAX: int = i32::MAX as int;\npub spec const MIN: int = i32::MIN as int;\nfn split_and_append (list : & Vec < i32 > , n : usize) -> (new_list : Vec < i32 >)   { let mut new_list = Vec :: new () ; let mut i = n ; ...",
+      "expected": "requires list @ . len () > 0 , 0 < n < list @ . len () \nensures new_list @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , n as int)) \ndecreases list . len () - i , n - j \ninvariant n <= i <= list . len () , new_list @ == list @ . subrange (n as int , i as int) , 0 <= j <= n , n < list @ . len () , new_list @ == list @ . subrange (n as int , list @ . len () as int) . add (list @ . subrange (0 , j as int)) ...",
+      "generated": "```rust\nrequires([\n    n <= list.len(),\n    forall(|i: usize| i < list.len() ==> list[i] as int <= MAX && list[i] as int >= MIN)\n])\nensures(|new_list: Vec<i32>| new_list.len() == list.len() && \n    forall(|i: usize| i < list.len() ==> new_list[i] == list[(i + n) % list.len()])\n)\ndecreases(list.len() - n)\ninvariants([\n    i <= list.len(),\n    j <= n,\n    forall(|k: usize| k < i ==> new_list[k] == list[k + n]),\n    forall(|k: usize| k < j ==> new_list[k + list.len() - n] == list[k])\n])\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 2.942984104156494,
+      "verification_time": 0.32057809829711914,
+      "timestamp": "2026-01-09T16:18:55.616675",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 221,
+          "completion_tokens": 160
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_48c2b1927084",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn map_identity<A>(gen: Set<A>, a: A)\n\n{\n}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "requires gen.contains(a)\n    ensures gen_map(gen, |x: A| x).contains(a)\nensures gen_map(gen, |x: A| x).contains(a)...",
+      "generated": "```verus\nrequires\n    gen.contains(a),\n\nensures\n    gen.contains(a),\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.875028133392334,
+      "verification_time": 0.3018369674682617,
+      "timestamp": "2026-01-09T16:18:56.793612",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 106,
+          "completion_tokens": 20
+        },
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "sample_id": "task_a_02fb0ee147fb",
+      "task": "A",
+      "model": "gpt-4o",
+      "prompt": "Given the following Verus code WITHOUT specifications, generate the appropriate specifications (requires, ensures, decreases, invariants).\n\nOutput ONLY the specifications to add, not the full code.\n\n### Code (without specifications):\n```verus\nuse vstd::prelude::*;\n\nverus! {\n\npub proof fn and_or_distr(a: bool, b: bool, c: bool)\n    \n{}\n\n} // verus!\n```\n\n### Specifications to add:...",
+      "expected": "ensures bool_and(a, bool_or(b, c)) == bool_or(bool_and(a, b), bool_and(a, c))...",
+      "generated": "```verus\nrequires(true);\nensures(a && (b || c) == (a && b) || (a && c));\n```",
+      "verified": true,
+      "error_type": null,
+      "api_latency": 0.9629759788513184,
+      "verification_time": 0.2982809543609619,
+      "timestamp": "2026-01-09T16:18:58.054948",
+      "raw_response": {
+        "model": "gpt-4o-2024-08-06",
+        "usage": {
+          "prompt_tokens": 109,
+          "completion_tokens": 29
+        },
+        "finish_reason": "stop"
+      }
+    }
+  ]
+}

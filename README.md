@@ -14,6 +14,20 @@ This repository collects datasets and evaluation infrastructure for post-trainin
 | **B** | Signature + specs | Full implementation | Execute & compare outputs |
 | **C** | Broken code | Fixed code | Verify with Verus |
 
+**🔧 [Evaluation Implementation Plan](./workspace/EVALUATION_IMPLEMENTATION_PLAN.md)** — Concrete implementation roadmap with code examples
+
+### Quick Evaluation Commands
+
+```bash
+# Evaluate closed API models (GPT-4o, o1, Claude)
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
+python evaluate_api_models.py --tasks all --models all --limit 50
+
+# Dry run (no API calls)
+python evaluate_api_models.py --tasks C --models gpt-4o --dry-run --limit 5
+```
+
 ---
 
 ## Overview
