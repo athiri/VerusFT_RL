@@ -1,0 +1,56 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ]
+  ],
+  "files": {
+    "dealloc_token.rs": {
+      "layout": 28,
+      "": 44,
+      "spec": 63,
+      "directives": 2,
+      "proof": 19,
+      "comment": 8
+    }
+  },
+  "total": {
+    "proof": 19,
+    "spec": 63,
+    "layout": 28,
+    "": 44,
+    "directives": 2,
+    "comment": 8
+  }
+}

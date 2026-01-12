@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ]
+  ],
+  "files": {
+    "queues.rs": {
+      "directives": 3,
+      "proof": 191,
+      "spec": 110,
+      "exec": 91,
+      "proof,exec": 17,
+      "": 52,
+      "comment": 241,
+      "layout": 144
+    }
+  },
+  "total": {
+    "comment": 241,
+    "": 52,
+    "directives": 3,
+    "spec": 110,
+    "layout": 144,
+    "proof,exec": 17,
+    "proof": 191,
+    "exec": 91
+  }
+}

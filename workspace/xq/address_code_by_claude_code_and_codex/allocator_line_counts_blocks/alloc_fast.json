@@ -1,0 +1,81 @@
+{
+  "kinds": [
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Trusted"
+      ],
+      "trusted"
+    ]
+  ],
+  "files": {
+    "alloc_fast.rs": {
+      "proof,exec": 16,
+      "trusted": 18,
+      "": 48,
+      "exec": 25,
+      "layout": 48,
+      "proof": 28,
+      "comment": 52,
+      "spec": 68,
+      "directives": 5
+    }
+  },
+  "total": {
+    "exec": 25,
+    "directives": 5,
+    "proof,exec": 16,
+    "spec": 68,
+    "": 48,
+    "proof": 28,
+    "layout": 48,
+    "trusted": 18,
+    "comment": 52
+  }
+}

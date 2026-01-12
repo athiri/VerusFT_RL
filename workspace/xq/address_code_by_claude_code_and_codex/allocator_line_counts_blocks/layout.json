@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ]
+  ],
+  "files": {
+    "layout.rs": {
+      "spec": 137,
+      "layout": 141,
+      "exec": 57,
+      "comment": 100,
+      "directives": 12,
+      "proof,exec": 5,
+      "": 89,
+      "proof": 157
+    }
+  },
+  "total": {
+    "spec": 137,
+    "comment": 100,
+    "proof,exec": 5,
+    "": 89,
+    "directives": 12,
+    "layout": 141,
+    "exec": 57,
+    "proof": 157
+  }
+}

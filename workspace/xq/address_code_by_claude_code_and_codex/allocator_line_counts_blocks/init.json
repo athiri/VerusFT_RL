@@ -1,0 +1,81 @@
+{
+  "kinds": [
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Trusted"
+      ],
+      "trusted"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ]
+  ],
+  "files": {
+    "init.rs": {
+      "spec": 29,
+      "exec": 336,
+      "": 410,
+      "trusted": 17,
+      "directives": 8,
+      "layout": 107,
+      "comment": 99,
+      "proof,exec": 8,
+      "proof": 201
+    }
+  },
+  "total": {
+    "trusted": 17,
+    "exec": 336,
+    "proof,exec": 8,
+    "proof": 201,
+    "": 410,
+    "layout": 107,
+    "directives": 8,
+    "spec": 29,
+    "comment": 99
+  }
+}

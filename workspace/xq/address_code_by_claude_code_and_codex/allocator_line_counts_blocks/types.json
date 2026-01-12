@@ -1,0 +1,89 @@
+{
+  "kinds": [
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Trusted"
+      ],
+      "trusted"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Definitions"
+      ],
+      "definitions"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ]
+  ],
+  "files": {
+    "types.rs": {
+      "proof,exec": 107,
+      "proof": 118,
+      "definitions": 278,
+      "trusted": 8,
+      "": 341,
+      "comment": 72,
+      "directives": 90,
+      "spec": 721,
+      "exec": 175,
+      "layout": 453
+    }
+  },
+  "total": {
+    "definitions": 278,
+    "layout": 453,
+    "spec": 721,
+    "exec": 175,
+    "comment": 72,
+    "": 341,
+    "trusted": 8,
+    "directives": 90,
+    "proof": 118,
+    "proof,exec": 107
+  }
+}

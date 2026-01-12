@@ -1,0 +1,65 @@
+{
+  "kinds": [
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ]
+  ],
+  "files": {
+    "page.rs": {
+      "spec": 141,
+      "comment": 150,
+      "exec": 68,
+      "proof": 115,
+      "": 59,
+      "layout": 113,
+      "proof,exec": 58
+    }
+  },
+  "total": {
+    "spec": 141,
+    "layout": 113,
+    "comment": 150,
+    "exec": 68,
+    "proof": 115,
+    "": 59,
+    "proof,exec": 58
+  }
+}

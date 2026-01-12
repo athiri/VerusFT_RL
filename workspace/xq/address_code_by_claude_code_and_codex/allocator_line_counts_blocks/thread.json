@@ -1,0 +1,49 @@
+{
+  "kinds": [
+    [
+      [
+        "Trusted"
+      ],
+      "trusted"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Trusted",
+        "Directives"
+      ],
+      "trusted,directives"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ]
+  ],
+  "files": {
+    "thread.rs": {
+      "trusted": 38,
+      "layout": 11,
+      "": 71,
+      "comment": 12,
+      "trusted,directives": 2
+    }
+  },
+  "total": {
+    "layout": 11,
+    "comment": 12,
+    "trusted": 38,
+    "trusted,directives": 2,
+    "": 71
+  }
+}

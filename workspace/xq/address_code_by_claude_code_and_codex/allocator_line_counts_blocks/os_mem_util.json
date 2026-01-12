@@ -1,0 +1,56 @@
+{
+  "kinds": [
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [],
+      ""
+    ]
+  ],
+  "files": {
+    "os_mem_util.rs": {
+      "proof": 408,
+      "spec": 328,
+      "layout": 156,
+      "directives": 1,
+      "comment": 49,
+      "": 73
+    }
+  },
+  "total": {
+    "directives": 1,
+    "": 73,
+    "spec": 328,
+    "comment": 49,
+    "layout": 156,
+    "proof": 408
+  }
+}

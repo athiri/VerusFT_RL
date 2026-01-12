@@ -1,0 +1,72 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Definitions"
+      ],
+      "definitions"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ]
+  ],
+  "files": {
+    "commit_mask.rs": {
+      "definitions": 3,
+      "directives": 2,
+      "comment": 16,
+      "": 62,
+      "spec": 98,
+      "layout": 144,
+      "proof": 364,
+      "exec": 115
+    }
+  },
+  "total": {
+    "comment": 16,
+    "spec": 98,
+    "layout": 144,
+    "proof": 364,
+    "exec": 115,
+    "definitions": 3,
+    "": 62,
+    "directives": 2
+  }
+}

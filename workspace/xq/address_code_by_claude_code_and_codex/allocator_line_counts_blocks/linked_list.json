@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ]
+  ],
+  "files": {
+    "linked_list.rs": {
+      "layout": 397,
+      "comment": 142,
+      "proof": 740,
+      "directives": 29,
+      "": 227,
+      "exec": 158,
+      "spec": 499,
+      "proof,exec": 76
+    }
+  },
+  "total": {
+    "layout": 397,
+    "proof,exec": 76,
+    "directives": 29,
+    "proof": 740,
+    "spec": 499,
+    "exec": 158,
+    "": 227,
+    "comment": 142
+  }
+}

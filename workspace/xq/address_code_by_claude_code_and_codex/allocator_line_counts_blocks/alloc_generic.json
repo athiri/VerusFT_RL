@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ]
+  ],
+  "files": {
+    "alloc_generic.rs": {
+      "directives": 1,
+      "comment": 119,
+      "spec": 64,
+      "proof,exec": 27,
+      "exec": 71,
+      "proof": 135,
+      "layout": 94,
+      "": 45
+    }
+  },
+  "total": {
+    "layout": 94,
+    "": 45,
+    "directives": 1,
+    "spec": 64,
+    "proof,exec": 27,
+    "comment": 119,
+    "proof": 135,
+    "exec": 71
+  }
+}

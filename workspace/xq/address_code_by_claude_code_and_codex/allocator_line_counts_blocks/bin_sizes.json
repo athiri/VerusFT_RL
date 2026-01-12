@@ -1,0 +1,64 @@
+{
+  "kinds": [
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ]
+  ],
+  "files": {
+    "bin_sizes.rs": {
+      "proof": 414,
+      "directives": 2,
+      "exec": 23,
+      "comment": 176,
+      "layout": 232,
+      "spec": 410,
+      "": 108
+    }
+  },
+  "total": {
+    "": 108,
+    "spec": 410,
+    "directives": 2,
+    "layout": 232,
+    "proof": 414,
+    "exec": 23,
+    "comment": 176
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof",
+        "Exec"
+      ],
+      "proof,exec"
+    ],
+    [
+      [
+        "Exec"
+      ],
+      "exec"
+    ],
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [],
+      ""
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ]
+  ],
+  "files": {
+    "commit_segment.rs": {
+      "exec": 136,
+      "directives": 1,
+      "layout": 105,
+      "spec": 76,
+      "comment": 32,
+      "proof,exec": 14,
+      "proof": 128,
+      "": 39
+    }
+  },
+  "total": {
+    "directives": 1,
+    "proof,exec": 14,
+    "comment": 32,
+    "layout": 105,
+    "proof": 128,
+    "exec": 136,
+    "spec": 76,
+    "": 39
+  }
+}

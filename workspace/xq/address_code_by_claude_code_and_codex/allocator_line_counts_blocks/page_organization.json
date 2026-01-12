@@ -1,0 +1,56 @@
+{
+  "kinds": [
+    [
+      [
+        "Proof"
+      ],
+      "proof"
+    ],
+    [
+      [
+        "Directives"
+      ],
+      "directives"
+    ],
+    [
+      [
+        "Comment"
+      ],
+      "comment"
+    ],
+    [
+      [
+        "Layout"
+      ],
+      "layout"
+    ],
+    [
+      [
+        "Spec"
+      ],
+      "spec"
+    ],
+    [
+      [],
+      ""
+    ]
+  ],
+  "files": {
+    "page_organization.rs": {
+      "comment": 406,
+      "directives": 58,
+      "": 225,
+      "spec": 2659,
+      "proof": 838,
+      "layout": 930
+    }
+  },
+  "total": {
+    "comment": 406,
+    "directives": 58,
+    "layout": 930,
+    "": 225,
+    "proof": 838,
+    "spec": 2659
+  }
+}
