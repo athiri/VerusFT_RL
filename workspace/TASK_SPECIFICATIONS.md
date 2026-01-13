@@ -1289,6 +1289,289 @@ cargo kani --harness check_equivalence --coverage
 ### Goal
 Given broken Verus code (missing ensures/requires/invariant/decreases/assert), generate the **fixed code** that verifies.
 
+### Adversarial Data Generation Strategy
+
+**Key Principle**: We apply adversarial changes to **specifications only**, preserving the original executable code. This ensures the repair task focuses on proof/spec completion rather than code modification.
+
+#### Mutation Types
+
+| Mutation Type | Target | Description | Difficulty |
+|---------------|--------|-------------|------------|
+| **Remove** | `ensures` | Delete entire postcondition | Easy |
+| **Remove** | `requires` | Delete entire precondition | Easy |
+| **Remove** | `invariant` | Delete loop invariant | Medium |
+| **Remove** | `decreases` | Delete termination measure | Medium |
+| **Remove** | `assert` | Delete proof hint assertion | Medium |
+| **Partial Remove** | Any spec | Remove some clauses, keep others | Medium |
+| **Mutate** | Any spec | Change constants, operators, bounds | Hard |
+
+#### Mutation Operations
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Adversarial Spec Mutations                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+1. REMOVAL MUTATIONS (spec deletion)
+   ├── Full removal: Delete entire spec clause
+   │   • ensures ret >= 0  →  (deleted)
+   │   • invariant i <= n  →  (deleted)
+   │
+   └── Partial removal: Delete some clauses
+       • ensures a > 0, b > 0, a + b > 0  →  ensures a > 0
+
+2. MUTATION OPERATIONS (spec modification)
+   ├── Constant mutation: Change numeric values
+   │   • ensures ret >= 0    →  ensures ret >= 1
+   │   • invariant i <= n    →  invariant i <= n - 1
+   │
+   ├── Operator mutation: Change comparison/logical operators
+   │   • ensures ret >= 0    →  ensures ret > 0
+   │   • requires x < len    →  requires x <= len
+   │   • ensures a && b      →  ensures a || b
+   │
+   ├── Bound mutation: Weaken or strengthen bounds
+   │   • ensures ret < arr.len()  →  ensures ret <= arr.len()
+   │   • invariant 0 <= i < n     →  invariant 0 <= i <= n
+   │
+   └── Expression mutation: Modify subexpressions
+       • ensures ret == a + b     →  ensures ret == a - b
+       • decreases n - i          →  decreases n
+```
+
+#### Mutation Code
+
+```python
+import random
+import re
+from typing import List, Tuple, Optional
+from enum import Enum
+
+class MutationType(Enum):
+    REMOVE_ENSURES = "remove_ensures"
+    REMOVE_REQUIRES = "remove_requires"
+    REMOVE_INVARIANT = "remove_invariant"
+    REMOVE_DECREASES = "remove_decreases"
+    REMOVE_ASSERT = "remove_assert"
+    PARTIAL_REMOVE = "partial_remove"
+    MUTATE_CONSTANT = "mutate_constant"
+    MUTATE_OPERATOR = "mutate_operator"
+    MUTATE_BOUND = "mutate_bound"
+
+def generate_adversarial_sample(
+    verified_code: str,
+    mutation_type: Optional[MutationType] = None
+) -> Tuple[str, MutationType]:
+    """
+    Generate adversarial (broken) code from verified code.
+    Only modifies specifications, preserves executable code.
+    """
+    if mutation_type is None:
+        mutation_type = random.choice(list(MutationType))
+    
+    if mutation_type == MutationType.REMOVE_ENSURES:
+        broken = remove_spec_clause(verified_code, "ensures")
+    elif mutation_type == MutationType.REMOVE_REQUIRES:
+        broken = remove_spec_clause(verified_code, "requires")
+    elif mutation_type == MutationType.REMOVE_INVARIANT:
+        broken = remove_spec_clause(verified_code, "invariant")
+    elif mutation_type == MutationType.REMOVE_DECREASES:
+        broken = remove_spec_clause(verified_code, "decreases")
+    elif mutation_type == MutationType.REMOVE_ASSERT:
+        broken = remove_assert_statements(verified_code)
+    elif mutation_type == MutationType.PARTIAL_REMOVE:
+        broken = partial_remove_clauses(verified_code)
+    elif mutation_type == MutationType.MUTATE_CONSTANT:
+        broken = mutate_constants(verified_code)
+    elif mutation_type == MutationType.MUTATE_OPERATOR:
+        broken = mutate_operators(verified_code)
+    elif mutation_type == MutationType.MUTATE_BOUND:
+        broken = mutate_bounds(verified_code)
+    else:
+        broken = verified_code
+    
+    return broken, mutation_type
+
+def remove_spec_clause(code: str, clause_type: str) -> str:
+    """Remove all occurrences of a spec clause type."""
+    # Pattern matches: clause_type followed by content until next clause or {
+    pattern = rf'\s*{clause_type}\s+[^{{}}]+(?=\s*(requires|ensures|decreases|invariant|\{{))'
+    return re.sub(pattern, '', code)
+
+def remove_assert_statements(code: str) -> str:
+    """Remove assert statements from proof blocks."""
+    # Match assert!(...); or assert(...);
+    pattern = r'\s*assert!?\s*\([^;]+\)\s*;'
+    return re.sub(pattern, '', code)
+
+def partial_remove_clauses(code: str) -> str:
+    """Remove some but not all clauses from multi-clause specs."""
+    # Find ensures/requires with multiple comma-separated clauses
+    def remove_random_clause(match):
+        clauses = match.group(2).split(',')
+        if len(clauses) > 1:
+            # Remove a random clause
+            idx = random.randint(0, len(clauses) - 1)
+            clauses.pop(idx)
+            return f"{match.group(1)} {', '.join(clauses)}"
+        return match.group(0)
+    
+    pattern = r'(ensures|requires)\s+(.+?)(?=\s*(requires|ensures|decreases|\{))'
+    return re.sub(pattern, remove_random_clause, code, flags=re.DOTALL)
+
+def mutate_constants(code: str) -> str:
+    """Mutate numeric constants in specs."""
+    def mutate_number(match):
+        num = int(match.group(0))
+        # Randomly add/subtract 1 or multiply/divide by 2
+        mutations = [num + 1, num - 1, num * 2, max(0, num // 2)]
+        return str(random.choice(mutations))
+    
+    # Only mutate numbers in spec contexts
+    spec_pattern = r'(ensures|requires|invariant|decreases|assert)\s+[^{]+'
+    
+    def mutate_in_spec(match):
+        spec = match.group(0)
+        return re.sub(r'\b\d+\b', mutate_number, spec, count=1)
+    
+    return re.sub(spec_pattern, mutate_in_spec, code)
+
+def mutate_operators(code: str) -> str:
+    """Mutate comparison/logical operators in specs."""
+    operator_mutations = {
+        '>=': ['>',  '<=', '=='],
+        '<=': ['<',  '>=', '=='],
+        '>':  ['>=', '<',  '!='],
+        '<':  ['<=', '>',  '!='],
+        '==': ['!=', '>=', '<='],
+        '!=': ['=='],
+        '&&': ['||'],
+        '||': ['&&'],
+    }
+    
+    def mutate_op(match):
+        op = match.group(0)
+        if op in operator_mutations:
+            return random.choice(operator_mutations[op])
+        return op
+    
+    # Only mutate in spec contexts
+    spec_pattern = r'(ensures|requires|invariant|assert)\s+[^{]+'
+    
+    def mutate_in_spec(match):
+        spec = match.group(0)
+        return re.sub(r'>=|<=|>|<|==|!=|&&|\|\|', mutate_op, spec, count=1)
+    
+    return re.sub(spec_pattern, mutate_in_spec, code)
+
+def mutate_bounds(code: str) -> str:
+    """Weaken or strengthen bounds in specs."""
+    # Common bound mutations
+    bound_mutations = [
+        (r'< (\w+)\.len\(\)', r'<= \1.len()'),      # Weaken: < len → <= len
+        (r'<= (\w+)\.len\(\)', r'< \1.len()'),      # Strengthen: <= len → < len
+        (r'(\w+) < (\w+)', r'\1 <= \2'),            # Weaken: a < b → a <= b
+        (r'(\w+) <= (\w+)', r'\1 < \2'),            # Strengthen: a <= b → a < b
+        (r'0 <= (\w+)', r'0 < \1'),                 # Strengthen: 0 <= x → 0 < x
+    ]
+    
+    pattern, replacement = random.choice(bound_mutations)
+    return re.sub(pattern, replacement, code, count=1)
+```
+
+#### Adversarial Sample Examples
+
+**Example 1: Remove Ensures**
+```verus
+// ORIGINAL (verified)
+fn abs(x: i32) -> (ret: i32)
+    requires x != i32::MIN
+    ensures ret >= 0, ret == x || ret == -x
+{
+    if x < 0 { -x } else { x }
+}
+
+// BROKEN (ensures removed)
+fn abs(x: i32) -> (ret: i32)
+    requires x != i32::MIN
+{
+    if x < 0 { -x } else { x }
+}
+```
+
+**Example 2: Remove Invariant**
+```verus
+// ORIGINAL (verified)
+fn sum_to_n(n: u64) -> (ret: u64)
+    ensures ret == n * (n + 1) / 2
+{
+    let mut i: u64 = 0;
+    let mut sum: u64 = 0;
+    while i < n
+        invariant sum == i * (i + 1) / 2
+        invariant i <= n
+    {
+        i = i + 1;
+        sum = sum + i;
+    }
+    sum
+}
+
+// BROKEN (invariants removed)
+fn sum_to_n(n: u64) -> (ret: u64)
+    ensures ret == n * (n + 1) / 2
+{
+    let mut i: u64 = 0;
+    let mut sum: u64 = 0;
+    while i < n
+    {
+        i = i + 1;
+        sum = sum + i;
+    }
+    sum
+}
+```
+
+**Example 3: Mutate Operator**
+```verus
+// ORIGINAL (verified)
+fn get_element(arr: &[u64], i: usize) -> (ret: u64)
+    requires i < arr.len()
+    ensures ret == arr@[i as int]
+{
+    arr[i]
+}
+
+// BROKEN (< mutated to <=)
+fn get_element(arr: &[u64], i: usize) -> (ret: u64)
+    requires i <= arr.len()  // BUG: should be <
+    ensures ret == arr@[i as int]
+{
+    arr[i]
+}
+```
+
+**Example 4: Partial Remove**
+```verus
+// ORIGINAL (verified)
+fn binary_search(arr: &[i32], target: i32) -> (ret: Option<usize>)
+    requires forall|i: int, j: int| 0 <= i < j < arr@.len() ==> arr@[i] <= arr@[j]
+    ensures ret.is_some() ==> arr@[ret.unwrap() as int] == target
+    ensures ret.is_none() ==> forall|i: int| 0 <= i < arr@.len() ==> arr@[i] != target
+{
+    // implementation
+}
+
+// BROKEN (second ensures removed)
+fn binary_search(arr: &[i32], target: i32) -> (ret: Option<usize>)
+    requires forall|i: int, j: int| 0 <= i < j < arr@.len() ==> arr@[i] <= arr@[j]
+    ensures ret.is_some() ==> arr@[ret.unwrap() as int] == target
+    // Missing: ensures ret.is_none() ==> forall|i: int| 0 <= i < arr@.len() ==> arr@[i] != target
+{
+    // implementation
+}
+```
+
 ### Bug Types
 | Bug Type | Description | Example Fix |
 |----------|-------------|-------------|
@@ -1297,6 +1580,7 @@ Given broken Verus code (missing ensures/requires/invariant/decreases/assert), g
 | `missing_decreases` | Missing termination measure | Add `decreases n` |
 | `missing_invariant` | Missing loop invariant | Add `invariant i <= n` |
 | `missing_assert` | Missing proof hint | Add `assert(condition)` |
+| `mutated_spec` | Incorrect spec (wrong operator/constant) | Fix `i <= n` to `i < n` |
 
 ### Input Format
 ```verus
