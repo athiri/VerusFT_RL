@@ -79,13 +79,13 @@ fn intersection(a: (i32, i32), b: (i32, i32)) -> (result: &'static str)
         result == "YES" <==> {
             let left = math::max(a.0 as int, b.0 as int);
             let right = math::min(a.1 as int, b.1 as int);
-            left <= right && spec_prime(right - left + 1)
+            left < right && spec_prime(right - left)
         },
 {
     let sect_start = max(a.0, b.0);
     let sect_end = min(a.1, b.1);
 
-    if sect_start < sect_end && is_prime(sect_end as i64 - sect_start as i64 + 1) {
+    if sect_start < sect_end && is_prime(sect_end as i64 - sect_start as i64) {
         "YES"
     } else {
         "NO"

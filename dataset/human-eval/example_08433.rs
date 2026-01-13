@@ -13,7 +13,7 @@ spec fn three_distinct_spec(s: Seq<char>, i: int) -> bool
     recommends
         0 < i && i + 1 < s.len(),
 {
-    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i] != s[i + 1])
+    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i - 1] != s[i + 1])
 }
 
 fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
@@ -22,7 +22,7 @@ fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
     ensures
         is <==> three_distinct_spec(s@, i as int),
 {
-    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i] != s[i + 1])
+    (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i - 1] != s[i + 1])
 }
 
 spec fn happy_spec(s: Seq<char>) -> bool {
