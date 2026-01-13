@@ -1,0 +1,1359 @@
+{
+  "timestamp": "2026-01-12T14:46:43.338418",
+  "total": 193,
+  "passed": 193,
+  "failed": 0,
+  "results": [
+    {
+      "file": "verismo/addr_e/01_page_alignment.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 5 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/addr_e/02_memory_range.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 8 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/addr_e/03_range_comparison.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 7 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/addr_e/04_addr_page_conversion.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/addr_e/05_address_validation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/addr_e/06_range_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 9 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/allocator/01_power_of_two.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 9 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/allocator/02_buddy_address.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/allocator/03_bucket_calculation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/allocator/04_size_validation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/allocator/05_free_list_tracking.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 14 verified, 0 errors\n",
+      "stderr": "[i].size < min_size\n   |                                                                    ^^^^^^^^^^^^^^^\n\nnote: automatically chose triggers for this expression:\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/allocator/05_free_list_tracking.rs:86:17\n   |\n86 |                 forall|j: int| 0 <= j < i ==> self.blocks@[j].size < min_size,\n   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nnote:   trigger 1 of 1:\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/allocator/05_free_list_tracking.rs:86:47\n   |\n86 |                 forall|j: int| 0 <= j < i ==> self.blocks@[j].size < min_size,\n   |                                               ^^^^^^^^^^^^^^^\n\nnote: Verus printed one or more automatically chosen quantifier triggers\n      because it had low confidence in the chosen triggers.\n      To suppress these messages, do one of the following:\n        (1) manually annotate a single desired trigger using #[trigger]\n            (example: forall|i: int, j: int| f(i) && #[trigger] g(i) && #[trigger] h(j)),\n        (2) manually annotate multiple desired triggers using #![trigger ...]\n            (example: forall|i: int| #![trigger f(i)] #![trigger g(i)] f(i) && g(i)),\n        (3) accept the automatically chosen trigger using #![auto]\n            (example: forall|i: int, j: int| #![auto] f(i) && g(i) && h(j))\n        (4) use the --triggers-mode silent command-line option to suppress all printing of triggers.\n      (Note: triggers are used by the underlying SMT theorem prover to instantiate quantifiers;\n      the theorem prover instantiates a quantifier whenever some expression matches the\n      pattern specified by one of the quantifier's triggers.)\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/allocator/05_free_list_tracking.rs:86:17\n   |\n86 |                 forall|j: int| 0 <= j < i ==> self.blocks@[j].size < min_size,\n   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    },
+    {
+      "file": "verismo/allocator/06_allocation_state.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 16 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/debug/01_ascii_validation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 7 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/debug/02_number_to_char.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 6 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/debug/03_byte_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 7 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/debug/04_base_conversion.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 8 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/lock/01_ticket_counter.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 9 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/lock/02_lock_state.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/lock/03_lock_id_mapping.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 8 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/lock/04_lock_range.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mem/01_memory_regions.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mem/02_range_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 8 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mem/03_memory_attributes.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mem/04_range_set_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 13 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mshyper/01_hypercall_status.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 13 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mshyper/02_vtl_vmpl_mapping.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mshyper/03_hypercall_codes.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 19 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/mshyper/04_retry_logic.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 14 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/pgtable_e/01_pte_flags.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 15 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/pgtable_e/02_page_table_levels.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 14 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/pgtable_e/03_address_conversion.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/pgtable_e/04_pte_attributes.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 15 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/primitives_e/01_safe_vector_ops.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 9 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/primitives_e/01_sequence_wellformedness.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 6 verified, 0 errors\n",
+      "stderr": "note: automatically chose triggers for this expression:\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/primitives_e/01_sequence_wellformedness.rs:61:5\n   |\n61 |     forall|i: int| 0 <= i < s.len() ==> s[i].wf()\n   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nnote:   trigger 1 of 1:\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/primitives_e/01_sequence_wellformedness.rs:61:41\n   |\n61 |     forall|i: int| 0 <= i < s.len() ==> s[i].wf()\n   |                                         ^^^^\n\nnote: Verus printed one or more automatically chosen quantifier triggers\n      because it had low confidence in the chosen triggers.\n      To suppress these messages, do one of the following:\n        (1) manually annotate a single desired trigger using #[trigger]\n            (example: forall|i: int, j: int| f(i) && #[trigger] g(i) && #[trigger] h(j)),\n        (2) manually annotate multiple desired triggers using #![trigger ...]\n            (example: forall|i: int| #![trigger f(i)] #![trigger g(i)] f(i) && g(i)),\n        (3) accept the automatically chosen trigger using #![auto]\n            (example: forall|i: int, j: int| #![auto] f(i) && g(i) && h(j))\n        (4) use the --triggers-mode silent command-line option to suppress all printing of triggers.\n      (Note: triggers are used by the underlying SMT theorem prover to instantiate quantifiers;\n      the theorem prover instantiates a quantifier whenever some expression matches the\n      pattern specified by one of the quantifier's triggers.)\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/primitives_e/01_sequence_wellformedness.rs:61:5\n   |\n61 |     forall|i: int| 0 <= i < s.len() ==> s[i].wf()\n   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    },
+    {
+      "file": "verismo/primitives_e/02_recursive_sequence_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/primitives_e/03_vector_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/primitives_e/04_sequence_size_calculation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/ptr/01_pointer_identification.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/ptr/01_pointer_validation.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 10 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/ptr/02_pointer_validity.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 16 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/ptr/03_pointer_conversion.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 18 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/ptr/04_pointer_data_relations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/registers/01_register_fields.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/registers/01_register_value.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 13 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/registers/02_core_mode.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/registers/03_register_identification.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 20 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/registers/04_msr_bit_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 16 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/security/01_pcr_chain.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 12 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/security/02_memory_permissions.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 24 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/security/03_secret_keys.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 19 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/security/04_guest_message.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 25 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/trusted_hacl/01_sha512_hash.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 19 verified, 0 errors\n",
+      "stderr": "note: automatically chose triggers for this expression:\n   --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/trusted_hacl/01_sha512_hash.rs:189:9\n    |\n189 |         forall|i: int| 0 <= i < self.hashes@.len() ==> self.hashes@[i].wf()\n    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nnote:   trigger 1 of 1:\n   --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/trusted_hacl/01_sha512_hash.rs:189:56\n    |\n189 |         forall|i: int| 0 <= i < self.hashes@.len() ==> self.hashes@[i].wf()\n    |                                                        ^^^^^^^^^^^^^^^\n\nnote: Verus printed one or more automatically chosen quantifier triggers\n      because it had low confidence in the chosen triggers.\n      To suppress these messages, do one of the following:\n        (1) manually annotate a single desired trigger using #[trigger]\n            (example: forall|i: int, j: int| f(i) && #[trigger] g(i) && #[trigger] h(j)),\n        (2) manually annotate multiple desired triggers using #![trigger ...]\n            (example: forall|i: int| #![trigger f(i)] #![trigger g(i)] f(i) && g(i)),\n        (3) accept the automatically chosen trigger using #![auto]\n            (example: forall|i: int, j: int| #![auto] f(i) && g(i) && h(j))\n        (4) use the --triggers-mode silent command-line option to suppress all printing of triggers.\n      (Note: triggers are used by the underlying SMT theorem prover to instantiate quantifiers;\n      the theorem prover instantiates a quantifier whenever some expression matches the\n      pattern specified by one of the quantifier's triggers.)\n   --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/trusted_hacl/01_sha512_hash.rs:189:9\n    |\n189 |         forall|i: int| 0 <= i < self.hashes@.len() ==> self.hashes@[i].wf()\n    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    },
+    {
+      "file": "verismo/trusted_hacl/02_aes_key_structures.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 26 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/trusted_hacl/03_encryption_specs.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 24 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/trusted_hacl/04_memory_safety.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 17 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec/01_result_types.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": "warning: `#[is_variant]` is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n  --> /Users/chuyues/VerusFT_RL/llm_generated_data/verismo/tspec/01_result_types.rs:9:1\n   |\n 9 | / #[is_variant]\n10 | | pub enum ResultOrError<T, E> {\n11 | |     Ok(T),\n12 | |     Error(E),\n13 | | }\n   | |_^\n\nwarning: 1 warning emitted\n\n"
+    },
+    {
+      "file": "verismo/tspec/02_wellformed_trait.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 9 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec/03_integer_traits.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 11 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec/04_partition.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec/05_spec_size.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 17 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/01_alignment_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 14 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/02_bit_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 19 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/03_array_specs.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 22 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/04_size_and_default.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 23 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/05_array_swap.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/06_array_reverse.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/07_array_memset.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 6 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/08_min_max.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 4 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/09_bit_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 7 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verismo/tspec_e/10_type_conversions.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 7 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/01_seq_push_to_set.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/02_seq_add_preserves_equality.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/03_multiset_empty_count.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/04_seq_prefix_preserves_equality.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/05_seq_map_no_duplicates.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/06_seq_empty_to_set.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/07_seq_add_associative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/08_multiset_insert_count.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/09_seq_contains_index.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/AL/10_seq_add_empty.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/01_singleton_seq_to_set.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/02_empty_set_operations.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/03_seq_len_push.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/04_set_insert_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/05_seq_add_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/06_set_remove_not_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/07_map_empty.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/08_seq_index_push.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/09_set_union_commutative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/IR/10_map_insert_contains_key.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/01_add_commutative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/02_mul_commutative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/03_add_associative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/04_mul_distribute.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/05_add_zero.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/06_mul_one.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/07_sub_self.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/08_div_by_one.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/09_mod_self.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/MA/10_singleton_set.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/01_empty_set_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/02_set_union_self.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/03_mod_identity.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/04_map_empty_dom.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/05_set_remove_not_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/06_mod_addition.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/07_map_insert_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/08_set_difference_not_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/09_map_remove_not_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NO/10_set_intersect_empty.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/01_map_insert_value.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/02_seq_push_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/03_empty_set_finite.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/04_map_values_empty.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/05_seq_last_push.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/06_set_insert_finite.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/07_map_contains_pair.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/08_seq_add_assoc.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/09_set_union_finite.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/NR/10_map_dom_finite.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/01_seq_update_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/02_seq_update_index.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/03_mul_bounded.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/04_seq_subrange_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/05_add_bounded.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/06_seq_push_subrange.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/07_div_bounded.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/08_seq_index_in_range.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/09_nat_transitive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/OS/10_seq_update_other.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/01_u64_to_u128.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/02_seq_skip_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/03_seq_take_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/04_u128_subtraction.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/05_seq_take_skip.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/06_u64_addition_bounded.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/07_seq_index_take.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/08_u128_cast_identity.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/09_seq_index_skip.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/ST/10_u64_compare.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/01_vec_push_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/02_vec_new_empty.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/03_array_view_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/04_seq_splice_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/05_vec_index_push.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/06_slice_view_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/07_vec_set_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/08_seq_add_len.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/09_vec_set_index.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/VeruSAGE-Bench/VE/10_array_eq_reflexive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/01_array_max.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/02_count_occurrences.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/03_factorial.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/04_gcd.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/05_array_all_positive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/06_fibonacci.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/07_array_min.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/08_array_product.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/09_power.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/10_array_contains.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/11_is_sorted.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/12_absolute_value.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 1 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/13_array_equal.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/14_count_positive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/CloverBench/15_is_even.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/01_array_init_sum.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/02_array_double.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 4 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/03_two_arrays_sum.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 5 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/04_conditional_modify.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 4 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/05_counter_accumulate.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/06_array_zeros_sum.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/07_multiply_or_add.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Diffy/08_triple_value.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 5 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/01_find_max.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/02_all_positive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/03_contains_value.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/04_all_even.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/05_count_occurrences.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/06_all_zeros.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/07_is_sorted.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/08_contains_negative.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/09_all_equal.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/MBPP/10_is_digit_string.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 3 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/01_find_max.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/02_array_sum.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/03_linear_search.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/04_increment_all.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/05_filter_even.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/06_find_first_odd.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/07_count_positive.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/08_reverse.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/09_double_all.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    },
+    {
+      "file": "verus-proof-synthesis/Verus-Bench/Misc/10_find_min.rs",
+      "success": true,
+      "returncode": 0,
+      "stdout": "verification results:: 2 verified, 0 errors\n",
+      "stderr": ""
+    }
+  ]
+}
