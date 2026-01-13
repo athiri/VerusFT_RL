@@ -1,0 +1,24 @@
+use vstd::prelude::*;
+
+verus! {
+
+pub enum Tree<T> {
+    Leaf,
+    Node { left: Box<Tree<T>>, value: T, right: Box<Tree<T>> },
+}
+
+
+pub open spec fn tree_height<T>(t: Tree<T>) -> nat
+    decreases t
+{
+    match t {
+        Tree::Leaf => 0,
+        Tree::Node { left, value: _, right } => {
+            let lh = tree_height(*left);
+            let rh = tree_height(*right);
+            1 + if lh > rh { lh } else { rh }
+        }
+    }
+}
+
+} // verus!

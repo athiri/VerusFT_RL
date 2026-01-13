@@ -1,0 +1,9 @@
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn largest_smallest_integers (arr : & Vec < i32 >) -> (res : (Option < i32 > , Option < i32 >)) ensures ({ let (a , b) = res ; (a . is_some () ==> (a . unwrap () < 0 && arr @ . contains (a . unwrap ()))) && (a . is_some () ==> forall | x : i32 | arr @ . contains (x) && x < 0 ==> x <= a . unwrap ()) && (a . is_none () ==> forall | x : i32 | arr @ . contains (x) ==> x >= 0) && (b . is_some () ==> (b . unwrap () > 0 && arr @ . contains (b . unwrap ()))) && (b . is_some () ==> forall | x : i32 | arr @ . contains (x) && x > 0 ==> x >= b . unwrap ()) && (b . is_none () ==> forall | x : i32 | arr @ . contains (x) ==> x <= 0) }) , { let mut i : usize = 0 ; let mut a = None ; let mut b = None ; while i < arr . len () invariant 0 <= i <= arr @ . len () , a . is_none () ==> forall | j : int | 0 <= j < i ==> arr @ [j] >= 0 , a . is_some () ==> arr @ . contains (a . unwrap ()) && a . unwrap () < 0 , a . is_some () ==> forall | j : int | 0 <= j < i && arr @ [j] < 0 ==> arr @ [j] <= a . unwrap () , b . is_none () ==> forall | j : int | 0 <= j < i ==> arr @ [j] <= 0 , b . is_some () ==> arr @ . contains (b . unwrap ()) && b . unwrap () > 0 , b . is_some () ==> forall | j : int | 0 <= j < i && arr @ [j] > 0 ==> arr @ [j] >= b . unwrap () , decreases arr @ . len () - i { if arr [i] < 0 && (a . is_none () || arr [i] >= a . unwrap ()) { a = Some (arr [i]) ; } if arr [i] > 0 && (b . is_none () || arr [i] <= b . unwrap ()) { b = Some (arr [i]) ; } i = i + 1 ; } (a , b) }
+
+} // verus!

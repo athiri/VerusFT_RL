@@ -1,0 +1,9 @@
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+fn replace_blanks_with_chars (str1 : & [u8] , ch : u8) -> (result : Vec < u8 >) ensures str1 @ . len () == result @ . len () , forall | i : int | 0 <= i < str1 . len () ==> result [i] == (if str1 [i] == 32 { ch } else { str1 [i] }) , { let mut out_str : Vec < u8 > = Vec :: with_capacity (str1 . len ()) ; let mut index = 0 ; while index < str1 . len () invariant 0 <= index <= str1 . len () , out_str @ . len () == index , forall | k : int | 0 <= k < index ==> out_str [k] == (if str1 [k] == 32 { ch } else { str1 [k] }) , decreases str1 . len () - index { if (str1 [index] == 32) { out_str . push (ch) ; } else { out_str . push (str1 [index]) ; } index += 1 ; } out_str }
+
+} // verus!

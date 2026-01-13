@@ -1,0 +1,10 @@
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn spec_fibfib (n : nat) -> (ret : nat) decreases n , { if (n == 0) { 0 } else if (n == 1) { 0 } else if (n == 2) { 1 } else { spec_fibfib ((n - 1) as nat) + spec_fibfib ((n - 2) as nat) + spec_fibfib ((n - 3) as nat) } }
+fn fibfib (x : u32) -> (ret : Option < u32 >) ensures ret . is_some () ==> spec_fibfib (x as nat) == ret . unwrap () , { return None ; }
+
+} // verus!

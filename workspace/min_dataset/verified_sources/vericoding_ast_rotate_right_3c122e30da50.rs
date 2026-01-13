@@ -1,0 +1,10 @@
+use vstd::prelude::*;
+
+verus! {
+
+pub spec const MAX: int = i32::MAX as int;
+pub spec const MIN: int = i32::MIN as int;
+spec fn rotation_split (len : usize , n : usize) -> int { len - (n % len) }
+fn rotate_right (list : & Vec < u32 > , n : usize) -> (new_list : Vec < u32 >) requires list . len () > 0 , ensures new_list . len () == list . len () , new_list @ == list @ . subrange (rotation_split (list . len () , n) as int , list @ . len () as int) . add (list @ . subrange (0 , rotation_split (list . len () , n) as int) ,) , { let len = list . len () ; let split_point = len - (n % len) ; assert (split_point <= len) ; assert (split_point == len - (n % len)) ; assert (n % len < len) ; assert (split_point >= 0) ; let mut new_list = Vec :: new () ; let mut i = split_point ; while i < len invariant list . len () > 0 , len == list . len () , split_point <= len , split_point <= i <= len , new_list . len () == i - split_point , split_point as int <= i as int <= len as int , split_point as int <= list @ . len () , i as int <= list @ . len () , new_list @ == list @ . subrange (split_point as int , i as int) , decreases len - i , { assert (i < len) ; assert (i < list . len ()) ; new_list . push (list [i]) ; i += 1 ; } let mut j = 0 ; while j < split_point invariant list . len () > 0 , len == list . len () , split_point <= len , 0 <= j <= split_point , new_list . len () == (len - split_point) + j , split_point as int <= len as int , j as int <= split_point as int , j as int <= len as int , 0 <= j as int , split_point as int <= list @ . len () , len as int == list @ . len () , new_list @ == list @ . subrange (split_point as int , len as int) . add (list @ . subrange (0 , j as int)) , decreases split_point - j , { assert (j < split_point) ; assert (split_point <= len) ; assert (j < list . len ()) ; new_list . push (list [j]) ; j += 1 ; } new_list }
+
+} // verus!
