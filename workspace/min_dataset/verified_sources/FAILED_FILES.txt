@@ -1,0 +1,52 @@
+# Verification Status for verified_sources
+# Last updated: 2026-01-13
+# Verified with: Verus 0.2026.01.02.6f52890
+
+## Summary
+Total files: 2,670
+Standalone verifiable: 2,670 (100%)
+Failed: 0 (0%)
+
+## Status: ALL FILES PASS ✓
+
+All .rs files in this directory successfully verify as standalone Verus code
+using: verus --crate-type=lib <file.rs>
+
+## Previously Documented Failures (Now Resolved)
+
+The following files were previously documented as failing but now pass:
+
+### Use builtin import errors (9 files) - NOW RESOLVED
+- complex_repos__4df37194f547.rs (4 verified, 0 errors)
+- complex_repos__a0c86e101dd0.rs (8 verified, 0 errors)
+- complex_repos__d13ecbc0afdf.rs (verified successfully)
+- complex_repos__e42edfec3663.rs (11 verified, 0 errors)
+- complex_repos__778eed726449.rs (2 verified, 0 errors)
+- complex_repos__1d964de00785.rs (5 verified, 0 errors)
+- complex_repos__6ea52b24da6a.rs (11 verified, 0 errors)
+- complex_repos__b235fd8d2aa0.rs (8 verified, 0 errors)
+- Note: complex_repos__verus_assert_by_compute_a4dde075646d.rs not found (may have been renamed)
+
+### Pattern visibility errors (5 files) - NOW RESOLVED
+- coq_translation_eval_property_4f276fdc2f61.rs
+- coq_translation_all_pass_effb319cf823.rs
+- coq_translation_any_pass_647faf522380.rs
+- coq_translation_empty_all_pass_91f1d089a6f4.rs
+- coq_translation_empty_any_fail_37ae658c675f.rs
+
+### Deprecated attribute style (3 files) - NOW RESOLVED
+- coq_translation_total_weight_85465a74e1cd.rs
+- coq_translation_frequency_cefe330aea80.rs
+- coq_translation_frequency_contains_all_782e62a61037.rs
+
+## Verification Method
+
+To verify all files:
+```bash
+python3 /Users/chuyues/VerusFT_RL/workspace/min_dataset/verify_all_sources.py
+```
+
+To verify a single file:
+```bash
+verus --crate-type=lib path/to/file.rs
+```
