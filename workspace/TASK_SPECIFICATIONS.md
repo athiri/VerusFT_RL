@@ -9,7 +9,7 @@ This document describes the three training tasks, their input/output formats, an
 | Task | Name | Input | Output | Primary Metric |
 |------|------|-------|--------|----------------|
 | **A** | Code → Specs | Code without specifications | Specifications to add | Three-tier: Template → LLM-guided → Proxy |
-| **B** | Specs → Code | Function signature + specs | Full verified implementation | Execution output match rate |
+| **B** | Specs → Code | Function signature + specs | Full verified implementation | Fuzzing + Kani model checking |
 | **C** | Repair | Broken code | Fixed code | Verification pass rate |
 
 ---
@@ -867,6 +867,421 @@ def generate_test_inputs(spec, num_tests=100):
     pass
 ```
 
+### Advanced Evaluation: Fuzzing + Kani Model Checking
+
+**Enhanced Method**: Combine coverage-guided fuzzing with [Kani Rust Verifier](https://github.com/model-checking/kani) for stronger functional equivalence guarantees.
+
+#### Why Combine Fuzzing + Kani?
+
+| Method | Strengths | Limitations |
+|--------|-----------|-------------|
+| **Fuzzing** | Fast, finds edge cases, high throughput | Only tests sampled inputs |
+| **Kani** | Proves correctness for all inputs (bounded) | Slower, may hit solver limits |
+| **Combined** | Best of both: quick failures + formal proof | Comprehensive coverage |
+
+#### Method: Two-Phase Equivalence Checking
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Phase 1: Fuzzing (Quick Differential Testing)                      │
+│  - Use cargo-fuzz/libFuzzer to generate diverse inputs              │
+│  - Run both original and generated code on same inputs              │
+│  - If outputs differ → found counter-example → NOT equivalent       │
+└─────────────────────────────────────────────────────────────────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+           [Counter-example found]    [No counter-example]
+                    │                         │
+                    ▼                         ▼
+           Return: NOT equivalent    ┌─────────────────────────────────┐
+           confidence=high           │  Phase 2: Kani Model Checking   │
+                                     │  - Generate equivalence harness │
+                                     │  - Use kani::any() for inputs   │
+                                     │  - Assert outputs are equal     │
+                                     │  - Bounded model checking       │
+                                     └─────────────────────────────────┘
+                                                    │
+                                       ┌────────────┴────────────┐
+                                       │                         │
+                                  [Verified]              [Counter-example]
+                                       │                         │
+                                       ▼                         ▼
+                               Return: EQUIVALENT         Return: NOT equivalent
+                               confidence=high            confidence=high
+```
+
+#### Kani Equivalence Harness
+
+```rust
+// equivalence_harness.rs
+// Generated harness to prove functional equivalence using Kani
+
+use kani::*;
+
+// Original function (from ground truth)
+fn original_get_element(arr: &[u64], i: usize) -> u64 {
+    arr[i]
+}
+
+// Generated function (from model output)
+fn generated_get_element(arr: &[u64], i: usize) -> u64 {
+    arr[i]  // May have different implementation
+}
+
+#[kani::proof]
+#[kani::unwind(10)]  // Bound for loops/recursion
+fn check_equivalence() {
+    // Generate arbitrary inputs satisfying preconditions
+    let len: usize = kani::any();
+    kani::assume(len > 0 && len <= 10);  // Bounded for tractability
+    
+    let arr: [u64; 10] = kani::any();
+    let arr_slice = &arr[..len];
+    
+    let i: usize = kani::any();
+    kani::assume(i < len);  // Satisfies requires clause
+    
+    // Call both functions
+    let original_result = original_get_element(arr_slice, i);
+    let generated_result = generated_get_element(arr_slice, i);
+    
+    // Assert functional equivalence
+    assert_eq!(original_result, generated_result, 
+        "Functions produce different outputs!");
+}
+
+#[kani::proof]
+fn check_no_panic() {
+    // Verify generated code doesn't panic on valid inputs
+    let len: usize = kani::any();
+    kani::assume(len > 0 && len <= 10);
+    
+    let arr: [u64; 10] = kani::any();
+    let i: usize = kani::any();
+    kani::assume(i < len);
+    
+    // Should not panic
+    let _ = generated_get_element(&arr[..len], i);
+}
+```
+
+#### Implementation Code
+
+```python
+import subprocess
+import tempfile
+import os
+from typing import Dict, List, Tuple, Optional
+
+def evaluate_task_b_advanced(
+    generated_code: str,
+    original_code: str,
+    input_spec: str,
+    fuzz_duration: int = 60,
+    kani_unwind: int = 10
+) -> Dict:
+    """
+    Evaluate Task B with Fuzzing + Kani combined approach.
+    
+    Phase 1: Fuzzing for quick counter-example detection
+    Phase 2: Kani for bounded model checking proof
+    """
+    
+    # ===== Phase 1: Fuzzing =====
+    fuzz_result = run_differential_fuzzing(
+        original_code, generated_code, 
+        duration_secs=fuzz_duration
+    )
+    
+    if fuzz_result["counter_example"]:
+        return {
+            "equivalent": False,
+            "method": "fuzzing",
+            "confidence": "high",
+            "counter_example": fuzz_result["counter_example"],
+            "fuzz_iterations": fuzz_result["iterations"]
+        }
+    
+    # ===== Phase 2: Kani Model Checking =====
+    kani_result = run_kani_equivalence_check(
+        original_code, generated_code,
+        input_spec, unwind=kani_unwind
+    )
+    
+    if kani_result["verified"]:
+        return {
+            "equivalent": True,
+            "method": "kani_proof",
+            "confidence": "high",
+            "bounds": {"unwind": kani_unwind},
+            "fuzz_iterations": fuzz_result["iterations"]
+        }
+    elif kani_result["counter_example"]:
+        return {
+            "equivalent": False,
+            "method": "kani_counter_example",
+            "confidence": "high",
+            "counter_example": kani_result["counter_example"]
+        }
+    else:
+        # Inconclusive (solver timeout, resource limits)
+        return {
+            "equivalent": None,
+            "method": "inconclusive",
+            "confidence": "low",
+            "fuzz_iterations": fuzz_result["iterations"],
+            "kani_error": kani_result.get("error")
+        }
+
+def run_differential_fuzzing(
+    original_code: str,
+    generated_code: str,
+    duration_secs: int = 60
+) -> Dict:
+    """
+    Run differential fuzzing to find inputs where functions differ.
+    Uses cargo-fuzz with libFuzzer backend.
+    """
+    # Create temporary Cargo project with fuzz target
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Setup fuzz target
+        fuzz_target = generate_fuzz_target(original_code, generated_code)
+        setup_fuzz_project(tmpdir, fuzz_target)
+        
+        # Run cargo fuzz
+        result = subprocess.run(
+            ["cargo", "fuzz", "run", "diff_fuzz", 
+             f"--max-total-time={duration_secs}"],
+            cwd=tmpdir,
+            capture_output=True,
+            text=True,
+            timeout=duration_secs + 30
+        )
+        
+        # Parse results
+        if "SUMMARY: " in result.stderr and "crash" in result.stderr.lower():
+            counter_example = extract_crash_input(tmpdir)
+            return {
+                "counter_example": counter_example,
+                "iterations": parse_fuzz_iterations(result.stderr)
+            }
+        
+        return {
+            "counter_example": None,
+            "iterations": parse_fuzz_iterations(result.stderr)
+        }
+
+def generate_fuzz_target(original_code: str, generated_code: str) -> str:
+    """Generate cargo-fuzz target for differential testing."""
+    return f'''
+#![no_main]
+use libfuzzer_sys::fuzz_target;
+use arbitrary::Arbitrary;
+
+// Strip Verus annotations from both functions
+{strip_verus_annotations(original_code).replace("fn ", "fn original_")}
+
+{strip_verus_annotations(generated_code).replace("fn ", "fn generated_")}
+
+#[derive(Arbitrary, Debug)]
+struct FuzzInput {{
+    // Input structure matching function parameters
+    arr: Vec<u64>,
+    i: usize,
+}}
+
+fuzz_target!(|input: FuzzInput| {{
+    // Skip invalid inputs (violate preconditions)
+    if input.arr.is_empty() || input.i >= input.arr.len() {{
+        return;
+    }}
+    
+    let orig = original_get_element(&input.arr, input.i);
+    let gen = generated_get_element(&input.arr, input.i);
+    
+    assert_eq!(orig, gen, "Differential: functions differ on input {{:?}}", input);
+}});
+'''
+
+def run_kani_equivalence_check(
+    original_code: str,
+    generated_code: str,
+    input_spec: str,
+    unwind: int = 10
+) -> Dict:
+    """
+    Run Kani model checker to prove functional equivalence.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Generate Kani harness
+        harness = generate_kani_harness(
+            original_code, generated_code, input_spec, unwind
+        )
+        
+        harness_path = os.path.join(tmpdir, "equivalence.rs")
+        with open(harness_path, "w") as f:
+            f.write(harness)
+        
+        # Run Kani
+        result = subprocess.run(
+            ["cargo", "kani", "--harness", "check_equivalence",
+             f"--unwind={unwind}", "--output-format=json"],
+            cwd=tmpdir,
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        # Parse Kani output
+        if result.returncode == 0:
+            return {"verified": True, "counter_example": None}
+        
+        # Check for counter-example
+        if "VERIFICATION FAILED" in result.stdout:
+            counter_example = extract_kani_counter_example(result.stdout)
+            return {"verified": False, "counter_example": counter_example}
+        
+        return {"verified": False, "counter_example": None, "error": result.stderr}
+
+def generate_kani_harness(
+    original_code: str,
+    generated_code: str,
+    input_spec: str,
+    unwind: int
+) -> str:
+    """Generate Kani proof harness for equivalence checking."""
+    # Parse input spec to extract parameter types and constraints
+    params = parse_function_params(input_spec)
+    constraints = parse_requires_clause(input_spec)
+    
+    return f'''
+use kani::*;
+
+// Original implementation
+{strip_verus_annotations(original_code).replace("fn ", "fn original_")}
+
+// Generated implementation  
+{strip_verus_annotations(generated_code).replace("fn ", "fn generated_")}
+
+#[kani::proof]
+#[kani::unwind({unwind})]
+fn check_equivalence() {{
+    // Generate symbolic inputs
+    {generate_kani_inputs(params)}
+    
+    // Apply preconditions
+    {generate_kani_assumes(constraints)}
+    
+    // Call both implementations
+    let orig_result = original_{params['fn_name']}({params['call_args']});
+    let gen_result = generated_{params['fn_name']}({params['call_args']});
+    
+    // Assert equivalence
+    assert!(orig_result == gen_result, 
+        "Functions are not equivalent!");
+}}
+
+#[kani::proof]
+#[kani::unwind({unwind})]
+fn check_generated_safety() {{
+    // Verify generated code doesn't exhibit undefined behavior
+    {generate_kani_inputs(params)}
+    {generate_kani_assumes(constraints)}
+    
+    // Should complete without UB
+    let _ = generated_{params['fn_name']}({params['call_args']});
+}}
+'''
+```
+
+#### Comparison: Evaluation Methods for Task B
+
+| Method | Coverage | Speed | Confidence | Use Case |
+|--------|----------|-------|------------|----------|
+| **Simple Execution** | Sampled | Fast | Medium | Quick sanity check |
+| **Fuzzing Only** | High (random) | Fast | Medium-High | Find edge cases |
+| **Kani Only** | Universal (bounded) | Slow | High | Formal proof |
+| **Fuzzing + Kani** | Universal (bounded) | Medium | High | **Production evaluation** |
+
+#### Combined Evaluation Strategy for Task B
+
+```python
+def evaluate_task_b(
+    generated_code: str,
+    original_code: str,
+    input_spec: str
+) -> Dict:
+    """
+    Three-tier evaluation for Task B:
+    1. Quick execution test (sanity check)
+    2. Differential fuzzing (find edge cases)
+    3. Kani model checking (formal proof)
+    """
+    
+    # ===== Tier 1: Quick Execution Test =====
+    quick_result = quick_execution_test(original_code, generated_code, num_tests=100)
+    
+    if not quick_result["all_match"]:
+        return {
+            "score": 0.0,
+            "method": "quick_test",
+            "confidence": "high",
+            "counter_example": quick_result["first_mismatch"]
+        }
+    
+    # ===== Tier 2: Differential Fuzzing =====
+    fuzz_result = run_differential_fuzzing(original_code, generated_code, duration_secs=30)
+    
+    if fuzz_result["counter_example"]:
+        return {
+            "score": 0.0,
+            "method": "fuzzing",
+            "confidence": "high", 
+            "counter_example": fuzz_result["counter_example"]
+        }
+    
+    # ===== Tier 3: Kani Model Checking =====
+    kani_result = run_kani_equivalence_check(original_code, generated_code, input_spec)
+    
+    if kani_result["verified"]:
+        return {
+            "score": 1.0,
+            "method": "kani_proof",
+            "confidence": "very_high",
+            "proof_bounds": kani_result.get("bounds")
+        }
+    elif kani_result["counter_example"]:
+        return {
+            "score": 0.0,
+            "method": "kani_counter_example",
+            "confidence": "high",
+            "counter_example": kani_result["counter_example"]
+        }
+    
+    # Inconclusive - return fuzzing confidence
+    return {
+        "score": 0.8,  # High confidence from fuzzing, but not proven
+        "method": "fuzzing_only",
+        "confidence": "medium",
+        "note": "Kani inconclusive, relying on fuzzing results"
+    }
+```
+
+#### Running Kani
+
+```bash
+# Install Kani
+cargo install --locked kani-verifier
+cargo kani setup
+
+# Run equivalence check
+cargo kani --harness check_equivalence --unwind 10
+
+# Run with coverage
+cargo kani --harness check_equivalence --coverage
+```
+
 ---
 
 ## Task C: Error-Guided Repair
@@ -1036,7 +1451,7 @@ def compute_metrics(results: list) -> dict:
 | Task | Input | Output | Evaluation | Correctness Guarantee |
 |------|-------|--------|------------|----------------------|
 | **A** | Code without specs | Just the specs | **1. Template equiv → 2. LLM-guided → 3. Proxy test** | Specs provably equivalent to original |
-| **B** | Signature + specs | Full implementation | **Execute & compare outputs** | Same outputs as original for all test inputs |
+| **B** | Signature + specs | Full implementation | **1. Quick test → 2. Fuzzing → 3. Kani proof** | Functionally equivalent (bounded proof) |
 | **C** | Broken code | Fixed code | **Verify with Verus** | Code now passes verification |
 
 ### Key Differences
