@@ -141,3 +141,22 @@ archived/
 minimized_examples/
 minimized_examples_scaled/
 repaired_examples/
+
+# Local scripts (not tracked)
+organize_by_source.py
+verify_extracted.py
+verify_extracted_parallel.py
+continuous_verification.py
+run_minimizer_stale.py
+run_pipeline.sh
+verify_minimized.sh
+
+# Cache and output files
+.verus_metrics_cache*.json
+reverification_results.json
+reverified_output/
+repair_log.json
+dataset_metadata.csv
+
+build_dataset.py
+extracted_verified_by_source/
