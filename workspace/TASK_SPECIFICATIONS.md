@@ -8,7 +8,7 @@ This document describes the three training tasks, their input/output formats, an
 
 | Task | Name | Input | Output | Primary Metric |
 |------|------|-------|--------|----------------|
-| **A** | Code → Specs | Code without specifications | Specifications to add | Template equivalence (verification-based) |
+| **A** | Code → Specs | Code without specifications | Specifications to add | Three-tier: Template → LLM-guided → Proxy |
 | **B** | Specs → Code | Function signature + specs | Full verified implementation | Execution output match rate |
 | **C** | Repair | Broken code | Fixed code | Verification pass rate |
 
@@ -213,20 +213,335 @@ def equiv_test_spec(
     }
 ```
 
-#### Comparison: Template Equivalence vs Proxy Testing
+### Secondary Evaluation: LLM-Guided Equivalence Checking
 
-| Aspect | Template Equivalence | Proxy Testing |
-|--------|---------------------|---------------|
-| **Coverage** | Universal (all inputs) | Limited to test cases |
-| **Precision** | Exact semantic match | Approximate |
-| **False Positives** | None (if verified) | Possible |
-| **Complexity** | Requires template design | Simpler |
-| **Speed** | Slower (verification) | Faster |
-| **Use Case** | **Primary: Formal correctness** | Fallback for partial credit |
+**Second Priority**: When template equivalence fails to verify automatically, use an LLM to iteratively find either a counter-example or construct a proof of equivalence.
 
-### Alternative Evaluation: Positive/Negative Proxy Testing
+#### Method: LLM + Verifier Iteration
 
-**Secondary Metric**: Test generated specs against positive and negative input/output pairs. Use as fallback when template equivalence fails.
+1. **Input**: Ground truth spec + generated spec + verifier error from template method
+2. **LLM Task**: Analyze the specs and either:
+   - **Find a counter-example**: Concrete inputs where specs differ
+   - **Construct a proof**: Provide hints/assertions to help Verus verify equivalence
+3. **Iterate**: LLM refines based on local verifier execution feedback
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Ground Truth Spec + Generated Spec + Verifier Error        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  LLM Analysis: Are these specs semantically equivalent?     │
+│  - If NO: Provide counter-example (input where they differ) │
+│  - If YES: Provide proof hints (assertions, lemmas)         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Local Verus Execution: Validate LLM's answer               │
+│  - Counter-example: Check if specs actually differ          │
+│  - Proof hints: Check if equivalence now verifies           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+                   ┌──────────┴──────────┐
+                   │                     │
+              [Success]             [Failure]
+                   │                     │
+                   ▼                     ▼
+              Return result      Iterate with feedback
+                                 (max N iterations)
+```
+
+#### LLM Prompt Template
+
+```python
+LLM_EQUIV_PROMPT = """
+You are analyzing two Verus specifications for semantic equivalence.
+
+## Function Signature
+{signature}
+
+## Ground Truth Specification
+{ground_truth_spec}
+
+## Generated Specification  
+{generated_spec}
+
+## Previous Verifier Output (if any)
+{verifier_error}
+
+## Task
+Determine if these specifications are semantically equivalent.
+
+1. If they are NOT equivalent:
+   - Provide a concrete counter-example: specific input values where the specs behave differently
+   - Explain which spec accepts/rejects the input and why
+
+2. If they ARE equivalent but verification failed:
+   - Provide proof hints (assertions, lemmas, or intermediate steps) to help Verus verify
+   - The hints should be inserted into the proof functions
+
+## Output Format
+```json
+{
+  "verdict": "equivalent" | "not_equivalent" | "unknown",
+  "counter_example": {
+    "inputs": {"arr": [...], "i": ..., ...},
+    "ground_truth_result": true/false,
+    "generated_result": true/false,
+    "explanation": "..."
+  },
+  "proof_hints": [
+    "assert(...);",
+    "// lemma call or intermediate assertion"
+  ],
+  "reasoning": "Step-by-step analysis..."
+}
+```
+"""
+```
+
+#### LLM-Guided Evaluation Code
+
+```python
+import json
+from typing import Dict, List, Optional
+
+def llm_guided_equiv_check(
+    signature: str,
+    ground_truth_spec: str,
+    generated_spec: str,
+    param_types: str,
+    verus_path: str = "verus",
+    max_iterations: int = 3,
+    verbose: int = 0
+) -> Dict:
+    """
+    Use LLM to find counter-example or construct equivalence proof.
+    Iterates based on verifier feedback.
+    """
+    verifier_error = ""
+    
+    for iteration in range(max_iterations):
+        if verbose >= 1:
+            print(f"=== LLM Iteration {iteration + 1}/{max_iterations} ===")
+        
+        # 1. Query LLM
+        llm_response = query_llm_for_equivalence(
+            signature=signature,
+            ground_truth_spec=ground_truth_spec,
+            generated_spec=generated_spec,
+            verifier_error=verifier_error
+        )
+        
+        if verbose >= 2:
+            print(f"LLM Response: {json.dumps(llm_response, indent=2)}")
+        
+        # 2. Handle LLM verdict
+        if llm_response["verdict"] == "not_equivalent":
+            # Validate counter-example
+            counter_example = llm_response.get("counter_example", {})
+            if validate_counter_example(
+                ground_truth_spec, generated_spec, 
+                counter_example, param_types
+            ):
+                return {
+                    "equivalent": False,
+                    "method": "llm_counter_example",
+                    "counter_example": counter_example,
+                    "iterations": iteration + 1
+                }
+            else:
+                verifier_error = "Counter-example validation failed. Please reconsider."
+                continue
+        
+        elif llm_response["verdict"] == "equivalent":
+            # Try to verify with proof hints
+            proof_hints = llm_response.get("proof_hints", [])
+            check_code = generate_equiv_check_with_hints(
+                param_types, ground_truth_spec, generated_spec, proof_hints
+            )
+            
+            result = run_verus(check_code)
+            
+            if result["success"]:
+                return {
+                    "equivalent": True,
+                    "method": "llm_proof",
+                    "proof_hints": proof_hints,
+                    "iterations": iteration + 1
+                }
+            else:
+                verifier_error = result.get("stderr", "Verification failed")
+                continue
+        
+        else:  # unknown
+            verifier_error = f"LLM uncertain. Reasoning: {llm_response.get('reasoning', '')}"
+            continue
+    
+    # Max iterations reached
+    return {
+        "equivalent": None,
+        "method": "llm_inconclusive",
+        "iterations": max_iterations,
+        "last_error": verifier_error
+    }
+
+def query_llm_for_equivalence(
+    signature: str,
+    ground_truth_spec: str,
+    generated_spec: str,
+    verifier_error: str
+) -> Dict:
+    """Query LLM with the equivalence checking prompt."""
+    prompt = LLM_EQUIV_PROMPT.format(
+        signature=signature,
+        ground_truth_spec=ground_truth_spec,
+        generated_spec=generated_spec,
+        verifier_error=verifier_error or "N/A (first attempt)"
+    )
+    
+    # Call your LLM API (e.g., OpenAI, Anthropic, local model)
+    response = call_llm_api(prompt)
+    
+    # Parse JSON response
+    return json.loads(response)
+
+def validate_counter_example(
+    ground_truth_spec: str,
+    generated_spec: str,
+    counter_example: Dict,
+    param_types: str
+) -> bool:
+    """
+    Validate that the counter-example actually demonstrates non-equivalence.
+    Execute both specs on the counter-example inputs.
+    """
+    inputs = counter_example.get("inputs", {})
+    
+    # Generate Verus code to evaluate specs on concrete inputs
+    eval_code = generate_spec_evaluation_code(
+        ground_truth_spec, generated_spec, inputs, param_types
+    )
+    
+    result = run_verus(eval_code)
+    
+    # Check if specs actually differ on this input
+    return result["success"] and specs_differ_on_input(result)
+
+def generate_equiv_check_with_hints(
+    param_types: str,
+    ground_truth_spec: str,
+    generated_spec: str,
+    proof_hints: List[str]
+) -> str:
+    """Generate equivalence check code with LLM-provided proof hints."""
+    hints_code = "\n    ".join(proof_hints) if proof_hints else ""
+    
+    params = ", ".join(p.split(":")[0].strip() for p in param_types.split(","))
+    pre_orig = extract_requires(ground_truth_spec)
+    pre_gen = extract_requires(generated_spec)
+    post_orig = extract_ensures(ground_truth_spec)
+    post_gen = extract_ensures(generated_spec)
+    
+    template = f'''use vstd::prelude::*;
+
+verus! {{
+
+spec fn pre_original({param_types}) -> bool {{
+    {pre_orig}
+}}
+
+spec fn pre_gen({param_types}) -> bool {{
+    {pre_gen}
+}}
+
+proof fn pre_eq({param_types})
+    ensures pre_original({params}) <==> pre_gen({params})
+{{
+    {hints_code}
+}}
+
+spec fn post_original({param_types}) -> bool
+    recommends pre_original({params})
+{{
+    {post_orig}
+}}
+
+spec fn post_gen({param_types}) -> bool
+    recommends pre_original({params})
+{{
+    {post_gen}
+}}
+
+proof fn post_eq({param_types})
+    requires pre_original({params})
+    requires pre_gen({params})
+    ensures post_original({params}) <==> post_gen({params})
+{{
+    {hints_code}
+}}
+
+}} // verus!
+'''
+    return template
+```
+
+#### Example: LLM Counter-Example
+
+```
+Ground Truth: requires arr@.len() > 0, i < arr@.len() as int
+Generated:    requires i >= 0, i < arr@.len() as int
+
+LLM Response:
+{
+  "verdict": "not_equivalent",
+  "counter_example": {
+    "inputs": {"arr": "Seq::empty()", "i": -1},
+    "ground_truth_result": false,  // rejected by arr@.len() > 0
+    "generated_result": false,     // rejected by i >= 0
+    "explanation": "Both reject, but for different reasons. Try arr=[1], i=-1"
+  },
+  "reasoning": "Ground truth requires non-empty array, generated requires non-negative index. 
+                These are independent constraints."
+}
+```
+
+#### Example: LLM Proof Hints
+
+```
+Ground Truth: ensures ret >= 0
+Generated:    ensures ret == if x < 0 { -x } else { x }
+
+LLM Response:
+{
+  "verdict": "equivalent",
+  "proof_hints": [
+    "assert(x < 0 ==> -x >= 0);",
+    "assert(x >= 0 ==> x >= 0);"
+  ],
+  "reasoning": "The generated spec is more precise but implies ret >= 0. 
+                Need hints to show absolute value is always non-negative."
+}
+```
+
+#### Comparison: All Three Methods
+
+| Aspect | Template Equivalence | LLM-Guided | Proxy Testing |
+|--------|---------------------|------------|---------------|
+| **Priority** | 1st (Primary) | 2nd (Secondary) | 3rd (Fallback) |
+| **Coverage** | Universal | Universal | Limited |
+| **Precision** | Exact | Exact (if verified) | Approximate |
+| **Handles Complex Proofs** | No | Yes (with hints) | N/A |
+| **Finds Counter-Examples** | No | Yes | Partial |
+| **Cost** | Low (just verifier) | Medium (LLM + verifier) | Low |
+| **Use Case** | Simple equivalences | Complex proofs, debugging | Partial credit |
+
+### Fallback Evaluation: Positive/Negative Proxy Testing
+
+**Third Priority**: Test generated specs against positive and negative input/output pairs. Use as fallback when both template equivalence and LLM-guided methods fail.
 
 #### Method: Executable Proxy
 
@@ -319,12 +634,17 @@ def evaluate_task_a(
     original_code: str,
     generated_specs: str,
     original_specs: str,
+    signature: str,
     param_types: str
 ) -> Dict:
     """
-    Evaluate Task A: Template equivalence (primary) + Proxy testing (fallback).
+    Evaluate Task A with three-tier strategy:
+    1. Template equivalence (primary)
+    2. LLM-guided equivalence (secondary)
+    3. Proxy testing (fallback)
     """
-    # Primary: Template-based equivalence (strong guarantee)
+    
+    # ===== Priority 1: Template-based equivalence =====
     template_result = equiv_test_spec(original_specs, generated_specs, param_types)
     
     if template_result["equivalent"]:
@@ -335,7 +655,32 @@ def evaluate_task_a(
             "details": template_result
         }
     
-    # Fallback: Proxy testing (partial credit)
+    # ===== Priority 2: LLM-guided equivalence checking =====
+    llm_result = llm_guided_equiv_check(
+        signature=signature,
+        ground_truth_spec=original_specs,
+        generated_spec=generated_specs,
+        param_types=param_types,
+        max_iterations=3
+    )
+    
+    if llm_result["equivalent"] is True:
+        return {
+            "score": 1.0,
+            "method": "llm_proof",
+            "confidence": "high",
+            "details": llm_result
+        }
+    elif llm_result["equivalent"] is False:
+        return {
+            "score": 0.0,
+            "method": "llm_counter_example",
+            "confidence": "high",
+            "counter_example": llm_result.get("counter_example"),
+            "details": llm_result
+        }
+    
+    # ===== Priority 3: Proxy testing (fallback for partial credit) =====
     positive_proxies = generate_positive_proxies(original_code, num=50)
     negative_proxies = generate_negative_proxies(original_code, num=50)
     
@@ -348,8 +693,51 @@ def evaluate_task_a(
         "confidence": "medium",
         "soundness": soundness,
         "completeness": completeness,
-        "template_error": template_result.get("verus_output", {}).get("stderr")
+        "template_error": template_result.get("verus_output", {}).get("stderr"),
+        "llm_result": llm_result
     }
+```
+
+#### Evaluation Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Task A: Spec Evaluation                          │
+└─────────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Priority 1: Template Equivalence (Verus verification)              │
+│  - Generate equivalence template                                    │
+│  - Run Verus to prove pre <==> pre' and post <==> post'            │
+└─────────────────────────────────────────────────────────────────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+               [Verified]              [Failed to verify]
+                    │                         │
+                    ▼                         ▼
+           Return score=1.0     ┌─────────────────────────────────────┐
+           confidence=high      │  Priority 2: LLM-Guided Checking    │
+                                │  - Query LLM with specs + error     │
+                                │  - LLM provides counter-example OR  │
+                                │    proof hints                      │
+                                │  - Validate with Verus (iterate)    │
+                                └─────────────────────────────────────┘
+                                              │
+                           ┌──────────────────┼──────────────────┐
+                           │                  │                  │
+                    [Proof found]    [Counter-example]    [Inconclusive]
+                           │                  │                  │
+                           ▼                  ▼                  ▼
+                    Return score=1.0   Return score=0.0   ┌─────────────┐
+                    confidence=high    confidence=high    │  Priority 3 │
+                                                          │  Proxy Test │
+                                                          └─────────────┘
+                                                                 │
+                                                                 ▼
+                                                    Return score=(sound+compl)/2
+                                                    confidence=medium
 ```
 
 ---
@@ -647,7 +1035,7 @@ def compute_metrics(results: list) -> dict:
 
 | Task | Input | Output | Evaluation | Correctness Guarantee |
 |------|-------|--------|------------|----------------------|
-| **A** | Code without specs | Just the specs | **Template equivalence** (primary) + Proxy testing (fallback) | Specs provably equivalent to original |
+| **A** | Code without specs | Just the specs | **1. Template equiv → 2. LLM-guided → 3. Proxy test** | Specs provably equivalent to original |
 | **B** | Signature + specs | Full implementation | **Execute & compare outputs** | Same outputs as original for all test inputs |
 | **C** | Broken code | Fixed code | **Verify with Verus** | Code now passes verification |
 
