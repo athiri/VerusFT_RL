@@ -8,7 +8,7 @@ This document describes the three training tasks, their input/output formats, an
 
 | Task | Name | Input | Output | Primary Metric |
 |------|------|-------|--------|----------------|
-| **A** | Code → Specs | Code without specifications | Specifications to add | Positive/negative proxy pass rate |
+| **A** | Code → Specs | Code without specifications | Specifications to add | Template equivalence (verification-based) |
 | **B** | Specs → Code | Function signature + specs | Full verified implementation | Execution output match rate |
 | **C** | Repair | Broken code | Fixed code | Verification pass rate |
 
@@ -40,9 +40,193 @@ ensures ret == arr@[i as int]
 
 **Note**: Output is ONLY the specifications, not the full code.
 
-### Evaluation: Positive/Negative Proxy Testing
+### Evaluation: Template-Based Specification Equivalence
 
-**Primary Metric**: Test generated specs against positive and negative input/output pairs.
+**Primary Metric**: Use Verus verification to prove generated specs are semantically equivalent to original specs.
+
+#### Method: Equivalence Template
+
+Use the verifier itself to check logical equivalence between original and generated specifications. This provides **universal coverage** (all inputs) rather than sampling.
+
+```
+If Verus verifies:  pre_original <==> pre_gen  AND  post_original <==> post_gen
+Then: Generated specs are semantically equivalent to original specs
+```
+
+#### Verus Equivalence Template
+
+```verus
+use vstd::prelude::*;
+
+verus! {
+
+// Original precondition (from ground truth)
+spec fn pre_original(arr: Seq<u64>, i: int, ret: u64) -> bool {
+    arr.len() > 0 && i < arr.len() as int  // (#PRE) - filled from original spec
+}
+
+// Generated precondition (from model output)
+spec fn pre_gen(arr: Seq<u64>, i: int, ret: u64) -> bool {
+    i >= 0 && i < arr.len() as int && arr.len() > 0  // (#PRE) - filled from generated spec
+}
+
+// Prove precondition equivalence
+proof fn pre_eq(arr: Seq<u64>, i: int, ret: u64)
+    ensures pre_original(arr, i, ret) <==> pre_gen(arr, i, ret)
+{
+}
+
+// Original postcondition
+spec fn post_original(arr: Seq<u64>, i: int, ret: u64) -> bool
+    recommends pre_original(arr, i, ret)
+{
+    ret == arr[i]  // (#POST) - filled from original spec
+}
+
+// Generated postcondition
+spec fn post_gen(arr: Seq<u64>, i: int, ret: u64) -> bool
+    recommends pre_original(arr, i, ret)
+{
+    ret == arr[i as int]  // (#POST) - filled from generated spec
+}
+
+// Prove postcondition equivalence
+proof fn post_eq(arr: Seq<u64>, i: int, ret: u64)
+    requires pre_original(arr, i, ret)
+    requires pre_gen(arr, i, ret)
+    ensures post_original(arr, i, ret) <==> post_gen(arr, i, ret)
+{
+}
+
+} // verus!
+```
+
+#### Template Evaluation Code
+
+```python
+import subprocess
+import tempfile
+import re
+from typing import Tuple, Optional, Dict
+
+def extract_requires(spec: str) -> str:
+    """Extract requires clause from specification."""
+    match = re.search(r'requires\s+(.+?)(?=ensures|decreases|\{|$)', spec, re.DOTALL)
+    if match:
+        return match.group(1).strip().rstrip(',')
+    return "true"
+
+def extract_ensures(spec: str) -> str:
+    """Extract ensures clause from specification."""
+    match = re.search(r'ensures\s+(.+?)(?=decreases|\{|$)', spec, re.DOTALL)
+    if match:
+        return match.group(1).strip().rstrip(',')
+    return "true"
+
+def generate_equiv_check_code(
+    param_types: str,  # e.g., "arr: Seq<u64>, i: int, ret: u64"
+    original_spec: str,
+    generated_spec: str
+) -> str:
+    """Generate Verus code to check spec equivalence."""
+    
+    pre_orig = extract_requires(original_spec)
+    pre_gen = extract_requires(generated_spec)
+    post_orig = extract_ensures(original_spec)
+    post_gen = extract_ensures(generated_spec)
+    
+    # Build parameter list without types for function calls
+    params = ", ".join(p.split(":")[0].strip() for p in param_types.split(","))
+    
+    template = f'''use vstd::prelude::*;
+
+verus! {{
+
+spec fn pre_original({param_types}) -> bool {{
+    {pre_orig}
+}}
+
+spec fn pre_gen({param_types}) -> bool {{
+    {pre_gen}
+}}
+
+proof fn pre_eq({param_types})
+    ensures pre_original({params}) <==> pre_gen({params})
+{{
+}}
+
+spec fn post_original({param_types}) -> bool
+    recommends pre_original({params})
+{{
+    {post_orig}
+}}
+
+spec fn post_gen({param_types}) -> bool
+    recommends pre_original({params})
+{{
+    {post_gen}
+}}
+
+proof fn post_eq({param_types})
+    requires pre_original({params})
+    requires pre_gen({params})
+    ensures post_original({params}) <==> post_gen({params})
+{{
+}}
+
+}} // verus!
+'''
+    return template
+
+def equiv_test_spec(
+    original_spec: str,
+    generated_spec: str,
+    param_types: str,
+    verus_path: str = "verus",
+    verbose: int = 0
+) -> Dict[str, bool]:
+    """
+    Test if generated spec is equivalent to original spec using Verus verification.
+    
+    Returns:
+        Dict with 'equivalent', 'pre_equiv', 'post_equiv' boolean results
+    """
+    check_code = generate_equiv_check_code(param_types, original_spec, generated_spec)
+    
+    if verbose >= 2:
+        print("=== Generated equivalence check code ===")
+        print(check_code)
+    
+    result = run_verus(check_code)
+    verified = result["success"]
+    
+    if verbose >= 1:
+        print(f"stdout: {result['stdout']}")
+        print(f"stderr: {result['stderr']}")
+    
+    return {
+        "equivalent": verified,
+        "pre_equiv": verified,
+        "post_equiv": verified,
+        "check_code": check_code,
+        "verus_output": result
+    }
+```
+
+#### Comparison: Template Equivalence vs Proxy Testing
+
+| Aspect | Template Equivalence | Proxy Testing |
+|--------|---------------------|---------------|
+| **Coverage** | Universal (all inputs) | Limited to test cases |
+| **Precision** | Exact semantic match | Approximate |
+| **False Positives** | None (if verified) | Possible |
+| **Complexity** | Requires template design | Simpler |
+| **Speed** | Slower (verification) | Faster |
+| **Use Case** | **Primary: Formal correctness** | Fallback for partial credit |
+
+### Alternative Evaluation: Positive/Negative Proxy Testing
+
+**Secondary Metric**: Test generated specs against positive and negative input/output pairs. Use as fallback when template equivalence fails.
 
 #### Method: Executable Proxy
 
@@ -57,7 +241,7 @@ Soundness:    Specs accept all positive proxies (no false negatives)
 Completeness: Specs reject all negative proxies (no false positives)
 ```
 
-#### Test Cases
+#### Proxy Test Cases
 
 | Proxy Type | Example | Expected |
 |------------|---------|----------|
@@ -65,13 +249,12 @@ Completeness: Specs reject all negative proxies (no false positives)
 | **Negative (bad input)** | `arr=[], i=0 → ret=?` | `requires` rejects |
 | **Negative (bad output)** | `arr=[1,2,3], i=1 → ret=99` | `ensures` rejects |
 
-### Evaluation Code
+#### Proxy Testing Code
+
 ```python
-def evaluate_task_a(input_code, generated_specs, original_code):
+def evaluate_proxy_testing(input_code, generated_specs, original_code):
     """
-    Evaluate Task A: Code → Specs
-    
-    Use positive/negative proxies to check spec quality.
+    Evaluate specs using positive/negative proxies (fallback method).
     """
     # Generate proxies from original code execution
     positive_proxies = generate_positive_proxies(original_code, num=50)
@@ -127,6 +310,46 @@ def specs_accept(specs, inp, out):
 def specs_reject(specs, inp, out):
     """Check if specs reject this (input, output) pair."""
     return not specs_accept(specs, inp, out)
+```
+
+### Combined Evaluation Strategy
+
+```python
+def evaluate_task_a(
+    original_code: str,
+    generated_specs: str,
+    original_specs: str,
+    param_types: str
+) -> Dict:
+    """
+    Evaluate Task A: Template equivalence (primary) + Proxy testing (fallback).
+    """
+    # Primary: Template-based equivalence (strong guarantee)
+    template_result = equiv_test_spec(original_specs, generated_specs, param_types)
+    
+    if template_result["equivalent"]:
+        return {
+            "score": 1.0,
+            "method": "template_equiv",
+            "confidence": "high",
+            "details": template_result
+        }
+    
+    # Fallback: Proxy testing (partial credit)
+    positive_proxies = generate_positive_proxies(original_code, num=50)
+    negative_proxies = generate_negative_proxies(original_code, num=50)
+    
+    soundness = sum(1 for p in positive_proxies if specs_accept(generated_specs, *p)) / len(positive_proxies)
+    completeness = sum(1 for p in negative_proxies if specs_reject(generated_specs, *p)) / len(negative_proxies)
+    
+    return {
+        "score": (soundness + completeness) / 2,
+        "method": "proxy_test",
+        "confidence": "medium",
+        "soundness": soundness,
+        "completeness": completeness,
+        "template_error": template_result.get("verus_output", {}).get("stderr")
+    }
 ```
 
 ---
@@ -424,7 +647,7 @@ def compute_metrics(results: list) -> dict:
 
 | Task | Input | Output | Evaluation | Correctness Guarantee |
 |------|-------|--------|------------|----------------------|
-| **A** | Code without specs | Just the specs | **Positive/negative proxy testing** | Specs accept valid, reject invalid behaviors |
+| **A** | Code without specs | Just the specs | **Template equivalence** (primary) + Proxy testing (fallback) | Specs provably equivalent to original |
 | **B** | Signature + specs | Full implementation | **Execute & compare outputs** | Same outputs as original for all test inputs |
 | **C** | Broken code | Fixed code | **Verify with Verus** | Code now passes verification |
 
