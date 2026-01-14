@@ -160,3 +160,4 @@ dataset_metadata.csv
 
 build_dataset.py
 extracted_verified_by_source/
+datasets/verification_results.json
