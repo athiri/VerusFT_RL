@@ -1,0 +1,15 @@
+{
+  "total_files": 3647,
+  "by_source": {
+    "betrfs": 12,
+    "human-eval": 15,
+    "ironkv": 3,
+    "mimalloc": 5,
+    "vericoding": 3533,
+    "verismo": 9,
+    "verus-tests": 14,
+    "vostd": 37,
+    "vstd": 19
+  },
+  "unmapped_files": 0
+}
