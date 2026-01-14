@@ -310,7 +310,7 @@ pub proof fn decommit_subset_of_pointsto(local: Local, sid: SegmentId)
 pub proof fn very_unready_range_okay_to_decommit(local: Local)
     requires
         local.wf_main(),
-        local.page_organization.popped.is_VeryUnready(),
+        local.page_organization.popped matches Popped::VeryUnready(..),
     ensures
         (match local.page_organization.popped {
             Popped::VeryUnready(segment_id, idx, count, _) => {

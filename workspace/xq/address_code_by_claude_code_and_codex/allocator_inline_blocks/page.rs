@@ -547,12 +547,12 @@ fn page_queue_of(page: PagePtr, Tracked(local): Tracked<&Local>) -> (res: (HeapP
             list_idx = local.page_organization.marked_unfull_is_in(page.page_id@);
             /*smallest_bin_fitting_size_size_of_bin(bin as int);
             assert(local.block_size(page.page_id@) == 
-                local.page_organization.pages[page.page_id@].page_header_kind.unwrap().get_Normal_1());
+                local.page_organization.pages[page.page_id@].page_header_kind.unwrap().arrow_Normal_1());
             assert(bin == smallest_bin_fitting_size(
                 local.block_size(page.page_id@)));
             assert(bin == smallest_bin_fitting_size(
                 size_of_bin());
-            assert(bin == local.page_organization.pages[page.page_id@].page_header_kind.unwrap().get_Normal_0());
+            assert(bin == local.page_organization.pages[page.page_id@].page_header_kind.unwrap().arrow_Normal_0());
             assert(local.page_organization.valid_used_page(page.page_id@, bin as int, list_idx));*/
         }
         const_facts();

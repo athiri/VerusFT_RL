@@ -21,7 +21,7 @@ use vstd::*;
 use vstd::cell::*;
 use vstd::atomic_ghost::*;
 use vstd::shared::Shared;
-use verus_state_machines_macros::*;
+use state_machines_macros::*;
 
 use crate::config::*;
 use crate::tokens::{Mim, PageId, ThreadId, SegmentId, HeapId, PageState, HeapState, SegmentState, TldId};
@@ -358,7 +358,7 @@ impl PageLocalAccess {
                         page_inner.zeroed_except_block_size()
                         /*&& (
                             && page_id.idx != 0 && (popped != Popped::Ready(page_id) &&
-                            !(popped.is_VeryUnready() && popped.get_VeryUnready_0() == page_id.segment_id && popped.get_VeryUnready_1() == page_id.idx))
+                            !(popped matches Popped::VeryUnready(..) && popped.arrow_VeryUnready_0() == page_id.segment_id && popped.arrow_VeryUnready_1() == page_id.idx))
                             ==> page_inner.xblock_size == 0
                         )*/
                     }
@@ -973,11 +973,11 @@ pub open spec fn page_organization_pages_match_data(
                               true,
                           _ => inner.xblock_size != 0
                       })
-                      &&& (!popped.is_SegmentCreating() ==> inner.xblock_size != 0)
+                      &&& ((!(popped matches Popped::SegmentCreating(..))) ==> inner.xblock_size != 0)
                     })
                     && (page_id.idx != 0 ==> page_data.offset == Some(0nat) ==> (
-                        (!(popped.is_Ready() && popped.get_Ready_0() == page_id) &&
-                            !(popped.is_VeryUnready() && popped.get_VeryUnready_0() == page_id.segment_id && popped.get_VeryUnready_1() == page_id.idx))
+                        (!(popped matches Popped::Ready(..) && popped.arrow_Ready_0() == page_id) &&
+                            !(popped matches Popped::VeryUnready(..) && popped.arrow_VeryUnready_0() == page_id.segment_id && popped.arrow_VeryUnready_1() == page_id.idx))
                           ==>
                         (page_data.is_used <==> inner.xblock_size != 0)
                     ))

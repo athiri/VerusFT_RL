@@ -331,7 +331,7 @@ fn free_block_mt(page: PagePtr, ptr: *mut u8, Tracked(perm): Tracked<PointsToRaw
             common_preserves(*old(local), *local),
 
             //*page == 
-            //    dealloc.mim_block.value().page_shared_access.points_to@.value.get_Some_0(),
+            //    dealloc.mim_block.value().page_shared_access.points_to@.value.arrow_Some_0(),
         //ensures
         //    use_delayed ==> (match delay_actor_token_opt {
         //        None => false,

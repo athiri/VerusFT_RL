@@ -1,0 +1,12 @@
+[package]
+name = "test_single"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vstd = "=0.0.0-2025-12-28-0056"
+state_machines_macros = { package = "verus_state_machines_macros", version = "=0.0.0-2025-11-23-0053" }
+libc = "0.2"
+
+[package.metadata.verus]
+verify = true

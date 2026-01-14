@@ -16,7 +16,7 @@ mod page_organization{
 
 use vstd::prelude::*;
 use vstd::*;
-use verus_state_machines_macros::*;
+use state_machines_macros::*;
 
 use crate::tokens::{PageId, SegmentId, TldId};
 use crate::config::*;
@@ -34,7 +34,6 @@ pub ghost struct DlistEntry {
     pub next: Option<PageId>,
 }
 
-#[is_variant]
 pub ghost enum PageHeaderKind {
     Normal(int, int),
 }
@@ -54,7 +53,6 @@ pub ghost struct SegmentData {
     pub used: int,
 }
 
-#[is_variant]
 pub ghost enum Popped {
     No,
     Ready(PageId, bool),            // set up the offsets   (all pages have offsets set)
@@ -490,7 +488,7 @@ state_machine!{ PageOrg {
     }
 
     pub proof fn first_is_in(&self, sbin_idx: int)
-        requires self.invariant(), self.popped.is_No(),
+        requires self.invariant(), self.popped matches Popped::No,
             0 <= sbin_idx <= SEGMENT_BIN_MAX,
         ensures
             match self.unused_dlist_headers[sbin_idx].first {
@@ -508,7 +506,7 @@ state_machine!{ PageOrg {
     }
 
     pub proof fn next_is_in(&self, page_id: PageId, sbin_idx: int, list_idx: int)
-        requires self.invariant(), self.popped.is_No(),
+        requires self.invariant(), self.popped matches Popped::No,
             self.valid_unused_page(page_id, sbin_idx, list_idx)
         ensures
             match self.pages[page_id].dlist_entry.unwrap().next {
@@ -528,8 +526,8 @@ state_machine!{ PageOrg {
 
     pub proof fn segment_freeing_is_in(&self) -> (list_idx: int)
         requires self.invariant(),
-            self.popped.is_SegmentFreeing(),
-            self.popped.get_SegmentFreeing_1() < SLICES_PER_SEGMENT,
+            self.popped matches Popped::SegmentFreeing(..),
+            self.popped.arrow_SegmentFreeing_1() < SLICES_PER_SEGMENT,
         ensures (match self.popped {
             Popped::SegmentFreeing(segment_id, idx) => { idx >= 0 && {
                 let page_id = PageId { segment_id, idx: idx as nat };
@@ -555,7 +553,7 @@ state_machine!{ PageOrg {
     pub proof fn marked_full_is_in(&self, page_id: PageId) -> (list_idx: int)
         requires self.invariant(),
             self.pages.dom().contains(page_id),
-            self.popped.is_No(),
+            self.popped matches Popped::No,
             self.pages[page_id].offset == Some(0nat),
             self.pages[page_id].full != Some(false),
             self.pages[page_id].is_used,
@@ -591,7 +589,7 @@ state_machine!{ PageOrg {
     pub proof fn marked_unfull_is_in(&self, page_id: PageId) -> (list_idx: int)
         requires self.invariant(),
             self.pages.dom().contains(page_id),
-            self.popped.is_No(),
+            self.popped matches Popped::No,
             self.pages[page_id].offset == Some(0nat),
             self.pages[page_id].full != Some(true),
             self.pages[page_id].is_used,
@@ -637,7 +635,7 @@ state_machine!{ PageOrg {
     proof fn unused_is_in_sbin(&self, page_id: PageId)
         requires self.invariant(),
             self.pages.dom().contains(page_id),
-            self.popped.is_VeryUnready() || self.popped.is_SegmentFreeing(),
+            self.popped matches Popped::VeryUnready(..) || self.popped matches Popped::SegmentFreeing(..),
             self.pages[page_id].offset == Some(0nat),
             !self.pages[page_id].is_used,
             page_id.idx != 0,
@@ -666,20 +664,20 @@ state_machine!{ PageOrg {
     }
 
     pub proof fn get_count_bound_very_unready(&self)
-        requires self.invariant(), self.popped.is_VeryUnready(),
+        requires self.invariant(), self.popped matches Popped::VeryUnready(..),
         ensures
-            0 < self.popped.get_VeryUnready_1(),
-            self.popped.get_VeryUnready_1() + 
-                self.popped.get_VeryUnready_2() <= SLICES_PER_SEGMENT,
+            0 < self.popped.arrow_VeryUnready_1(),
+            self.popped.arrow_VeryUnready_1() + 
+                self.popped.arrow_VeryUnready_2() <= SLICES_PER_SEGMENT,
     {
     }
 
     pub proof fn lemma_range_disjoint_very_unready(&self, page_id: PageId)
-        requires self.invariant(), self.popped.is_VeryUnready(),
+        requires self.invariant(), self.popped matches Popped::VeryUnready(..),
             self.pages.dom().contains(page_id),
             self.pages[page_id].offset == Some(0nat),
             self.pages[page_id].is_used,
-            page_id.segment_id == self.popped.get_VeryUnready_0(),
+            page_id.segment_id == self.popped.arrow_VeryUnready_0(),
         ensures
             match self.popped {
                 Popped::VeryUnready(_, idx, p_count, _) => {
@@ -714,9 +712,9 @@ state_machine!{ PageOrg {
                 _ => false,
             }
     {
-        if self.popped.is_Used() && self.popped.get_Used_0() == page_id1 {
+        if self.popped matches Popped::Used(..) && self.popped.arrow_Used_0() == page_id1 {
             self.lemma_range_used(page_id2);
-        } else if self.popped.is_Used() && self.popped.get_Used_0() == page_id2 {
+        } else if self.popped matches Popped::Used(..) && self.popped.arrow_Used_0() == page_id2 {
             self.lemma_range_used(page_id1);
         } else {
             self.lemma_range_used(page_id1);
@@ -746,7 +744,7 @@ state_machine!{ PageOrg {
             self.pages[slice_id].is_used,
             self.pages[slice_id].offset == Some((slice_id.idx - page_id.idx) as nat)
     {
-        if self.popped.is_Used() && self.popped.get_Used_0() == page_id {
+        if self.popped matches Popped::Used(..) && self.popped.arrow_Used_0() == page_id {
         } else {
             self.lemma_range_used(page_id);
         }
@@ -760,7 +758,7 @@ state_machine!{ PageOrg {
                 Some(count) => page_id.idx + count <= SLICES_PER_SEGMENT
             }),
     {
-        if self.popped.is_Ready() && self.popped.get_Ready_0() == page_id {
+        if self.popped matches Popped::Ready(..) && self.popped.arrow_Ready_0() == page_id {
             return;
         }
         match self.pages[page_id].count {
@@ -806,7 +804,7 @@ state_machine!{ PageOrg {
     }
 
     pub proof fn used_first_is_in(&self, bin_idx: int)
-        requires self.invariant(), !self.popped.is_Ready(),
+        requires self.invariant(), !self.popped matches Popped::Ready(..),
             0 <= bin_idx <= BIN_HUGE,
         ensures
             match self.used_dlist_headers[bin_idx].first {
@@ -851,7 +849,7 @@ state_machine!{ PageOrg {
                 }
                 _ => false,
             },
-            self.attached_rec(self.popped.get_VeryUnready_0(), idx, sp),
+            self.attached_rec(self.popped.arrow_VeryUnready_0(), idx, sp),
             !sp ==>
                 idx >= Self::page_id_of_popped(self.popped).idx + self.popped_len(),
             idx >= 0,
@@ -869,7 +867,7 @@ state_machine!{ PageOrg {
         decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = self.popped.get_VeryUnready_0();
+        let segment_id = self.popped.arrow_VeryUnready_0();
         if idx == SLICES_PER_SEGMENT {
             assert(!sp);
         } else if idx > SLICES_PER_SEGMENT {
@@ -900,7 +898,7 @@ state_machine!{ PageOrg {
                 _ => false,
             }
     {
-        let segment_id = self.popped.get_VeryUnready_0();
+        let segment_id = self.popped.arrow_VeryUnready_0();
         self.rec_valid_page_after(
             self.pages[PageId { segment_id, idx: 0 }].count.unwrap() as int, true);
     }
@@ -913,7 +911,7 @@ state_machine!{ PageOrg {
                 }
                 _ => false,
             },
-            self.attached_rec(self.popped.get_VeryUnready_0(), idx, sp),
+            self.attached_rec(self.popped.arrow_VeryUnready_0(), idx, sp),
             !sp ==>
                 idx >= Self::page_id_of_popped(self.popped).idx + self.popped_len(),
             idx >= 0,
@@ -938,7 +936,7 @@ state_machine!{ PageOrg {
         decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = self.popped.get_VeryUnready_0();
+        let segment_id = self.popped.arrow_VeryUnready_0();
         if idx == SLICES_PER_SEGMENT {
             assert(!sp);
         } else if idx > SLICES_PER_SEGMENT {
@@ -975,7 +973,7 @@ state_machine!{ PageOrg {
                 _ => false,
             }
     {
-        let segment_id = self.popped.get_VeryUnready_0();
+        let segment_id = self.popped.arrow_VeryUnready_0();
         self.rec_valid_page_before(
             self.pages[PageId { segment_id, idx: 0 }].count.unwrap() as int, true);
     }
@@ -2118,7 +2116,7 @@ state_machine!{ PageOrg {
 
         let segment_id = page_id.segment_id;
         Self::attached_ranges_except(pre, post, segment_id);
-        if pre.popped.is_No() {
+        if pre.popped matches Popped::No {
             assert(post.good_range0(segment_id));
             Self::rec_take_page_from_unused_queue(pre, post, page_id, sbin_idx, list_idx,
                 pre.pages[PageId { segment_id, idx: 0 }].count.unwrap() as int);
@@ -2148,10 +2146,10 @@ state_machine!{ PageOrg {
             assert(post.attached_rec(segment_id,
                 page_id.idx + pre.pages[page_id].count.unwrap() as int,
                 false));
-            /*assert(post.popped.get_SegmentFreeing_0() == segment_id);
-            assert(post.popped.get_SegmentFreeing_1() == 
+            /*assert(post.popped.arrow_SegmentFreeing_0() == segment_id);
+            assert(post.popped.arrow_SegmentFreeing_1() == 
                 page_id.idx + pre.pages[page_id].count.unwrap() as int);
-            assert(post.popped.get_SegmentFreeing_1() > 0);
+            assert(post.popped.arrow_SegmentFreeing_1() > 0);
             assert(post.attached_ranges());*/
         }
     }
@@ -2201,7 +2199,7 @@ state_machine!{ PageOrg {
       requires pre.invariant(),
           State::take_page_from_unused_queue_strong(pre, post, pid, sbin_idx, list_idx),
           pre.attached_rec(pid.segment_id, idx, false),
-          pre.popped.is_No(),
+          pre.popped matches Popped::No,
           idx >= 0,
           pid.idx < SLICES_PER_SEGMENT,
       ensures
@@ -2222,11 +2220,11 @@ state_machine!{ PageOrg {
         } else {
             Self::rec_take_page_from_unused_queue(pre, post, pid, sbin_idx, list_idx, idx + pre.pages[page_id].count.unwrap());
             pre.lemma_range_not_used(pid);
-            //assert(post.popped.is_Popped());
-            //assert(post.popped.get_Popped_0() == pid);
-            //assert(!(post.popped.get_Popped_0().segment_id == pid.segment_id && post.popped.get_Popped_0().idx == idx));
-            //assert(!(post.popped.get_Popped_0().segment_id == page_id.segment_id && post.popped.get_Popped_0().idx == page_id.idx));
-            //assert(post.popped.get_Popped_0() != page_id);
+            //assert(post.popped matches Popped::Popped(..));
+            //assert(post.popped.arrow_Popped_0() == pid);
+            //assert(!(post.popped.arrow_Popped_0().segment_id == pid.segment_id && post.popped.arrow_Popped_0().idx == idx));
+            //assert(!(post.popped.arrow_Popped_0().segment_id == page_id.segment_id && post.popped.arrow_Popped_0().idx == page_id.idx));
+            //assert(post.popped.arrow_Popped_0() != page_id);
             //pre.good_range_disjoint_two(page_id, pid);
             //assert(pre.good_range_unused(page_id));
             //assert(post.good_range_unused(page_id));
@@ -2234,7 +2232,7 @@ state_machine!{ PageOrg {
             /*assert(pre.good_range_unused(page_id));
             pre.good_range_disjoint_very_unready(page_id);
             assert(post.good_range_unused(page_id));
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, false));*/
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, false));*/
         }
     }
 
@@ -2350,7 +2348,7 @@ state_machine!{ PageOrg {
         }
 
         assert(post.attached_ranges()) by {
-            let segment_id = pre.popped.get_VeryUnready_0();
+            let segment_id = pre.popped.arrow_VeryUnready_0();
             Self::attached_ranges_except(pre, post, segment_id);
             assert(post.good_range0(segment_id));
             Self::rec_split_page(pre, post, page_id, current_count, target_count, sbin_idx, 
@@ -2361,26 +2359,26 @@ state_machine!{ PageOrg {
     pub proof fn rec_split_page(pre: Self, post: Self, pid: PageId, current_count: int, target_count: int, sbin_idx: int, idx: int, sp: bool)
       requires pre.invariant(),
           State::split_page_strong(pre, post, pid, current_count, target_count, sbin_idx),
-          pre.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp)
+          pre.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp)
       ensures
-          post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp)
+          post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp)
       decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = pre.popped.get_VeryUnready_0();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
         let page_id = PageId { segment_id, idx: idx as nat };
         if idx == SLICES_PER_SEGMENT {
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
         } else if idx > SLICES_PER_SEGMENT {
             assert(false);
         } else if Self::is_the_popped(segment_id, idx, pre.popped) {
             Self::rec_split_page(pre, post, pid, current_count, target_count, sbin_idx, idx + pre.popped_len(), false);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx + post.popped_len(), false));
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx + post.popped_len(), false));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
         } else {
             Self::rec_split_page(pre, post, pid, current_count, target_count, sbin_idx, idx + pre.pages[page_id].count.unwrap(), sp);
             pre.good_range_disjoint_very_unready(page_id);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
         }
     }
 
@@ -2390,7 +2388,7 @@ state_machine!{ PageOrg {
         Self::ucount_preserve_all(pre, post);
         Self::unchanged_used_ll(pre, post);
         Self::unchanged_unused_ll(pre, post);
-        //let page_id = pre.popped.get_Popped_0();
+        //let page_id = pre.popped.arrow_Popped_0();
         /*assert forall |pid: PageId|
                     pid.segment_id == page_id.segment_id
                       && page_id.idx <= pid.idx < page_id.idx + post.pages[page_id].count.unwrap()
@@ -2414,7 +2412,7 @@ state_machine!{ PageOrg {
   
     #[inductive(set_range_to_used)]
     fn set_range_to_used_inductive(pre: Self, post: Self, page_header_kind: PageHeaderKind) {
-        let page_id = post.popped.get_Used_0();
+        let page_id = post.popped.arrow_Used_0();
         let segment_id = page_id.segment_id;
         Self::unchanged_used_ll(pre, post);
         Self::unchanged_unused_ll(pre, post);
@@ -2436,7 +2434,7 @@ state_machine!{ PageOrg {
 
     #[inductive(set_range_to_not_used)]
     fn set_range_to_not_used_inductive(pre: Self, post: Self) {
-        let page_id = pre.popped.get_Used_0();
+        let page_id = pre.popped.arrow_Used_0();
         let segment_id = page_id.segment_id;
 
         Self::unchanged_used_ll(pre, post);
@@ -2463,7 +2461,7 @@ state_machine!{ PageOrg {
         Self::ucount_preserve_all(pre, post);
         Self::unchanged_unused_ll(pre, post);
 
-        let page_id = pre.popped.get_Used_0();
+        let page_id = pre.popped.arrow_Used_0();
         let segment_id = page_id.segment_id;
         let queue_first_page_id = pre.used_dlist_headers[bin_idx].first;
 
@@ -2544,13 +2542,13 @@ state_machine!{ PageOrg {
       requires pre.invariant(),
           State::into_used_list_strong(pre, post, bin_idx)
             || State::into_used_list_back_strong(pre, post, bin_idx),
-          pre.attached_rec(pre.popped.get_Used_0().segment_id, idx, sp)
+          pre.attached_rec(pre.popped.arrow_Used_0().segment_id, idx, sp)
       ensures
-          post.attached_rec(pre.popped.get_Used_0().segment_id, idx, false)
+          post.attached_rec(pre.popped.arrow_Used_0().segment_id, idx, false)
       decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = pre.popped.get_Used_0().segment_id;
+        let segment_id = pre.popped.arrow_Used_0().segment_id;
         let page_id = PageId { segment_id, idx: idx as nat };
         if idx == SLICES_PER_SEGMENT {
             assert(post.attached_rec(segment_id, idx, false));
@@ -2586,7 +2584,7 @@ state_machine!{ PageOrg {
    
     #[inductive(forget_about_first_page)]
     fn forget_about_first_page_inductive(pre: Self, post: Self, count: int) {
-        let segment_id = pre.popped.get_SegmentCreating_0();
+        let segment_id = pre.popped.arrow_SegmentCreating_0();
         let page_id = PageId { segment_id, idx: count as nat };
         assert(post.good_range_very_unready(page_id));
         assert(post.popped_basics());
@@ -2629,9 +2627,9 @@ state_machine!{ PageOrg {
     #[verifier::spinoff_prover]
     #[inductive(free_to_unused_queue)]
     fn free_to_unused_queue_inductive(pre: Self, post: Self, sbin_idx: int) {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let start = pre.popped.get_VeryUnready_1();
-        let count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let start = pre.popped.arrow_VeryUnready_1();
+        let count = pre.popped.arrow_VeryUnready_2();
         let first_page = PageId { segment_id, idx: start as nat };
         let last_page = PageId { segment_id, idx: (first_page.idx + count - 1) as nat };
         let queue_first_page_id = pre.unused_dlist_headers[sbin_idx].first;
@@ -2698,16 +2696,16 @@ state_machine!{ PageOrg {
     pub proof fn rec_free_to_unused_queue(pre: Self, post: Self, sbin_idx: int, idx: int, sp: bool)
       requires pre.invariant(),
           State::free_to_unused_queue_strong(pre, post, sbin_idx),
-          pre.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp)
+          pre.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp)
       ensures
-          post.attached_rec(pre.popped.get_VeryUnready_0(), idx, false)
+          post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, false)
       decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = pre.popped.get_VeryUnready_0();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
         let page_id = PageId { segment_id, idx: idx as nat };
         if idx == SLICES_PER_SEGMENT {
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, false));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, false));
         } else if idx > SLICES_PER_SEGMENT {
             assert(false);
         } else if Self::is_the_popped(segment_id, idx, pre.popped) {
@@ -2739,11 +2737,11 @@ state_machine!{ PageOrg {
                 }
             }
             assert(post.good_range_unused(page_id));*/
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, false));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, false));
         } else {
             Self::rec_free_to_unused_queue(pre, post, sbin_idx, idx + pre.pages[page_id].count.unwrap(), sp);
             pre.good_range_disjoint_very_unready(page_id);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, false));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, false));
         }
     }
 
@@ -2938,9 +2936,9 @@ state_machine!{ PageOrg {
     #[inductive(merge_with_after)]
     #[verifier::spinoff_prover]
     fn merge_with_after_inductive(pre: Self, post: Self) {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
-        let cur_count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
+        let cur_count = pre.popped.arrow_VeryUnready_2();
         let cur_id = PageId { segment_id, idx: cur_start as nat };
         let page_id = PageId { segment_id, idx: (cur_start + cur_count) as nat };
         pre.lemma_range_not_used(page_id);
@@ -2948,7 +2946,7 @@ state_machine!{ PageOrg {
         Self::ucount_preserve_all(pre, post);
         Self::unchanged_used_ll(pre, post);
 
-        let count = post.popped.get_VeryUnready_2();
+        let count = post.popped.arrow_VeryUnready_2();
         /*assert(count == cur_count + pre.pages[page_id].count.unwrap());
         assert forall |pid: PageId|
               pid.segment_id == cur_id.segment_id
@@ -3020,9 +3018,9 @@ state_machine!{ PageOrg {
         ensures
             post.ll_inv_valid_unused()
     {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
-        let cur_count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
+        let cur_count = pre.popped.arrow_VeryUnready_2();
         let page_id = PageId { segment_id, idx: (cur_start + cur_count) as nat };
         pre.lemma_range_not_used(page_id);
         let n_count = pre.pages[page_id].count.unwrap();
@@ -3127,20 +3125,20 @@ state_machine!{ PageOrg {
 
     pub proof fn sp_true_implies_le(&self, idx: int)
       requires self.invariant(),
-          self.popped.is_VeryUnready(),
-          self.attached_rec(self.popped.get_VeryUnready_0(), idx, true),
+          self.popped matches Popped::VeryUnready(..),
+          self.attached_rec(self.popped.arrow_VeryUnready_0(), idx, true),
           idx >= 0,
       ensures
-          idx <= self.popped.get_VeryUnready_1()
+          idx <= self.popped.arrow_VeryUnready_1()
       decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = self.popped.get_VeryUnready_0();
+        let segment_id = self.popped.arrow_VeryUnready_0();
         if idx == SLICES_PER_SEGMENT {
         } else if idx > SLICES_PER_SEGMENT {
         } else if Self::is_the_popped(segment_id, idx, self.popped) {
         } else {
-            if idx > self.popped.get_VeryUnready_1() {
+            if idx > self.popped.arrow_VeryUnready_1() {
                 let page_id = PageId { segment_id, idx: idx as nat };
                 /*assert(self.pages[page_id].count.unwrap() > 0);
                 assert(idx + self.pages[page_id].count.unwrap()
@@ -3155,18 +3153,18 @@ state_machine!{ PageOrg {
     pub proof fn rec_merge_with_after(pre: Self, post: Self, idx: int, sp: bool)
       requires pre.invariant(),
           State::merge_with_after_strong(pre, post),
-          pre.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp),
+          pre.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp),
           idx >= 0,
-          //sp ==> idx <= pre.popped.get_VeryUnready_1(),
-          !sp ==> idx >= pre.popped.get_VeryUnready_1() + post.popped_len(),
+          //sp ==> idx <= pre.popped.arrow_VeryUnready_1(),
+          !sp ==> idx >= pre.popped.arrow_VeryUnready_1() + post.popped_len(),
       ensures
-          post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp)
+          post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp)
       decreases SLICES_PER_SEGMENT - idx
     {
         reveal(State::attached_rec);
-        let segment_id = pre.popped.get_VeryUnready_0();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
         let page_id = PageId { segment_id, idx: idx as nat };
-        let pidx = pre.popped.get_VeryUnready_1() + pre.popped.get_VeryUnready_2();
+        let pidx = pre.popped.arrow_VeryUnready_1() + pre.popped.arrow_VeryUnready_2();
         if idx == SLICES_PER_SEGMENT {
             assert(post.attached_rec(segment_id, idx, sp));
         } else if idx > SLICES_PER_SEGMENT {
@@ -3174,7 +3172,7 @@ state_machine!{ PageOrg {
         } else if Self::is_the_popped(segment_id, idx, post.popped) {
             assert(pre.attached_rec(segment_id, idx + pre.popped_len(), false));
             Self::rec_merge_with_after(pre, post, idx + post.popped_len(), false);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
         } else {
             if sp {
                 pre.sp_true_implies_le(idx);
@@ -3185,7 +3183,7 @@ state_machine!{ PageOrg {
             assert(pid.idx + c <= idx || idx + pre.pages[page_id].count.unwrap() <= pid.idx);
             pre.lemma_range_not_used(pid);
             Self::rec_merge_with_after(pre, post, idx + pre.pages[page_id].count.unwrap(), sp);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
         }
     }
 
@@ -3193,18 +3191,18 @@ state_machine!{ PageOrg {
     pub proof fn rec_merge_with_before(pre: Self, post: Self, idx: int, sp: bool)
       requires pre.invariant(),
           State::merge_with_before_strong(pre, post),
-          pre.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp),
+          pre.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp),
           idx >= 0,
-          //sp ==> idx <= pre.popped.get_VeryUnready_1(),
-          idx != pre.popped.get_VeryUnready_1(),
-          !sp ==> idx >= pre.popped.get_VeryUnready_1() + pre.popped_len(),
+          //sp ==> idx <= pre.popped.arrow_VeryUnready_1(),
+          idx != pre.popped.arrow_VeryUnready_1(),
+          !sp ==> idx >= pre.popped.arrow_VeryUnready_1() + pre.popped_len(),
       ensures
-          post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp)
+          post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp)
       decreases SLICES_PER_SEGMENT - idx
     {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
-        let cur_count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
+        let cur_count = pre.popped.arrow_VeryUnready_2();
         let last_id = PageId { segment_id, idx: (cur_start - 1) as nat };
         let offset = pre.pages[last_id].offset.unwrap();
         let first_id = PageId { segment_id, idx: (last_id.idx - offset) as nat };
@@ -3212,9 +3210,9 @@ state_machine!{ PageOrg {
         pre.get_stuff_before();
 
         reveal(State::attached_rec);
-        let segment_id = pre.popped.get_VeryUnready_0();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
         let page_id = PageId { segment_id, idx: idx as nat };
-        let pidx = pre.popped.get_VeryUnready_1() + pre.popped.get_VeryUnready_2();
+        let pidx = pre.popped.arrow_VeryUnready_1() + pre.popped.arrow_VeryUnready_2();
         if idx == SLICES_PER_SEGMENT {
             assert(post.attached_rec(segment_id, idx, sp));
         } else if idx > SLICES_PER_SEGMENT {
@@ -3222,9 +3220,9 @@ state_machine!{ PageOrg {
         } else if Self::is_the_popped(segment_id, idx, pre.popped) {
             assert(false);
         } else {
-            if idx + pre.pages[page_id].count.unwrap() == pre.popped.get_VeryUnready_1() {
+            if idx + pre.pages[page_id].count.unwrap() == pre.popped.arrow_VeryUnready_1() {
                 assert(pre.attached_rec(segment_id, idx + pre.pages[page_id].count.unwrap(), sp));
-                Self::rec_merge_with_before(pre, post, pre.popped.get_VeryUnready_1() + pre.popped_len(), false);
+                Self::rec_merge_with_before(pre, post, pre.popped.arrow_VeryUnready_1() + pre.popped_len(), false);
                 assert(post.attached_rec(segment_id, idx, sp));
             } else {
                 Self::rec_merge_with_before(pre, post, idx + pre.pages[page_id].count.unwrap(), sp);
@@ -3245,7 +3243,7 @@ state_machine!{ PageOrg {
             assert(pid.idx + c <= idx || idx + pre.pages[page_id].count.unwrap() <= pid.idx);
             pre.lemma_range_not_used(pid);
             Self::rec_merge_with_after(pre, post, idx + pre.pages[page_id].count.unwrap(), sp);
-            assert(post.attached_rec(pre.popped.get_VeryUnready_0(), idx, sp));
+            assert(post.attached_rec(pre.popped.arrow_VeryUnready_0(), idx, sp));
             */
         }
     }
@@ -3259,9 +3257,9 @@ state_machine!{ PageOrg {
           post.pages[page_id].offset.is_none(),
           State::merge_with_after_strong(pre, post),
           ({
-              let segment_id = pre.popped.get_VeryUnready_0();
-              let cur_start = pre.popped.get_VeryUnready_1();
-              let cur_count = pre.popped.get_VeryUnready_2();
+              let segment_id = pre.popped.arrow_VeryUnready_0();
+              let cur_start = pre.popped.arrow_VeryUnready_1();
+              let cur_count = pre.popped.arrow_VeryUnready_2();
               let cur_id = PageId { segment_id, idx: cur_start as nat };
               let n_count = pre.pages[page_id].count.unwrap();
               page_id == PageId { segment_id, idx: (cur_start + cur_count) as nat }
@@ -3305,9 +3303,9 @@ state_machine!{ PageOrg {
           post.pages[page_id].offset.is_none(),
           State::merge_with_before_strong(pre, post),
           ({
-              let segment_id = pre.popped.get_VeryUnready_0();
-              let cur_start = pre.popped.get_VeryUnready_1();
-              let cur_count = pre.popped.get_VeryUnready_2();
+              let segment_id = pre.popped.arrow_VeryUnready_0();
+              let cur_start = pre.popped.arrow_VeryUnready_1();
+              let cur_count = pre.popped.arrow_VeryUnready_2();
               let last_id = PageId { segment_id, idx: (cur_start - 1) as nat };
               let offset = pre.pages[last_id].offset.unwrap();
               let p_count = pre.pages[page_id].count.unwrap();
@@ -3349,9 +3347,9 @@ state_machine!{ PageOrg {
     #[inductive(merge_with_before)]
     #[verifier::spinoff_prover]
     fn merge_with_before_inductive(pre: Self, post: Self) {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
-        let cur_count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
+        let cur_count = pre.popped.arrow_VeryUnready_2();
         let last_id = PageId { segment_id, idx: (cur_start - 1) as nat };
         let offset = pre.pages[last_id].offset.unwrap();
         let page_id = PageId { segment_id, idx: (last_id.idx - offset) as nat };
@@ -3397,8 +3395,8 @@ state_machine!{ PageOrg {
         ensures
             post.ll_inv_valid_unused()
     {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
         let last_id = PageId { segment_id, idx: (cur_start - 1) as nat };
         let offset = pre.pages[last_id].offset.unwrap();
         let page_id = PageId { segment_id, idx: (last_id.idx - offset) as nat };
@@ -3509,9 +3507,9 @@ state_machine!{ PageOrg {
           State::merge_with_before_strong(pre, post),
         ensures post.attached_ranges()
     {
-        let segment_id = pre.popped.get_VeryUnready_0();
-        let cur_start = pre.popped.get_VeryUnready_1();
-        let cur_count = pre.popped.get_VeryUnready_2();
+        let segment_id = pre.popped.arrow_VeryUnready_0();
+        let cur_start = pre.popped.arrow_VeryUnready_1();
+        let cur_count = pre.popped.arrow_VeryUnready_2();
         let last_id = PageId { segment_id, idx: (cur_start - 1) as nat };
         let offset = pre.pages[last_id].offset.unwrap();
         let page_id = PageId { segment_id, idx: (last_id.idx - offset) as nat };
@@ -3551,7 +3549,7 @@ state_machine!{ PageOrg {
     fn segment_freeing_finish_inductive(pre: Self, post: Self) {
         Self::ucount_preserve_all(pre, post);
         Self::unchanged_used_ll(pre, post);
-        let segment_id = pre.popped.get_SegmentFreeing_0();
+        let segment_id = pre.popped.arrow_SegmentFreeing_0();
         Self::attached_ranges_except(pre, post, segment_id);
         assert(post.ll_inv_exists_in_some_list()) by {
             reveal(State::ll_inv_exists_in_some_list);
@@ -3574,7 +3572,7 @@ state_machine!{ PageOrg {
         Self::ucount_preserve_all(pre, post);
         Self::unchanged_unused_ll(pre, post);
 
-        let page_id = pre.popped.get_Used_0();
+        let page_id = pre.popped.arrow_Used_0();
         let segment_id = page_id.segment_id;
         let queue_last_page_id = pre.used_dlist_headers[bin_idx].last;
 
@@ -3859,7 +3857,7 @@ state_machine!{ PageOrg {
         requires self.invariant(),
             0 <= i < self.unused_lists.len(),
         ensures
-            (self.popped.is_Ready())
+            (self.popped matches Popped::Ready(..))
               ==>
                 self.unused_dlist_headers[i].first != Some(self.popped_page_id())
                 && self.unused_dlist_headers[i].last != Some(self.popped_page_id()),
@@ -3877,7 +3875,7 @@ state_machine!{ PageOrg {
             }),
     {
         assert(valid_ll(self.pages, self.unused_dlist_headers[i], self.unused_lists[i]));
-        if self.popped.is_Ready() {
+        if self.popped matches Popped::Ready(..) {
             assert(self.unused_dlist_headers[i].first != Some(self.popped_page_id()));
             assert(self.unused_dlist_headers[i].last != Some(self.popped_page_id()));
         }
@@ -3905,7 +3903,7 @@ state_machine!{ PageOrg {
         requires self.invariant(),
             0 <= i < self.used_lists.len(),
         ensures
-            (self.popped.is_Ready())
+            (self.popped matches Popped::Ready(..))
               ==>
                 self.used_dlist_headers[i].first != Some(self.popped_page_id())
                 && self.used_dlist_headers[i].last != Some(self.popped_page_id()),
@@ -3934,17 +3932,17 @@ state_machine!{ PageOrg {
     /*pub proof fn lemma_range_not_header(&self, page_id: PageId, next_id: PageId)
         requires
             self.invariant(),
-            self.popped.is_VeryUnready(),
+            self.popped matches Popped::VeryUnready(..),
             page_id.segment_id == next_id.segment_id,
             self.pages.dom().contains(page_id),
-            page_id.idx == self.popped.get_VeryUnready_1(),
+            page_id.idx == self.popped.arrow_VeryUnready_1(),
             next_id.segment_id == page_id.segment_id,
-            page_id.idx < next_id.idx < page_id.idx + self.popped.get_VeryUnready_2(),
+            page_id.idx < next_id.idx < page_id.idx + self.popped.arrow_VeryUnready_2(),
         ensures
             self.pages[next_id].offset != Some(0nat)
     {
-        if page_id.segment_id == self.popped.get_VeryUnready_0()
-            && page_id.idx == self.popped.get_VeryUnready_1()
+        if page_id.segment_id == self.popped.arrow_VeryUnready_0()
+            && page_id.idx == self.popped.arrow_VeryUnready_1()
         {
             assert(self.pages[next_id].offset != Some(0nat));
         } else if page_id.idx == 0 {
@@ -4216,7 +4214,7 @@ state_machine!{ PageOrg {
 
     /*
     pub proof fn lemma_range_not_used_very_unready(&self)
-        requires self.invariant(), self.popped.is_VeryUnready(),
+        requires self.invariant(), self.popped matches Popped::VeryUnready(..),
         ensures match self.popped {
             Popped::VeryUnready(segment_id, start, count, _) => {
                 (forall |pid| #![trigger self.pages.dom().contains(pid)]
@@ -4237,7 +4235,7 @@ state_machine!{ PageOrg {
         &&& self.pages.dom().contains(page_id)
         &&& self.pages[page_id].offset.is_none()
         &&& self.pages[page_id].count.is_none()
-        &&& ({ let count = self.popped.get_VeryUnready_2();
+        &&& ({ let count = self.popped.arrow_VeryUnready_2();
             page_id.idx + count <= SLICES_PER_SEGMENT
             && (forall |pid| #![trigger self.pages.dom().contains(pid)]
                 #![trigger self.pages.index(pid)]
@@ -4602,9 +4600,9 @@ state_machine!{ PageOrg {
         requires
           pre.invariant(),
           Self::popped_ranges_match(pre, post),
-          !pre.popped.is_SegmentFreeing(),
-          !pre.popped.is_SegmentCreating(),
-          !post.popped.is_SegmentFreeing(),
+          !pre.popped matches Popped::SegmentFreeing(..),
+          !pre.popped matches Popped::SegmentCreating(..),
+          !post.popped matches Popped::SegmentFreeing(..),
           pre.segments.dom() =~= post.segments.dom(),
           match post.popped {
               Popped::VeryUnready(_, i, _, _) => i >= 0,
@@ -4720,7 +4718,7 @@ state_machine!{ PageOrg {
               | Popped::Used(page_id, _) => page_id.segment_id,
             };*/
 
-            /*if pre.popped.is_VeryUnready() {
+            /*if pre.popped matches Popped::VeryUnready(..) {
                 if pre.pages[page_id].is_used {
                     assert(pre.good_range_used(page_id));
 

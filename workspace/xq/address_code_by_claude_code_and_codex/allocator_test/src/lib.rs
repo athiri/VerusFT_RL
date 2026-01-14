@@ -2754,7 +2754,7 @@ pub tracked struct Local {
     // (used pages are in the token system)
     pub tracked unused_pages: Map<PageId, PageSharedAccess>,
 
-    pub ghost page_organization: PageOrg::State,
+    pub ghost page_organization: crate::page_organization::PageOrg::State,
 
     pub tracked page_empty_global: Shared<PageFullAccess>,
 }
@@ -18700,7 +18700,7 @@ fn span_queue_delete(
     let ghost mut next_state;
     proof {
         //assert(local.page_organization.pages.dom().contains(slice.page_id@));
-        next_state = PageOrg::take_step::take_page_from_unused_queue(
+        next_state = crate::page_organization::PageOrg::take_step::take_page_from_unused_queue(
             local.page_organization,
             slice.page_id@,
             sbin_idx as int,
@@ -18871,7 +18871,7 @@ fn segment_slice_split(
 
     let ghost mut next_state;
     proof {
-        next_state = PageOrg::take_step::split_page(
+        next_state = crate::page_organization::PageOrg::take_step::split_page(
             local.page_organization,
             slice.page_id@,
             current_slice_count as int,
@@ -19070,9 +19070,9 @@ fn segment_span_allocate(
     proof {
         const_facts();
         if local.page_organization.popped matches Popped::VeryUnready(..) {
-            next_state = PageOrg::take_step::allocate_popped(local.page_organization);
+            next_state = crate::page_organization::PageOrg::take_step::allocate_popped(local.page_organization);
         } else {
-            next_state = PageOrg::take_step::forget_about_first_page(local.page_organization, slice_count as int);
+            next_state = crate::page_organization::PageOrg::take_step::forget_about_first_page(local.page_organization, slice_count as int);
         }
     }
 
@@ -19568,7 +19568,7 @@ fn segment_alloc(
 
         ////////// Set up pages and stuff
 
-        local.page_organization = PageOrg::take_step::create_segment(local.page_organization, segment_id);
+        local.page_organization = crate::page_organization::PageOrg::take_step::create_segment(local.page_organization, segment_id);
 
         /*assert forall |page_id|
             #[trigger] local.pages.dom().contains(page_id) &&
@@ -19642,7 +19642,7 @@ fn segment_alloc(
     );*/
 
     let ghost local_snap = *local;
-    let ghost next_state = PageOrg::take_step::forget_about_first_page2(local.page_organization);
+    let ghost next_state = crate::page_organization::PageOrg::take_step::forget_about_first_page2(local.page_organization);
     segment_get_mut_main2!(segment_ptr, local, main2 => {
         main2.used = main2.used - 1;
     });
@@ -19832,7 +19832,7 @@ fn segment_free(segment: SegmentPtr, force: bool, tld: TldPtr, Tracked(local): T
     todo();
     /*
     proof {
-        let next_state = PageOrg::take_step::segment_freeing_start(local.page_organization, segment.segment_id@);
+        let next_state = crate::page_organization::PageOrg::take_step::segment_freeing_start(local.page_organization, segment.segment_id@);
         local.page_organization = next_state;
         preserves_mem_chunk_good(*old(local), *local);
         assert(local.wf_main());
@@ -19969,7 +19969,7 @@ fn segment_span_free(
     let ghost mut next_state;
     proof {
         //assert(valid_sbin_idx(bin_idx as int));
-        next_state = PageOrg::take_step::free_to_unused_queue(local.page_organization, bin_idx as int);
+        next_state = crate::page_organization::PageOrg::take_step::free_to_unused_queue(local.page_organization, bin_idx as int);
     }
 
     let slice = segment_ptr.get_page_header_ptr(slice_index);
@@ -20127,7 +20127,7 @@ fn segment_page_clear(page: PagePtr, tld: TldPtr, Tracked(local): Tracked<&mut L
         common_preserves(*old(local), *local),
 {
     let ghost page_id = page.page_id@;
-    let ghost next_state = PageOrg::take_step::set_range_to_not_used(local.page_organization);
+    let ghost next_state = crate::page_organization::PageOrg::take_step::set_range_to_not_used(local.page_organization);
     let ghost n_slices = local.page_organization.pages[page_id].count.unwrap();
     //assert(page.is_used_and_primary(*local));
     //assert(local.thread_token.value().pages.dom().contains(page_id));
@@ -20313,7 +20313,7 @@ fn segment_page_clear(page: PagePtr, tld: TldPtr, Tracked(local): Tracked<&mut L
 
     let ghost local_snap = *local;
 
-    let ghost next_state = PageOrg::take_step::clear_ec(local.page_organization);
+    let ghost next_state = crate::page_organization::PageOrg::take_step::clear_ec(local.page_organization);
     segment_get_mut_main2!(segment, local, main2 => {
         main2.used = main2.used - 1;
     });
@@ -20386,7 +20386,7 @@ fn segment_span_free_coalesce(slice: PagePtr, tld: TldPtr, Tracked(local): Track
     if less_than_end && page.get_inner_ref(Tracked(&*local)).xblock_size == 0 {
         let ghost page_id = page.page_id@;
         let ghost local_snap = *local;
-        let ghost next_state = PageOrg::take_step::merge_with_after(local.page_organization);
+        let ghost next_state = crate::page_organization::PageOrg::take_step::merge_with_after(local.page_organization);
 
         let prev_ptr = page.get_prev(Tracked(&*local));
         let next_ptr = page.get_next(Tracked(&*local));
@@ -20525,7 +20525,7 @@ fn segment_span_free_coalesce_before(segment: SegmentPtr, slice: PagePtr, tld: T
         }
         if page.get_inner_ref(Tracked(&*local)).xblock_size == 0 {
             let ghost local_snap = *local;
-            let ghost next_state = PageOrg::take_step::merge_with_before(local.page_organization);
+            let ghost next_state = crate::page_organization::PageOrg::take_step::merge_with_before(local.page_organization);
 
             let prev_ptr = page.get_prev(Tracked(&*local));
             let next_ptr = page.get_next(Tracked(&*local));
@@ -22007,7 +22007,7 @@ fn page_init(heap_ptr: HeapPtr, page_ptr: PagePtr, block_size: usize, tld_ptr: T
 {
     let ghost mut next_state;
     proof {
-        next_state = PageOrg::take_step::set_range_to_used(local.page_organization, PageHeaderKind::Normal(pq as int, block_size as int));
+        next_state = crate::page_organization::PageOrg::take_step::set_range_to_used(local.page_organization, PageHeaderKind::Normal(pq as int, block_size as int));
     }
 
     let ghost page_id = page_ptr.page_id@;
@@ -22471,11 +22471,11 @@ pub fn page_queue_remove(heap: HeapPtr, pq: usize, page: PagePtr, Tracked(local)
     let ghost mut next_state;
     let ghost page_id = page.page_id@;
     proof {
-        next_state = PageOrg::take_step::out_of_used_list(local.page_organization,
+        next_state = crate::page_organization::PageOrg::take_step::out_of_used_list(local.page_organization,
             page_id, pq as int, list_idx);
         holds_on_present_value(*local, pq as int);
         if old(local).page_organization.valid_used_page(next_id, pq as int, list_idx + 1) {
-            PageOrg::State::preserved_by_out_of_used_list(
+            crate::page_organization::PageOrg::State::preserved_by_out_of_used_list(
                 local.page_organization, next_state, page_id, pq as int, list_idx, next_id);
         }
     }
@@ -22668,7 +22668,7 @@ pub fn page_queue_push(heap: HeapPtr, pq: usize, page: PagePtr, Tracked(local): 
 {
     let ghost mut next_state;
     proof {
-        next_state = PageOrg::take_step::into_used_list(local.page_organization, pq as int);
+        next_state = crate::page_organization::PageOrg::take_step::into_used_list(local.page_organization, pq as int);
         holds_on_present_value(*local, pq as int);
     }
 
@@ -22851,10 +22851,10 @@ pub fn page_queue_push_back(heap: HeapPtr, pq: usize, page: PagePtr, Tracked(loc
 {
     let ghost mut next_state;
     proof {
-        next_state = PageOrg::take_step::into_used_list_back(local.page_organization, pq as int);
+        next_state = crate::page_organization::PageOrg::take_step::into_used_list_back(local.page_organization, pq as int);
         holds_on_present_value(*local, pq as int);
         if local.page_organization.valid_used_page(other_id, other_pq, other_list_idx) {
-            PageOrg::State::preserved_by_into_used_list_back(
+            crate::page_organization::PageOrg::State::preserved_by_into_used_list_back(
                 local.page_organization, next_state, pq as int, other_id, other_pq, other_list_idx);
         }
     }
@@ -23472,7 +23472,7 @@ pub fn heap_init(Tracked(global): Tracked<Global>, // $line_count$Trusted$
             heap_shared_access,
             uniq_reservation_tok);
 
-    let ghost page_organization = PageOrg::take_step::initialize();
+    let ghost page_organization = crate::page_organization::PageOrg::take_step::initialize();
     let tracked my_inst = global.my_inst.clone();
     let tracked local = Local {
         thread_id,

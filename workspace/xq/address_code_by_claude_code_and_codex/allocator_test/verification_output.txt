@@ -1,0 +1,171 @@
+   Compiling allocator_test v0.1.0 (/Users/chuyues/VerusFT_RL/workspace/xq/address_code_by_claude_code_and_codex/allocator_test)
+error: expected `,`
+    --> src/lib.rs:9080:19
+     |
+9080 |             assert(post.good_range0(segment_id));
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+    --> src/lib.rs:2757:60
+     |
+2757 |     pub ghost page_organization: crate::page_organization::PageOrg::State,
+     |                                                            ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:18703:48
+      |
+18703 |         next_state = crate::page_organization::PageOrg::take_step::take_page_from_unused_queue(
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:18874:48
+      |
+18874 |         next_state = crate::page_organization::PageOrg::take_step::split_page(
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:19073:52
+      |
+19073 |             next_state = crate::page_organization::PageOrg::take_step::allocate_popped(local.page_organization);
+      |                                                    ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:19075:52
+      |
+19075 |             next_state = crate::page_organization::PageOrg::take_step::forget_about_first_page(local.page_organization, slice_count as int);
+      |                                                    ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:19571:61
+      |
+19571 |         local.page_organization = crate::page_organization::PageOrg::take_step::create_segment(local.page_organization, segment_id);
+      |                                                             ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:19645:54
+      |
+19645 |     let ghost next_state = crate::page_organization::PageOrg::take_step::forget_about_first_page2(local.page_organization);
+      |                                                      ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:19972:48
+      |
+19972 |         next_state = crate::page_organization::PageOrg::take_step::free_to_unused_queue(local.page_organization, bin_idx as int);
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:20130:54
+      |
+20130 |     let ghost next_state = crate::page_organization::PageOrg::take_step::set_range_to_not_used(local.page_organization);
+      |                                                      ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:20316:54
+      |
+20316 |     let ghost next_state = crate::page_organization::PageOrg::take_step::clear_ec(local.page_organization);
+      |                                                      ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:20389:58
+      |
+20389 |         let ghost next_state = crate::page_organization::PageOrg::take_step::merge_with_after(local.page_organization);
+      |                                                          ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:20528:62
+      |
+20528 |             let ghost next_state = crate::page_organization::PageOrg::take_step::merge_with_before(local.page_organization);
+      |                                                              ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22010:48
+      |
+22010 | ...   next_state = crate::page_organization::PageOrg::take_step::set_range_to_used(local.page_organization, PageHeaderKind::Normal(pq as ...
+      |                                              ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22474:48
+      |
+22474 |         next_state = crate::page_organization::PageOrg::take_step::out_of_used_list(local.page_organization,
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22671:48
+      |
+22671 |         next_state = crate::page_organization::PageOrg::take_step::into_used_list(local.page_organization, pq as int);
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22854:48
+      |
+22854 |         next_state = crate::page_organization::PageOrg::take_step::into_used_list_back(local.page_organization, pq as int);
+      |                                                ^^^^^^^ could not find `PageOrg` in `page_organization`
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22478:39
+      |
+22478 |             crate::page_organization::PageOrg::State::preserved_by_out_of_used_list(
+      |                                       ^^^^^^^ could not find `PageOrg` in `page_organization`
+      |
+help: consider importing one of these structs
+      |
+22426 + use crate::linked_list::StuffAgree::State;
+      |
+22426 + use crate::queues::BoolAgree::State;
+      |
+22426 + use crate::queues::Mim::State;
+      |
+22426 + use crate::queues::rwlock::RwLockToks::State;
+      |
+      = and 3 other candidates
+help: if you import `State`, refer to it directly
+      |
+22478 -             crate::page_organization::PageOrg::State::preserved_by_out_of_used_list(
+22478 +             State::preserved_by_out_of_used_list(
+      |
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:22857:39
+      |
+22857 |             crate::page_organization::PageOrg::State::preserved_by_into_used_list_back(
+      |                                       ^^^^^^^ could not find `PageOrg` in `page_organization`
+      |
+help: consider importing one of these structs
+      |
+22426 + use crate::linked_list::StuffAgree::State;
+      |
+22426 + use crate::queues::BoolAgree::State;
+      |
+22426 + use crate::queues::Mim::State;
+      |
+22426 + use crate::queues::rwlock::RwLockToks::State;
+      |
+      = and 3 other candidates
+help: if you import `State`, refer to it directly
+      |
+22857 -             crate::page_organization::PageOrg::State::preserved_by_into_used_list_back(
+22857 +             State::preserved_by_into_used_list_back(
+      |
+
+error[E0433]: failed to resolve: could not find `PageOrg` in `page_organization`
+     --> src/lib.rs:23475:61
+      |
+23475 |     let ghost page_organization = crate::page_organization::PageOrg::take_step::initialize();
+      |                                                             ^^^^^^^ could not find `PageOrg` in `page_organization`
+      |
+help: consider importing one of these modules
+      |
+23262 + use crate::init::BoolAgree::take_step;
+      |
+23262 + use crate::init::Mim::take_step;
+      |
+23262 + use crate::init::StuffAgree::take_step;
+      |
+help: if you import `take_step`, refer to it directly
+      |
+23475 -     let ghost page_organization = crate::page_organization::PageOrg::take_step::initialize();
+23475 +     let ghost page_organization = take_step::initialize();
+      |
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `allocator_test` (lib) due to 20 previous errors

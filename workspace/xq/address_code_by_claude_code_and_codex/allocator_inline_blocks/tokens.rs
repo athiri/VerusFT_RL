@@ -15,7 +15,7 @@ mod tokens{
 #![feature(allocator_api)]
 #![allow(unused_imports)]
 
-use verus_state_machines_macros::*;
+use state_machines_macros::*;
 use vstd::prelude::*;
 use vstd::raw_ptr::*;
 use vstd::*;

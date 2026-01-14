@@ -745,8 +745,8 @@ fn segment_span_allocate(
         SLICES_PER_SEGMENT >= slice_count > 0,
     ensures
         local.wf_main(),
-        success ==> old(local).page_organization.popped.is_VeryUnready() ==> local.page_organization.popped == Popped::Ready(slice.page_id@, true),
-        success ==> old(local).page_organization.popped.is_SegmentCreating() ==> local.page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice_count as int, SLICES_PER_SEGMENT - slice_count as int, true),
+        success ==> (old(local).page_organization.popped matches Popped::VeryUnready(..)) ==> local.page_organization.popped == Popped::Ready(slice.page_id@, true),
+        success ==> (old(local).page_organization.popped matches Popped::SegmentCreating(..)) ==> local.page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice_count as int, SLICES_PER_SEGMENT - slice_count as int, true),
         success ==> local.page_organization.pages.dom().contains(slice.page_id@),
         success ==> local.page_organization.pages[slice.page_id@].count
             == Some(slice_count as nat),
@@ -757,7 +757,7 @@ fn segment_span_allocate(
     let ghost mut next_state;
     proof {
         const_facts();
-        if local.page_organization.popped.is_VeryUnready() {
+        if local.page_organization.popped matches Popped::VeryUnready(..) {
             next_state = PageOrg::take_step::allocate_popped(local.page_organization);
         } else {
             next_state = PageOrg::take_step::forget_about_first_page(local.page_organization, slice_count as int);
@@ -906,7 +906,7 @@ fn segment_span_allocate(
 
         preserves_mem_chunk_good(old_local, *local);
 
-        /*if old_po.popped.is_VeryUnready() {
+        /*if old_po.popped matches Popped::VeryUnready(..) {
             assert(local.page_organization.pages[first_page_id].page_header_kind.is_none());
             assert(page_organization_pages_match_data(local.page_organization.pages[first_page_id], local.pages[first_page_id], local.psa[first_page_id], first_page_id, local.page_organization.popped));
             assert(page_organization_pages_match(local.page_organization.pages, local.pages, local.psa, local.page_organization.popped));
@@ -1639,12 +1639,12 @@ fn segment_span_free(
         0 <= slice_index,
         slice_index + slice_count <= SLICES_PER_SEGMENT,
 
-        old(local).page_organization.popped == Popped::VeryUnready(segment_ptr.segment_id@, slice_index as int, slice_count as int, old(local).page_organization.popped.get_VeryUnready_3()),
+        old(local).page_organization.popped == Popped::VeryUnready(segment_ptr.segment_id@, slice_index as int, slice_count as int, old(local).page_organization.popped.arrow_VeryUnready_3()),
     ensures
         local.wf_main(),
         common_preserves(*old(local), *local),
         segment_ptr.is_in(*local),
-        local.page_organization.popped == if old(local).page_organization.popped.get_VeryUnready_3() {
+        local.page_organization.popped == if old(local).page_organization.popped.arrow_VeryUnready_3() {
             Popped::ExtraCount(segment_ptr.segment_id@)
         } else {
             Popped::No
@@ -2167,7 +2167,7 @@ fn segment_span_free_coalesce_before(segment: SegmentPtr, slice: PagePtr, tld: T
         segment.segment_id@ == slice.page_id@.segment_id,
         slice.wf(),
         slice.is_in(*old(local)),
-        old(local).page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice.page_id@.idx as int, slice_count as int, old(local).page_organization.popped.get_VeryUnready_3())
+        old(local).page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice.page_id@.idx as int, slice_count as int, old(local).page_organization.popped.arrow_VeryUnready_3())
     ensures
         local.wf_main(),
         common_preserves(*old(local), *local),
@@ -2175,7 +2175,7 @@ fn segment_span_free_coalesce_before(segment: SegmentPtr, slice: PagePtr, tld: T
         slice.page_id@.segment_id == res.0.page_id@.segment_id,
         ({ let (slice, slice_count) = res;
           slice.wf()
-          && local.page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice.page_id@.idx as int, slice_count as int, old(local).page_organization.popped.get_VeryUnready_3())
+          && local.page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice.page_id@.idx as int, slice_count as int, old(local).page_organization.popped.arrow_VeryUnready_3())
           && slice.page_id@.idx + slice_count <= SLICES_PER_SEGMENT
         })
 {
@@ -2192,7 +2192,7 @@ fn segment_span_free_coalesce_before(segment: SegmentPtr, slice: PagePtr, tld: T
                 slice.page_id@.segment_id,
                 slice.page_id@.idx as int,
                 slice_count as int,
-                local.page_organization.popped.get_VeryUnready_3()));*/
+                local.page_organization.popped.arrow_VeryUnready_3()));*/
             local.page_organization.valid_page_before();
         }
         let last = slice.sub_offset(1);
@@ -2280,10 +2280,10 @@ fn segment_span_free_coalesce_before(segment: SegmentPtr, slice: PagePtr, tld: T
                 //assert(local.wf_main());
 
                 /*assert(slice.wf());
-                assert(local.page_organization.popped.is_VeryUnready());
-                assert(local.page_organization.popped.get_VeryUnready_1()
+                assert(local.page_organization.popped matches Popped::VeryUnready(..));
+                assert(local.page_organization.popped.arrow_VeryUnready_1()
                     == slice.page_id@.idx as int);
-                assert(local.page_organization.popped.get_VeryUnready_2()
+                assert(local.page_organization.popped.arrow_VeryUnready_2()
                     == slice_count as int);
                 assert(local.page_organization.popped == Popped::VeryUnready(slice.page_id@.segment_id, slice.page_id@.idx as int, slice_count as int));*/
             }
